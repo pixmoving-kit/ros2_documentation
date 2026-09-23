@@ -1,118 +1,99 @@
----
-translation_status: machine_translated
-source: Contact.rst
----
+<span id="contact"></span>
+<span id="help"></span>
 
-!!! info "翻译说明"
+# 联系方式
 
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
+<span id="support"></span>
+<span id="using-robotics-stack-exchange"></span>
 
-<span id="contact"></span> <span id="help"></span>
+## 获取帮助
 
-# 联系
+不同类型的问题或讨论适合不同的沟通渠道。请阅读下面的说明，选择合适的方式。
 
-<span id="support"></span> <span id="using-robotics-stack-exchange"></span>
+需要帮助排查系统问题时，请先搜索 [Robotics Stack Exchange](https://robotics.stackexchange.com/)，看看是否有人遇到过类似问题，以及他们的解决方法是否适用于你。
 
-## 支助
+如果没有找到答案，请在 [Robotics Stack Exchange](https://robotics.stackexchange.com/) 上提出新问题。务必添加标签，至少包括 `ros2` 和所用发行版的版本，例如 `rolling`。如果问题与本文档有关，请添加 `docs` 标签，或更具体的 `tutorials` 标签。
 
-不同类型的问题或讨论对应不同的沟通途径;检查下面的描述,以确保你选择正确的方法.
-
-需要帮忙找出系统故障吗? [机器人堆栈交换](https://robotics.stackexchange.com/) 看看其他人是否有类似的问题, 以及他们的解决方案是否对你有用。
-
-如果没有,请问一个新问题: [机器人堆栈交换](https://robotics.stackexchange.com/)。确定至少要添加标记。 `ros2` 标签和您正在运行的 Distro 版本, 例如 。 `rolling`。如果您的问题与文档相关,请添加一个标签,如 `docs`或更具体地说, `tutorials`.
-
-请不要直接与开发者/维护者联系。 社区无法看到问答没有公开询问或回答。 当整个社区参与讨论并帮助回答问题时,开源开发效果最好。 最好把所有问题发送到 [机器人堆栈交换](https://robotics.stackexchange.com/) 并向问题跟踪员报告所有问题。
+请不要直接联系开发者或维护者。未公开提出或回答的问题，社区其他成员无法看到。当整个社区都能参与讨论、帮助解答问题时，开源开发才能发挥最佳效果。建议将问题发布到 [Robotics Stack Exchange](https://robotics.stackexchange.com/)，并在问题跟踪系统中报告缺陷。
 
 <span id="contributing-support"></span>
 
-### 捐助支助
+### 帮助其他用户
 
-ROS 2的用户来自广泛的技术背景,使用不同的操作系统,而且不一定具有ROS(1或2)的任何以往经验,因此,拥有任何经验的用户都必须贡献支持。
+ROS 2 用户的技术背景各不相同，使用的操作系统多种多样，也不一定有任何 ROS（1 或 2）使用经验。因此，无论经验多少，用户参与答疑都很重要。
 
-如果你看到一个问题 [机器人堆栈交换](https://robotics.stackexchange.com/) 这类似于你遇到的事情,请考虑为帮助你处境的东西提供一些指导。 如果你不确定你的反应是否正确,就不用担心。 简单地说,其他社区成员会在必要时介入。
+如果你在 [Robotics Stack Exchange](https://robotics.stackexchange.com/) 上看到与自己经历相似的问题，可以分享当时对你有帮助的线索。不必因为不确定答案是否正确而担心。只需说明你的不确定之处，其他社区成员会在需要时补充。
 
 <span id="issues"></span>
 
-## 问题
+## 报告问题
 
-如果识别出错误,有改进建议,或者一个包特有的问题,可以在GitHub上打开一个问题.
+如果发现缺陷、有改进建议，或有针对某个软件包的具体问题，可以在 GitHub 上创建 issue。
 
-例如,如果您在跟踪 [这里的教程](Tutorials.md) 并且遇到一个对系统不起作用的指令, 您可以在其中打开一个问题 [ros2_documentation](https://github.com/ros2/ros2_documentation) 复传.
+例如，学习[本站教程](Tutorials.md)时，如果发现某条操作说明在你的系统上不起作用，可以在 [ros2_documentation 仓库](https://github.com/ros2/ros2_documentation)中创建 issue。
 
-您可以在其中搜索 ROS 2 寄存器 [ROS 2 的 GitHub](https://github.com/ros2).
+可以在 [ROS 2 的 GitHub 组织](https://github.com/ros2)中搜索各个 ROS 2 仓库。
 
-在打开一个问题之前, 请检查其他用户是否报告过类似的问题, 搜索整个 ros2 和 ament GitHub 组织: [示例搜索查询](https://github.com/search?q=user%3Aros2+user%3Aament+turtlesim&type=Issues).
+创建 issue 前，请先搜索 ros2 和 ament 这两个 GitHub 组织，确认其他用户是否报告过类似问题：[搜索示例](https://github.com/search?q=user%3Aros2+user%3Aament+turtlesim&type=Issues)。
 
-下一个, 请检查 [机器人堆栈交换](https://robotics.stackexchange.com/) 看看有没有别人问你的问题 或者报告你的问题。
+然后，检查 [Robotics Stack Exchange](https://robotics.stackexchange.com/)，看看是否有人提出过相同的问题或报告过相同的故障。
 
-如果还没有被报告,请在适当的寄存器跟踪器中打开一个问题。如果不清楚用于某个特定问题的哪个跟踪器,请在 [ros2/ros2 存储器](https://github.com/ros2/ros2/issues) 我们将会看看它。
+如果尚未有人报告，可以在相应仓库的问题跟踪系统中创建 issue。如果不确定应该使用哪个仓库，请在 [ros2/ros2 仓库](https://github.com/ros2/ros2/issues)中提交，我们会查看。
 
-在提交申请时,请确保:
+创建 issue 时，请务必：
 
-- 包含足够的信息,供他人理解问题.
+- 提供足够的信息，让其他人能够理解问题。准确描述你当时正在做什么、想实现什么，以及究竟哪里出了问题。如果按照教程或在线说明操作，请附上对应说明的链接。
+- 使用具体明确的标题。不好的例子：“rviz 无法使用”；好的例子：“最近一次 apt 更新后，Rviz 因找不到 `.so` 文件而崩溃”。
+- 提供与问题有关的具体平台、软件、版本和环境信息，包括软件的安装方式（二进制安装或源码构建），以及所用的 ROS 中间件或 DDS 供应商（如果知道）。
+- 提供所有警告或错误信息。请直接从输出这些信息的终端窗口中复制粘贴，不要重新手打，也不要用截图替代。
+- 如果是缺陷，请考虑提供[简短、自包含、正确且可编译的示例](https://sscce.org/)。
+- 讨论编译、链接或安装问题时，同时提供编译器版本。
 
-准确描述您正在做什么或试图做什么, 以及如果出了什么问题, 究竟发生了什么。 如果遵循一个教程或在线指令, 则会提供一个与特定指令的链接 。
+根据具体情况，还应提供：
 
-- 使用描述性标题或主题行。 不好 : “ rviz 无效 ” 。 很好 : “ Rviz 崩溃寻找缺失 ” `.so` 最新更新之后”
-
-- 包含与问题相关的准确平台、软件、版本和环境信息。 包括您如何安装软件( 从二进制或源头) 以及您正在使用的 ROS 中间软件/ DDS 供应商( 如果您知道的话 ) 。
-
-- 任何警告或错误。 从打印到的终端窗口直接剪切并粘贴它们。 请不要重打或包含截图 。
-
-- 发生错误时,考虑提供 [短, 自包含, 正确( 可编译), 例如](https://sscce.org/).
-
-- 在讨论任何汇编/链接/安装问题时,也提供汇编器版本
-
-酌情包括:
-
-- ROS 环境变量 (env  ⁇  grep ROS)
-
-- 回溯跟踪
-
+- ROS 环境变量（`env | grep ROS`）
+- 调用栈回溯
 - 相关配置文件
+- 显卡型号及驱动版本
+- 如果可以，提供 rviz 的 Ogre.log（使用 `rviz -l` 运行）
+- 能够复现问题的 bag 文件和示例代码
+- 展示问题的 GIF 动图或视频
 
-- 图形卡片模型和驱动程序版本
+<span id="discussion"></span>
+<span id="using-ros-discourse"></span>
 
-- rviz 的 Ogre.log, 如果可能的话( 使用 rviz - l 运行)
+## 讨论
 
-- 可以复制问题的包文件和代码样本
+如果想与其他 ROS 2 社区成员展开讨论，请访问官方 [Open Robotics Discourse](https://discourse.openrobotics.org/)。Discourse 适合较宏观的内容，不适合解答具体的代码问题，但适合讨论最佳实践或标准改进。
 
-- 显示问题的吉卜赛或电影
+关于 ROS 2 开发和计划的讨论在 [Open Robotics Discourse 的 ROS 分类](https://discourse.openrobotics.org/c/ros/111)中进行。参与这些讨论，是对 ROS 2 各项功能的行为和实现方式发表意见的重要途径。
 
-<span id="discussion"></span> <span id="using-ros-discourse"></span>
-
-## 讨论情况
-
-与其他ROS 2社区成员开始讨论,访问官员 [打开机器人演讲](https://discourse.openrobotics.org/)演讲的内容应该是高层次的;它不是获得 *问 题* 关于代码被回答,但应该开始讨论最佳做法或改进标准。
-
-关于ROS 2的发展和计划的讨论正在进行之中。 [开放机器人演讲的 ROS 类](https://discourse.openrobotics.org/c/ros/111)参加这些讨论是就《规则2》的不同特点如何运作和执行发表意见的重要途径。
-
-ROS生态系统背后的多样化社区是其最大的资产之一。 我们鼓励ROS社区的所有成员参与这些设计讨论,以便利用社区成员的经验,并铭记ROS的各种使用案例。
+ROS 生态系统背后多元化的社区是它最宝贵的财富之一。我们鼓励所有 ROS 社区成员参与设计讨论，让大家的经验得到充分利用，并兼顾 ROS 的不同使用场景。
 
 <span id="etiquette"></span>
 
-## 节奏
+## 交流礼仪
 
-假设“诚信”:在网络上评论的含义或语气容易被错误解释。 假设“诚信”让那些试图帮助你的人从怀疑中获益,避免:污辱社区成员,毒化情绪。 假设“诚信”在回应时几乎总是效果更好,即使最初的回答事实上不是善意的。
+**善意理解他人。** 网络上的评论很容易被误解，无论是含义还是语气。先假定对方怀有善意，可以避免冒犯真心想帮助你的社区成员，也有助于维护交流氛围。即使对方最初并非善意，以善意回应通常仍然更有效。
 
-请不要不止一次地发出问题:问题已经被看到。 如果你没有得到答复, 那么就可能没有人有时间回答你。 或者,没有人知道答案。 无论如何,再次发出这个问题是糟糕的形态,类似于大喊大叫,而且有可能使很多人雪上加霜。 这也适用于交叉张贴。 尝试选择你认为最匹配的论坛,然后问它。如果你被提到一个新的论坛,请提供与旧讨论的链接。
+**请勿重复发送同一个问题。** 大家已经看到了你的问题。如果没有收到回复，可能只是还没有人有时间回答，也可能没有人知道答案。无论哪种情况，重复发送都不合适，如同大声叫喊，容易让许多人反感。这也适用于在多个平台交叉发帖。请尽量选择最合适的论坛提问。如果有人建议你转到另一个论坛，请附上原讨论的链接。
 
-打开 [机器人堆栈交换](https://robotics.stackexchange.com/) 您可以编辑您的问题,以提供更多细节。您在问题中包含的更多细节越容易让其他人帮助您找到解决方案,从而使您更容易得到答复。
+在 [Robotics Stack Exchange](https://robotics.stackexchange.com/) 上，可以编辑问题以补充细节。信息越充分，其他人越容易帮你找到解决方法，你也越有可能得到回复。
 
-社区成员回答问题时也有。
+**不宜强调个人的截止期限。** 回答问题的社区成员也有自己的截止期限。
 
-不要求救。 如果有人愿意并能够帮助你解决问题, 你通常会得到一个答案。 要求更快的答案大多会产生负面效果 。
+**不要恳求帮助。** 如果有人愿意并且能够帮助你，通常会得到回复。催促别人更快回答，大多只会适得其反。
 
-不要在帖子上添加不相关的内容. 帖子的内容应该以手头的主题为主,而不包括不相关的内容. 内容,链接和与这个主题无关的图像都被认为是垃圾邮件.
+**不要在帖子中添加无关内容。** 帖子应围绕当前主题展开。无关的内容、链接和图片会被视为垃圾信息。
 
-关于商业员额,另见 [本次讨论](https://discourse.openrobotics.org/t/sponsorship-notation-in-posts-on-ros-org/2078).
+商业性质的帖子另请参阅[这项讨论](https://discourse.openrobotics.org/t/sponsorship-notation-in-posts-on-ros-org/2078)。
 
-最小化付费墙后内容的引用。 张贴在 [打开机器人演讲](https://discourse.openrobotics.org/) 财务报告和财务报告 [机器人堆栈交换](https://robotics.stackexchange.com/) 与付费墙后内容的链接,如私人期刊文章、教科书和付费新闻网站,虽然有用且相关,但可能无法向所有用户开放。
+**尽量少引用付费内容。** 发布在 [Open Robotics Discourse](https://discourse.openrobotics.org/) 和 [Robotics Stack Exchange](https://robotics.stackexchange.com/) 上的内容，通常应对所有用户免费开放。私人期刊文章、教科书或付费新闻网站等内容的链接，虽然可能有用且与问题相关，却未必人人都能访问。尽可能以免费开放的来源作为主要资料，付费内容只作为补充。
 
-单一链接的帖子应该避免。 一般来说,发布单一链接的答案不太有用,很容易与垃圾邮件混淆。 此外,链接可能会随着时间推移而退化或被替换。 将链接的内容与一些背景信息和归属联系起来往往更有用。
+**避免只发一个链接。** 一般来说，仅包含链接的回答帮助较小，也容易被误认为垃圾信息。此外，链接可能随着时间失效，或对应内容被替换。概述链接中的内容，并提供上下文和来源，通常会更有帮助。
 
 <span id="private-contact"></span>
 
-## 私人联系人
+## 私下联系
 
-如果你想私下联系我们(例如,如果您的问题包含对您的组织或项目敏感的信息,或者如果涉及到安全问题),您可以直接通过电子邮件向我们联系。 `ros@osrfoundation.org`.
+如果需要私下联系我们，例如问题涉及组织或项目的敏感信息，或与安全问题有关，可以直接发送电子邮件至 `ros@osrfoundation.org`。

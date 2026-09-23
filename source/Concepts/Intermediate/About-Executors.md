@@ -1,12 +1,3 @@
----
-translation_status: machine_translated
-source: Concepts/Intermediate/About-Executors.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="executors"></span>
 
 # 执行器
@@ -15,17 +6,17 @@ source: Concepts/Intermediate/About-Executors.rst
 
 ## 概述
 
-ROS 2 中的执行管理由执行者处理。 一个执行者使用一个或多个基础操作系统的线程来引用用户、定时器、服务服务器、动作服务器等在来信和事件上的召回。 明确的执行者类( in) [executor.hpp](https://github.com/ros2/rclcpp/blob/rolling/rclcpp/include/rclcpp/executor.hpp) 在 rclpp 中,在 [executors.py](https://github.com/ros2/rclpy/blob/rolling/rclpy/rclpy/executors.py) 以粗略表示,或以粗略表示 [executor.h](https://github.com/ros2/rclc/blob/master/rclc/include/rclc/executor.h) 在rclc)中,比ROS 1中的自旋机制更能提供对执行管理的控制,尽管基本的API非常相似.
+ROS 2 由执行器（Executor）负责执行管理。执行器使用底层操作系统的一个或多个线程，在收到消息和事件时调用订阅、定时器、服务端、动作服务端等的回调函数。显式的 Executor 类位于 rclcpp 的 [executor.hpp](https://github.com/ros2/rclcpp/blob/rolling/rclcpp/include/rclcpp/executor.hpp)、rclpy 的 [executors.py](https://github.com/ros2/rclpy/blob/rolling/rclpy/rclpy/executors.py) 或 rclc 的 [executor.h](https://github.com/ros2/rclc/blob/master/rclc/include/rclc/executor.h) 中。虽然基本 API 与 ROS 1 的 spin 机制十分相似，但执行器提供了更强的执行管理能力。
 
-下面,我们专注于 C++ 客户端库 *rclcpp*.
+下文主要介绍 C++ 客户端库 *rclcpp*。
 
 <span id="basic-use"></span>
 
-## 基本用途
+## 基本用法
 
-在最简单的情况下,主线程用于通过调用处理一个节点的来函和事件 `rclcpp::spin(..)` 现将有关事项通知如下:
+最简单的情况下，通过调用 `rclcpp::spin(..)`，使用主线程处理节点收到的消息和事件：
 
-``` cpp
+```cpp
 int main(int argc, char* argv[])
 {
    // Some initialization.
@@ -44,48 +35,34 @@ int main(int argc, char* argv[])
 }
 ```
 
-呼唤 `spin(node)` 基本扩展为即时引用单曲执行器,这是最简单的执行器:
+`spin(node)` 调用基本上相当于创建并调用最简单的执行器——单线程执行器：
 
-``` cpp
+```cpp
 rclcpp::executors::SingleThreadedExecutor executor;
 executor.add_node(node);
 executor.spin();
 ```
 
-通过援引 `spin()` 中执行器实例中,当前线索开始查询 rcl 和 中间软件层,以获取来信和其他事件,并调用相应的调回功能,直到节点关闭。为了不抵制中间软件的 QoS 设置,来信不会存储在客户端库层的队列中,而是保存在中间软件中,直到它被调回功能处理。 (这对 ROS 1. 是一个关键区别 。) A *等待设定* 用于向执行者通报中间软件层上可用的消息,每个队列有一个二进制标记。 *等待设定* 用于检测计时器过期时。
+调用执行器实例的 `spin()` 后，当前线程开始向 rcl 层和中间件层查询收到的消息及其他事件，并调用相应的回调函数，直到节点关闭。为避免抵消中间件的 QoS 设置，收到的消息不会存放在客户端库层的队列中，而是保留在中间件中，直到回调函数取出消息并处理。这是与 ROS 1 的一个关键区别。执行器通过*等待集*（wait set）获知中间件层是否有可用消息，每个队列对应一个二值标志。等待集也用于检测定时器是否到期。
 
-![](../images/executors_basic_principle.png)
+![执行器的基本原理](../images/executors_basic_principle.png)
 
-容器过程也使用单图执行器 [组件](About-Composition.md),即所有在没有明确主要功能的情况下创建和执行节点。
+[组件](About-Composition.md)的容器进程也使用单线程执行器，即在没有显式 main 函数的情况下创建并执行节点时使用它。
 
-<span id="types-of-executors"></span> <span id="typesofexecutors"></span>
+<span id="types-of-executors"></span>
+<span id="typesofexecutors"></span>
 
-## 执行者的类型
+## 执行器类型
 
-目前,rclcpp提供三种执行器类型,来源于一个共享的父类:
+本文介绍的 rclcpp 提供三种执行器，它们继承自同一个父类：
 
-``` dot
+![Executor 及其三个派生类：SingleThreadedExecutor、MultiThreadedExecutor 和 StaticSingleThreadedExecutor](../images/executor-types.svg)
 
-digraph Flatland {
+*多线程执行器*（Multi-Threaded Executor）创建可配置数量的线程，以并行处理多条消息或多个事件。*静态单线程执行器*（Static Single-Threaded Executor）则优化了扫描节点结构的运行开销，包括扫描订阅、定时器、服务端和动作服务端等。它仅在添加节点时扫描一次，而另外两种执行器会定期检查这些结构是否发生变化。因此，静态单线程执行器只适用于在初始化阶段创建所有订阅、定时器等实体的节点。
 
-   Executor -> SingleThreadedExecutor [dir = back, arrowtail = empty];
-   Executor -> MultiThreadedExecutor [dir = back, arrowtail = empty];
-   Executor -> StaticSingleThreadedExecutor [dir = back, arrowtail = empty];
-   Executor  [shape=polygon,sides=4];
-   SingleThreadedExecutor  [shape=polygon,sides=4];
-   MultiThreadedExecutor  [shape=polygon,sides=4];
-   StaticSingleThreadedExecutor  [shape=polygon,sides=4];
+三种执行器都支持多个节点，只需为每个节点调用 `add_node(..)`：
 
-   }
-```
-
-![执行器继承关系](../images/executor-types.svg)
-
-那个... *多轨执行器* 创建可配置的线程数,以便并行处理多个消息或事件。 *静态单向执行器* 在订阅,定时器,服务服务器,动作服务器等方面优化扫描节点结构的运行时间成本,它只在添加节点时进行一次扫描,而其他两个执行器则定期扫描这些更改。因此,在初始化时,只应该使用创建所有订阅,定时器等节点的静态单向执行器.
-
-所有三个执行器都可以通过调用多个节点来使用 `add_node(..)` 用于每个节点。
-
-``` cpp
+```cpp
 rclcpp::Node::SharedPtr node1 = ...
 rclcpp::Node::SharedPtr node2 = ...
 rclcpp::Node::SharedPtr node3 = ...
@@ -97,17 +74,17 @@ executor.add_node(node3);
 executor.spin();
 ```
 
-在上述例子中,静态单轨执行器的一个线程用于一起服务三个节点。如果是多轨执行器,则实际的并行性取决于召回组。
+上例中，静态单线程执行器使用一个线程共同处理三个节点。对于多线程执行器，实际并行程度取决于回调组。
 
 <span id="callback-groups"></span>
 
-## 召回组
+## 回调组
 
-ROS 2 允许将节点的调用重新组织成组。在 rclcpp 中,这样的调用 *回调组* 可以通过 `create_callback_group` 在 rclpy 中,同样通过调用特定调用组类型的构建器来实现。调用组必须在节点的整个执行过程中存储(例如作为类成员),否则执行器将无法触发调用。然后,在创建订阅、计时器等时可以指定这个调用组。例如,通过订阅选项:
+ROS 2 允许将节点的回调组织成组。在 rclcpp 中，可以通过 Node 类的 `create_callback_group` 函数创建*回调组*；在 rclpy 中，则调用相应回调组类型的构造函数。必须在节点执行期间一直保存回调组，例如将其保存为类成员，否则执行器将无法触发这些回调。随后，可在创建订阅、定时器等实体时指定回调组。例如，通过订阅选项指定：
 
-##### C++
+### C++
 
-``` cpp
+```cpp
 my_callback_group = create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
 rclcpp::SubscriptionOptions options;
@@ -117,64 +94,57 @@ my_subscription = create_subscription<Int32>("/topic", rclcpp::SensorDataQoS(),
                                              callback, options);
 ```
 
-##### Python
+### Python
 
-``` python
+```python
 my_callback_group = MutuallyExclusiveCallbackGroup()
 my_subscription = self.create_subscription(Int32, "/topic", self.callback, qos_profile=1,
                                            callback_group=my_callback_group)
 ```
 
-所有未注明回调组而创建的订阅器、定时器等都指定给 *默认回调组*。默认的召回组可以通过 `NodeBaseInterface::get_default_callback_group()` 以 rclpp 和 by 键 `Node.default_callback_group` 在rclpy。 (原始内容存档于2018-09-21).
+创建订阅、定时器等实体时，如果没有指定回调组，它们会被分配到*默认回调组*。在 rclcpp 中可通过 `NodeBaseInterface::get_default_callback_group()` 获取默认回调组，在 rclpy 中则通过 `Node.default_callback_group` 获取。
 
-召回组有两种类型,类型必须在即时指定:
+回调组有两种类型，创建时必须指定：
 
-- *相互排斥:* 此组的召回不能平行执行 。
+- **互斥（Mutually exclusive）**：同组回调不能并行执行。
+- **可重入（Reentrant）**：同组回调可以并行执行。
 
-- *归依者:* 此组的召回可能平行执行 。
+不同回调组中的回调始终可以并行执行。多线程执行器将其线程作为线程池，在这些条件允许的范围内尽可能并行处理回调。高效使用回调组的建议参见[使用回调组](../../How-To-Guides/Using-callback-groups.md)。
 
-不同召回组的召回总是平行执行的。 多线程执行器使用它的线程作为集合, 根据这些条件来并行处理尽可能多的召回。 关于如何高效使用召回组的提示, 请参见 。 [使用回调组](../../How-To-Guides/Using-callback-groups.md).
-
-rclcpp 中的执行器基础类也具有功能 `add_callback_group(..)`,它允许向不同的执行器分配调回组。通过使用操作系统调度器配置基本线程,特定的调回可以优先于其他调回。例如,控制循环的订阅和定时器可以优先于节点的所有其他订阅和标准服务。 [示例_rclcpp_cbg_执行器软件包](https://github.com/ros2/examples/tree/rolling/rclcpp/executors/cbg_executor) 提供了此机制的演示。
+rclcpp 的 Executor 基类还提供 `add_callback_group(..)`，允许将回调组分配给不同执行器。通过操作系统调度器配置底层线程，可以让某些回调获得比其他回调更高的优先级。例如，可以让控制循环的订阅和定时器优先于节点中其他订阅及普通服务执行。[examples_rclcpp_cbg_executor 软件包](https://github.com/ros2/examples/tree/rolling/rclcpp/executors/cbg_executor)提供了这种机制的示例。
 
 <span id="scheduling-semantics"></span>
 
-## 排程语义
+## 调度语义
 
-如果调用回调的处理时间比消息和事件发生的时间短, 执行器基本上按照 FIFO 顺序处理它们。 但是, 如果一些调用回调的处理时间更长, 消息和事件会排在堆栈的下层。 等待机制只向执行器报告极少有关这些队列的信息 。 详细来说, 它只报告是否有针对特定主题的任何消息 。 执行器使用这种信息来处理消息( 包括服务和动作) , 而不是在 FIFO 顺序中。 以下流程图可视化这种调度语义 。
+如果回调处理时间短于消息和事件的发生周期，执行器基本上按先进先出（FIFO）的顺序处理它们。但如果某些回调耗时较长，消息和事件就会在软件栈的下层排队。等待集机制向执行器提供的队列信息非常有限，具体而言，它只报告某个话题是否有消息。执行器根据这些信息，以轮转（round-robin）方式处理消息（包括服务和动作），而不是按照 FIFO 顺序。下图展示了这种调度语义。
 
-![](../images/executors_scheduling_semantics.png)
+![执行器的调度语义](../images/executors_scheduling_semantics.png)
 
-这个语义最早是在 [Casini等人在ECRTS 2019上发表的论文](https://drops.dagstuhl.de/opus/volltexte/2019/10743/pdf/LIPIcs-ECRTS-2019-6.pdf).(注:本文还解释说,计时器事件优先于所有其他信息。) [这一优先次序在讨论会上被删除。](https://github.com/ros2/rclcpp/pull/841))
+这种语义最早由 [Casini 等人在 ECRTS 2019 发表的论文](https://drops.dagstuhl.de/opus/volltexte/2019/10743/pdf/LIPIcs-ECRTS-2019-6.pdf)描述。注意：论文还指出定时器事件优先于所有其他消息，但[该优先处理机制已在 Eloquent 中移除](https://github.com/ros2/rclcpp/pull/841)。
 
 <span id="outlook"></span>
 
 ## 展望
 
-虽然rclcpp的三名执行者在大多数应用中效果良好,但有些问题使其不适合实时应用,这需要明确的执行时间、确定性以及自定义对执行命令的控制。
+尽管 rclcpp 的这三种执行器适用于大多数应用，但实时应用要求明确的执行时间、确定性以及对执行顺序的自定义控制，现有执行器仍存在一些不适合此类应用的问题：
 
-1.  复杂和混合的排程语义。 理想的情况是, 要进行正式的排程语义分析 。
+1. 调度语义复杂且混杂。理想情况下，需要明确定义的调度语义，才能进行形式化时序分析。
+2. 回调可能出现优先级反转：高优先级回调可能被低优先级回调阻塞。
+3. 无法显式控制回调的执行顺序。
+4. 没有内置机制来控制特定话题的触发行为。
 
-2.  回调可能会受到优先级反转的影响. 更高优先级回调可能会受到较低优先级回调的阻塞.
+此外，执行器的 CPU 和内存开销也较大。静态单线程执行器显著降低了这些开销，但对某些应用仍可能不够。
 
-3.  对召回执行命令没有明确的控制.
+以下工作部分解决了这些问题：
 
-4.  对特定主题的触发没有内置控制 。
-
-此外,在CPU和内存使用方面,执行器的间接费用相当大。 Static Single-Treaded执行器大大降低了这一间接费用,但对于一些应用程序来说可能还不够。
-
-这些问题已经通过下列事态发展得到部分解决:
-
-- [rclcpp 等待设置](https://github.com/ros2/rclcpp/blob/rolling/rclcpp/include/rclcpp/wait_set.hpp)编号: `WaitSet` rclcpp 类允许直接等待订阅、定时器、服务服务器、动作服务器等,而不是使用执行器。它可用于执行决定性的、用户定义的处理序列,可能同时处理来自不同订阅的多个消息。 [示例_rclcpp_wait_set 软件包](https://github.com/ros2/examples/tree/rolling/rclcpp/wait_set) 提供了使用此用户级等待设置机制的几个示例。
-
-- [rcc 执行器](https://github.com/ros2/rclc/blob/master/rclc/include/rclc/executor.h): C 客户端库中的此执行器 *rc( 红色)*为微ROS开发,赋予用户对回调执行顺序的精细控制,并允许自定义触发条件激活回调。此外,它执行逻辑执行时间(LET)语义学的想法。
+- [rclcpp WaitSet](https://github.com/ros2/rclcpp/blob/rolling/rclcpp/include/rclcpp/wait_set.hpp)：rclcpp 的 `WaitSet` 类允许直接等待订阅、定时器、服务端和动作服务端等，而不使用执行器。它可用于实现确定的、用户自定义的处理顺序，也可以一起处理来自不同订阅的多条消息。[examples_rclcpp_wait_set 软件包](https://github.com/ros2/examples/tree/rolling/rclcpp/wait_set)提供了多个使用这种用户层等待集机制的示例。
+- [rclc Executor](https://github.com/ros2/rclc/blob/master/rclc/include/rclc/executor.h)：这是为 micro-ROS 开发的 C 客户端库 *rclc* 中的执行器，允许用户精细控制回调执行顺序，并自定义激活回调的触发条件。它还实现了逻辑执行时间（Logical Execution Time，LET）语义中的一些思想。
 
 <span id="further-information"></span>
 
-## 更多信息
+## 更多资料
 
-- 迈克尔·波赫纳尔等人: [“ROS 2 执行者:如何使它具有效率、实时性和决定性?”](https://www.apex.ai/roscon-21)2021年世界ROS讲习班,虚拟活动,2021年10月19日。
-
-- 拉尔夫·兰格: [“使用《规则》第2条的高级执行管理”](https://www.youtube.com/watch?v=Sz-nllmtcc8&t=109s). ROS工业会议 虚拟活动. 2020年12月16日.
-
-- 丹尼尔·卡西尼,托比亚斯·布拉斯,英戈·吕特克博赫勒,比约恩·勃兰登堡: [“根据基于保留的时间安排对ROS 2处理链的响应-时间分析”](https://drops.dagstuhl.de/opus/volltexte/2019/10743/pdf/LIPIcs-ECRTS-2019-6.pdf),第31届ECRTS 2019年7月,德国斯图加特.
+- Michael Pöhnl 等：[“ROS 2 Executor: How to make it efficient, real-time and deterministic?”](https://www.apex.ai/roscon-21)。ROS World 2021 研讨会，线上活动，2021 年 10 月 19 日。
+- Ralph Lange：[“Advanced Execution Management with ROS 2”](https://www.youtube.com/watch?v=Sz-nllmtcc8&t=109s)。ROS Industrial Conference，线上活动，2020 年 12 月 16 日。
+- Daniel Casini、Tobias Blass、Ingo Lütkebohle 和 Björn Brandenburg：[“Response-Time Analysis of ROS 2 Processing Chains under Reservation-Based Scheduling”](https://drops.dagstuhl.de/opus/volltexte/2019/10743/pdf/LIPIcs-ECRTS-2019-6.pdf)。第 31 届 ECRTS 2019 会议论文集，德国斯图加特，2019 年 7 月。

@@ -1,135 +1,116 @@
----
-translation_status: machine_translated
-source: How-To-Guides/Migrating-from-ROS1/Migrating-Package-XML.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="migrating-your-package-xml-to-format-2"></span>
+# 将 package.xml 迁移到格式 2
 
-# 将 package.xml 迁移至格式 2
+ROS 2 要求 `package.xml` 至少使用[格式 2](https://reps.openrobotics.org/rep-0140/)。本指南介绍如何将 `package.xml` 从格式 1 迁移到格式 2。
 
-报告2要求 `package.xml` 至少要使用的文件 [格式 2](https://reps.openrobotics.org/rep-0140/)。本指南显示如何迁移 `package.xml` 从格式1到格式2。
+如果文件开头的 `<package>` 标签如下所示，就表示它使用格式 1，必须迁移：
 
-如果说 `<package>` 标签在您的起始处 `package.xml` 看起来像下面的任何一个,然后它使用格式1,你必须迁移它。
-
-``` xml
+```xml
 <package>
 ```
 
-``` xml
+```xml
 <package format="1">
 ```
 
 <span id="prerequisites"></span>
-
 ## 前提条件
 
-您应该有一个工作 ROS 1 的安装。 这样您就可以检查转换的 `package.xml` 通过构建和测试软件包是有效的,因为ROS 1 支持所有 `package.xml` 格式版本。
+应已安装能够正常工作的 ROS 1。由于 ROS 1 支持所有 `package.xml` 格式版本，可以通过构建和测试软件包，验证转换后的文件是否有效。
 
 <span id="migrate-from-format-1-to-2"></span>
+## 从格式 1 迁移到格式 2
 
-## 从格式 1 移到 2
-
-格式 1 和格式 2 如何指定依赖关系不同。请阅读 [REP-0140中的兼容性部分](https://reps.openrobotics.org/rep-0140/#compatibility) 以汇总差异。
+格式 1 和格式 2 指定依赖项的方式有所不同，差异概述见 [REP-0140 的兼容性章节](https://reps.openrobotics.org/rep-0140/#compatibility)。
 
 <span id="add-format-attribute-to-package"></span>
+### 为 `<package>` 添加 format 属性
 
-### 添加 `format` 属性为 `<package>`
+添加 `format` 属性并将其设为 `2`，或将已有属性改为 `2`，表明 `package.xml` 使用格式 2：
 
-添加或设置 `format` 属性为 `2` 以表明 `package.xml` 使用格式2。
-
-``` xml
+```xml
 <package format="2">
 ```
 
 <span id="replace-run-depend"></span>
-
 ### 替换 `<run_depend>`
 
-那个... `<run_depend>` 标记不再允许。如果您有这样的依赖性 :
+格式 2 不再允许使用 `<run_depend>`。如果有以下依赖声明：
 
-``` xml
+```xml
 <run_depend>foo</run_depend>
 ```
 
-然后用其中之一或两个标签替换:
+请将其替换为以下一个或两个标签：
 
-``` xml
+```xml
 <build_export_depend>foo</build_export_depend>
 <exec_depend>foo</exec_depend>
 ```
 
-如果执行软件包中的某些内容时需要依赖,请使用 `<exec_depend>` 标签。如果依赖于您的软件包的软件包在构建时需要依赖性,则使用 `<build_export_depend>` 标记。如果不确定,则使用两个标记。
+如果运行软件包中的内容时需要该依赖，请使用 `<exec_depend>`。如果其他依赖此软件包的包在构建时也需要该依赖，请使用 `<build_export_depend>`。不确定时，可以同时使用两个标签。
 
 <span id="convert-some-build-depend-to-test-depend"></span>
+### 将部分 `<build_depend>` 改为 `<test_depend>`
 
-### 转换一些 `<build_depend>` 改为: `<test_depend>`
+在格式 1 中，`<test_depend>` 声明运行软件包测试所需的依赖。在格式 2 中，它还用于声明构建测试所需的依赖。
 
-格式 1 `<test_depend>` 声明在运行您的软件包测试时需要的依赖性。它仍然在格式2中这样做,但它还声明了构建您的软件包测试时需要的依赖性。
+由于格式 1 的限制，软件包可能通过 `<build_depend>` 声明仅用于测试的依赖，例如：
 
-由于格式1中此标签的局限性, 您的软件包可能具有一个被指定为仅测试的依赖性 。 `<build_depend>` 像这样:
-
-``` xml
+```xml
 <build_depend>testfoo</build_depend>
 ```
 
-如果是,则改为a `<test_depend>`.
+此时应将其改为 `<test_depend>`：
 
-``` xml
+```xml
 <test_depend>testfoo</test_depend>
 ```
 
-> **说明**
->
-> 如果您正在使用 CMake , 请确保您的测试依赖性仅在一个内引用 `if(BUILD_TESTING)` 块 :
->
-> ``` cmake
-> if (BUILD_TESTING)
->     find_package(testfoo REQUIRED)
-> endif()
-> ```
+!!! note "说明"
+    如果使用 CMake，确保只在 `if(BUILD_TESTING)` 块中引用测试依赖：
+
+    ```cmake
+    if (BUILD_TESTING)
+        find_package(testfoo REQUIRED)
+    endif()
+    ```
 
 <span id="begin-using-doc-depend"></span>
+### 使用 `<doc_depend>`
 
-### 开始使用 `<doc_depend>`
+使用新增的 `<doc_depend>` 标签，声明构建软件包文档所需的依赖。例如，C++ 软件包可能有以下依赖：
 
-使用新内容 `<doc_depend>` C++ 软件包可能具有此依赖性 :
-
-``` xml
+```xml
 <doc_depend>doxygen</doc_depend>
 ```
 
-而Python软件包可能会有这个:
+Python 软件包则可能有：
 
-``` xml
+```xml
 <doc_depend>python3-sphinx</doc_depend>
 ```
 
-见 [记录 ROS 2 软件包的指南](../Documenting-a-ROS-2-Package.md) 以获取更多信息。
+更多信息见[为 ROS 2 软件包编写文档的指南](../Documenting-a-ROS-2-Package.md)。
 
 <span id="simplify-dependencies-with-depend"></span>
+### 使用 `<depend>` 简化依赖声明
 
-### 简化依附关系 `<depend>`
+新增的 `<depend>` 标签可以使 `package.xml` 更简洁。如果同一个依赖使用了以下三个标签：
 
-`<depend>` 是一个新标签,它使 `package.xml` 文档更为简洁。如果您是 `package.xml` 有这三种标记用于同一依赖性:
-
-``` default
+```xml
 <build_depend>foo</build_depend>
 <build_export_depend>foo</build_export_depend>
 <exec_depend>foo</exec_depend>
 ```
 
-然后用一个单数来代替它们。 `<depend>` 像这样:
+可以将它们替换为一个 `<depend>`：
 
-``` xml
+```xml
 <depend>foo</depend>
 ```
 
 <span id="test-your-new-package-xml"></span>
+## 测试新的 package.xml
 
-## 测试您的新 `package.xml`
-
-构建和测试您通常使用的软件包 `catkin_make`, `cakin_make_isolated`,或 `catkin` 构建工具。如果一切都成功,那么您 `package.xml` 无效。
+像平时一样，使用 `catkin_make`、`cakin_make_isolated` 或 `catkin` 构建工具构建并测试软件包。如果全部成功，就说明新的 `package.xml` 有效。

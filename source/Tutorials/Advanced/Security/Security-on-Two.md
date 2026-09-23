@@ -1,109 +1,97 @@
----
-translation_status: machine_translated
-source: Tutorials/Advanced/Security/Security-on-Two.rst
----
+<span id="ensuring-security-across-machines"></span>
+<span id="security-on-two"></span>
+<span id="background"></span>
+<span id="create-the-second-keystore"></span>
+<span id="copy-files"></span>
+<span id="launch-the-nodes"></span>
 
-!!! info "翻译说明"
+# 确保跨机器通信安全
 
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
-<span id="ensuring-security-across-machines"></span> <span id="security-on-two"></span>
-
-# 确保跨计算机通信安全
-
-**目标：** 使两台不同的机器安全地交流.
+**目标：** 让两台不同的机器安全通信。
 
 **教程级别：** 高级
 
-**用时：** 5分钟
-
-<span id="background"></span>
+**耗时：** 5 分钟
 
 ## 背景
 
-之前的教程已经在同一台机器上使用了两个ROS节点,通过本地主机接口发送所有网络通信。 让我们把这种情景扩大到多台机器,因为认证和加密的好处会变得更加明显。
+前面的教程在同一台机器上运行两个 ROS 节点，所有网络通信都通过本地主机接口进行。现在将这一场景扩展到多台机器，以便更直观地体现身份认证和加密的作用。
 
-假设在前一个演示中创建的键盘的机器有一个主机名 `Alice`,而且我们也想要使用另一个有主机名的机器 `Bob` 我们的多机 `talker/listener` 演示。我们需要移动一些密钥从 `Alice` 改为: `Bob` 允许 SROS 2 认证和加密传输。
+假设前一演示中创建密钥库的机器主机名为 `Alice`，我们希望再使用主机名为 `Bob` 的机器运行跨机器 `talker/listener` 演示。需要把部分密钥从 `Alice` 复制到 `Bob`，使 SROS 2 能够认证并加密传输。
 
-<span id="create-the-second-keystore"></span>
+## 创建第二个密钥库
 
-## 创建第二个密钥托
+首先在 `Bob` 上创建一个空密钥库；实际上只需创建一个空目录。
 
-开始于创建空密钥托 `Bob`;键盘实际上只是一个空目录 :
+### Linux
 
-##### Linux
-
-``` console
+```console
 $ ssh Bob
 $ mkdir ~/sros2_demo
 $ exit
 ```
 
-##### 麦克OS
+### macOS
 
-``` console
+```console
 $ ssh Bob
 $ mkdir ~/sros2_demo
 $ exit
 ```
 
-##### Windows
+### Windows
 
-``` console
+```console
 $ ssh Bob
 $ md C:\dev\ros2\sros2_demo
 $ exit
 ```
 
-<span id="copy-files"></span>
-
 ## 复制文件
 
-下次复制密钥和证书 `talker` 程序从 `Alice` 改为: `Bob`。由于密钥只是文本文件,我们可以使用 `scp` 以复制它们。
+接下来，把 `talker` 程序的密钥和证书从 `Alice` 复制到 `Bob`。密钥都是文本文件，可以使用 `scp` 复制。
 
-##### Linux
+### Linux
 
-``` console
+```console
 $ cd ~/sros2_demo/demo_keystore
 $ scp -r talker USERNAME@Bob:~/sros2_demo/demo_keystore
 ```
 
-##### 麦克OS
+### macOS
 
-``` console
+```console
 $ cd ~/sros2_demo/demo_keystore
 $ scp -r talker USERNAME@Bob:~/sros2_demo/demo_keystore
 ```
 
-##### Windows
+### Windows
 
-``` console
+```console
 $ cd C:\dev\ros2\sros2_demo\demo_keystore
 $ scp -r talker USERNAME@Bob:/dev/ros2/sros2_demo/demo_keystore
 ```
 
-> **警告**
->
-> 请注意,在这种情况下,整个键盘由不同机器共享,可能不是理想的行为,因为这可能造成安全风险。 [部署指南](Deployment-Guidelines.md) 请提供这方面的更多信息。
+!!! warning "警告"
 
-这将是非常快的,因为它只是复制一些非常小的文本文件。 现在,我们准备运行一个多机器的谈话者/听众演示。
+    注意，此例在不同机器之间共享了整个密钥库，这可能不符合实际需求，并可能造成安全风险。有关说明，请参阅[部署指南](Deployment-Guidelines.md)。
 
-<span id="launch-the-nodes"></span>
+文件都是很小的文本文件，因此复制很快即可完成。现在可以运行跨机器 talker/listener 演示了！
 
 ## 启动节点
 
-环境一旦建立, 运行谈话者 `Bob`:
+设置好环境后，在 `Bob` 上运行 talker：
 
-``` console
+```console
 $ ros2 run demo_nodes_cpp talker --ros-args --enclave /talker_listener/talker
 ```
 
-并启动听者 `Alice`:
+在 `Alice` 上启动 listener：
 
-``` console
+```console
 $ ros2 run demo_nodes_py listener --ros-args --enclave /talker_listener/listener
 ```
 
-爱丽丝现在会收到鲍勃的加密信息
+Alice 现在会接收来自 Bob 的加密消息。
 
-由于两台机器同时使用加密和认证手段成功进行通信,可以使用同样的程序在你的ROS图中添加更多的机器.
+两台机器成功通过加密和身份认证进行通信后，可以采用同样的步骤向 ROS 图中添加更多机器。

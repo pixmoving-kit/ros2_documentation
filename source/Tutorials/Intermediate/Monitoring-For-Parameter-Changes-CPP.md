@@ -1,73 +1,59 @@
----
-translation_status: machine_translated
-source: Tutorials/Intermediate/Monitoring-For-Parameter-Changes-CPP.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="monitoring-for-parameter-changes-c"></span>
 
 # 监控参数变化（C++）
 
-**目标：** 学习使用参数EventHandler类来监视和响应参数变化.
+**目标：** 学习使用 ParameterEventHandler 类监控并响应参数变化。
 
 **教程级别：** 中级
 
-**用时：** 20分钟
+**预计耗时：** 20 分钟
 
-**最小平台 :** 银河
+**最低版本：** Galactic
 
 <span id="background"></span>
 
 ## 背景
 
-一个节点通常需要响应它自己的参数或另一个节点参数的改变。参数EventHandler类可以方便地听取参数的改变,这样你的代码就可以响应这些变化。这个教程将显示如何使用参数EventHandler类的C++版本来监视一个节点自己的参数的改变以及另一个节点参数的改变。
+节点经常需要响应自身或其他节点的参数变化。`ParameterEventHandler` 可方便地监听这些变化，供代码作出响应。本教程介绍其 C++ 版本，分别监控本节点和其他节点的参数。
 
 <span id="prerequisites"></span>
 
 ## 前提条件
 
-在开始此教程之前, 您应该先完成以下教程 :
+开始前应完成：
 
-- [理解参数](../Beginner-CLI-Tools/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md)
+- [理解 ROS 2 参数](../Beginner-CLI-Tools/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md)
+- [在 C++ 类中使用参数](../Beginner-Client-Libraries/Using-Parameters-In-A-Class-CPP.md)
 
-- [在类中使用参数（C++）](../Beginner-Client-Libraries/Using-Parameters-In-A-Class-CPP.md)
-
-此外,您必须运行 ROS 2 的银河分布.
+此外，本教程要求运行 ROS 2 Galactic 发行版。
 
 <span id="tasks"></span>
 
-## 操作步骤
+## 任务
 
-在此教程中, 您将创建新包, 包含一些样本代码, 编写一些 C++ 代码, 使用 ParameterEventHandler 类, 并测试生成的代码 。
+创建一个存放示例代码的软件包，编写使用 ParameterEventHandler 的 C++ 代码，并测试结果。
 
 <span id="create-a-package"></span>
 
 ### 1 创建软件包
 
-首先,打开一个新的终端和 [源代码 ROS 2 安装](../Beginner-CLI-Tools/Configuring-ROS2-Environment.md) 这样一来 `ros2` 命令会起作用的。
+打开新终端，[加载 ROS 2 环境](../Beginner-CLI-Tools/Configuring-ROS2-Environment.md)，使 `ros2` 命令可用。按照[这些步骤](../Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.md#new-directory)创建 `ros2_ws` 工作空间。
 
-跟着 [这些指示](../Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.md#new-directory) 创建新工作空间 `ros2_ws`.
+软件包应创建在 `src` 内，而不是工作空间根目录。进入 `ros2_ws/src` 后运行：
 
-回顾 应在 `src` 目录,不是工作空间的根。所以,导航到 `ros2_ws/src` 然后在那里创建新软件包:
-
-``` console
+```console
 $ ros2 pkg create --build-type ament_cmake --license Apache-2.0 cpp_parameter_event_handler --dependencies rclcpp
 ```
 
-您的终端将返回一个消息, 以验证您的软件包的创建 `cpp_parameter_event_handler` 以及所有必要的文件和文件夹。
-
-那个... `--dependencies` 参数将自动添加必要的依赖线到 `package.xml` 财务报告和财务报告 `CMakeLists.txt`.
+终端会显示 `cpp_parameter_event_handler` 及其所需文件、目录已创建。`--dependencies` 会自动在 `package.xml` 和 `CMakeLists.txt` 中加入依赖声明。
 
 <span id="update-package-xml"></span>
 
-#### 1.1 最新情况 `package.xml`
+#### 1.1 更新 package.xml
 
-因为你用了 `--dependencies` 在创建软件包时,您不需要手动添加依赖性到 `package.xml` 或 时 间 `CMakeLists.txt`但是,一如既往,确保添加描述、维护者电子邮件和姓名,并给信息发放许可证。 `package.xml`.
+由于创建时使用了 `--dependencies`，无须手动添加依赖。但仍应在 `package.xml` 中填写描述、维护者姓名和邮箱、许可证信息：
 
-``` xml
+```xml
 <description>C++ parameter events client tutorial</description>
 <maintainer email="you@email.com">Your Name</maintainer>
 <license>Apache License 2.0</license>
@@ -75,11 +61,11 @@ $ ros2 pkg create --build-type ament_cmake --license Apache-2.0 cpp_parameter_ev
 
 <span id="write-the-c-node"></span>
 
-### 2 写入 C++ 节点
+### 2 编写 C++ 节点
 
-内侧 `ros2_ws/src/cpp_parameter_event_handler/src` 目录,创建名为新文件 `parameter_event_handler.cpp` 并粘贴下列编码:
+在 `ros2_ws/src/cpp_parameter_event_handler/src` 中创建 `parameter_event_handler.cpp`，填入：
 
-``` C++
+```C++
 #include <memory>
 
 #include "rclcpp/rclcpp.hpp"
@@ -124,23 +110,17 @@ int main(int argc, char ** argv)
 
 <span id="examine-the-code"></span>
 
-#### 2.1 审查守则
+#### 2.1 分析代码
 
-第一次发言, `#include <memory>` 包含其中,以便代码能够使用 std: make_shared 模板。下一个, `#include "rclcpp/rclcpp.hpp"` 包含用于允许代码引用 rclcpp 界面提供的各种功能,包括 ParameterEventHandler 类。
+`#include <memory>` 让代码可以使用 `std::make_shared` 模板；`#include "rclcpp/rclcpp.hpp"` 引入 rclcpp 功能，包括 ParameterEventHandler。
 
-> **说明**
->
-> `rclcpp/rclcpp.hpp` 是一个 *便利性* 头部 整个都拉着 `rclcpp` API同时——节点,出版商,订阅,服务,定时器,参数,执行器,速率,等位集,等等——所以每个包含它的翻译单元都是根据它从未使用过的特性编译的.
->
-> 在教程之外, 偏爱只包含您实际使用的 API 特定调用时的页眉 。 例如, `rclcpp::Node` 已声明为 `rclcpp/node.hpp`, `rclcpp::spin` 输入 `rclcpp/executors.hpp`,以及 `rclcpp::init` 财务报告和财务报告 `rclcpp::shutdown` 输入 `rclcpp/utilities.hpp`。保存量最大的是从未创建或旋转节点的翻译单位——标题、插件和辅助工具库,它们只需要像 `rclcpp/qos.hpp` 或 时 间 `rclcpp/time.hpp` - 因为... `rclcpp/node.hpp` 财务报告和财务报告 `rclcpp/executors.hpp` 他们本身就很大。 `rclcpp/rclcpp.hpp` 只不过是这些信头的列表,所以在研究你需要哪个信头的时候,这是一个很好的开始。
+参阅 [rclcpp 便捷头文件说明](../../_internal/Rclcpp-Convenience-Header-Note.md)。
 
-班级声明后,代码定义一个班级, `SampleNodeWithParameters`。该类的构造器宣布一个整数参数 `an_int_param`,默认值为 0。下一步,代码创建一个 `ParameterEventHandler` 用于监视参数的更改。最后,代码创建了 lambda 函数,并将其设定为每次引用时的回调。 `an_int_param` 将更新。
+`SampleNodeWithParameters` 的构造函数声明默认值为 0 的整数参数 `an_int_param`，随后创建 `ParameterEventHandler` 监控参数变化，再创建 lambda 回调，使其在 `an_int_param` 更新时被调用。
 
-> **说明**
->
-> 保存返回的手柄非常重要 `add_parameter_callback`;否则,回调不会被适当注册.
+> 务必保存 `add_parameter_callback` 返回的句柄，否则回调无法正确注册。
 
-``` C++
+```C++
 SampleNodeWithParameters()
 : Node("node_with_parameters")
 {
@@ -162,9 +142,9 @@ SampleNodeWithParameters()
 }
 ```
 
-紧接着 `SampleNodeWithParameters` 是一个典型的 `main` 函数初始化 ROS,旋转样本节点,以便发送和接收消息,然后在用户进入控制台的 ^C 后关闭。
+类定义之后是常规主函数：初始化 ROS，运行节点以收发消息，并在用户按下 `Ctrl+C` 后关闭。
 
-``` C++
+```C++
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
@@ -177,11 +157,11 @@ int main(int argc, char ** argv)
 
 <span id="add-executable"></span>
 
-#### 2.2 添加可执行文件
+#### 2.2 添加可执行程序
 
-要构建此代码,首先打开 `CMakeLists.txt` 文档,并在依赖性下方添加以下代码行 `find_package(rclcpp REQUIRED)`
+打开 `CMakeLists.txt`，在 `find_package(rclcpp REQUIRED)` 后加入：
 
-``` console
+```console
 add_executable(parameter_event_handler src/parameter_event_handler.cpp)
 ament_target_dependencies(parameter_event_handler rclcpp)
 
@@ -193,85 +173,79 @@ install(TARGETS
 
 <span id="build-and-run"></span>
 
-### 3 构建和运行
+### 3 构建并运行
 
-运行是好的做法 `rosdep` 在工作空间的根部(`ros2_ws`在建构前检查缺失的依赖性 :
+构建前，建议在工作空间根目录 `ros2_ws` 运行 `rosdep`，检查缺失依赖。
 
-##### Linux
+Linux：
 
-``` console
+```console
 $ rosdep install -i --from-path src --rosdistro $ROS_DISTRO -y
 ```
 
-##### macOS
+本教程中，macOS 和 Windows 可跳过这一步，因为此处的 rosdep 流程仅适用于 Linux。
 
-rosdep只运行在Linux上,所以可以提前跳到下一步.
+返回 `ros2_ws` 并构建：
 
-##### Windows
-
-rosdep只运行在Linux上,所以可以提前跳到下一步.
-
-导航回你工作空间的根, `ros2_ws`,并构建您的新软件包:
-
-``` console
+```console
 $ colcon build --packages-select cpp_parameter_event_handler
 ```
 
-打开新终端, 导航到 `ros2_ws`,并源代码设置文件 :
+打开新终端，进入 `ros2_ws` 并加载环境。
 
-##### Linux
+Linux：
 
-``` console
+```console
 $ . install/setup.bash
 ```
 
-##### macOS
+macOS：
 
-``` console
+```console
 $ . install/setup.bash
 ```
 
-##### Windows
+Windows：
 
-``` console
+```console
 $ call install/setup.bat
 ```
 
-现在运行节点:
+运行节点：
 
-``` console
+```console
 $ ros2 run cpp_parameter_event_handler parameter_event_handler
 ```
 
-节点现在已激活, 并有一个单一参数, 每当更新此参数时都会打印一个消息 。 要测试, 请打开另一个终端并像以前一样源源 ROS 设置文件( ROS) 。`. install/setup.bash`)并执行以下命令:
+节点已有一个参数，每次参数更新都会打印消息。打开另一终端，像之前一样加载环境（`. install/setup.bash`），然后执行：
 
-``` console
+```console
 $ ros2 param set node_with_parameters an_int_param 43
 ```
 
-运行节点的终端将显示类似以下的信件:
+节点终端应出现类似输出：
 
-``` console
+```console
 [INFO] [1606950498.422461764] [node_with_parameters]: cb: Received an update to parameter "an_int_param" of type integer: "43"
 ```
 
-我们先前在节点中设置的调用符已被引用并显示新的更新值。 您现在可以在终端中使用 ^C 终止运行的参数\_ event\_ handler 样本 。
+先前设置的回调已执行，并显示更新后的值。现在可以在节点终端按 `Ctrl+C` 停止示例。
 
 <span id="extensions"></span>
 
 ## 扩展
 
-迄今为止,我们建造并测试了一个小节点,用来监视节点本身拥有的单个参数。下面将用这个节点作为基准,介绍另外两个可以使用参数EventHandler的用例。
+目前的节点只监控自身的一个参数。以下在此基础上介绍另外两个适合 ParameterEventHandler 的使用场景。
 
 <span id="monitor-changes-to-another-node-s-parameters"></span>
 
-### 监视另一个节点参数的更改
+### 监控其他节点的参数变化
 
-您也可以使用参数EventHandler来监视另一个节点参数的参数变化。 让我们更新“标本节点”类, 也监视另一个节点参数的变化。 我们将使用参数\_ 黑板演示应用程序来托管我们将监测更新的双参数 。
+ParameterEventHandler 也能监控其他节点。下面修改 `SampleNodeWithParameters`，监听 `parameter_blackboard` 演示节点中的一个 double 参数。
 
-第一次更新构造器以在现有代码后添加以下代码:
+在构造函数现有代码后加入：
 
-``` C++
+```C++
 // Now, add a callback to monitor any changes to the remote node's parameter. In this
 // case, we supply the remote node name.
 auto cb2 = [this](const rclcpp::Parameter & p) {
@@ -286,9 +260,9 @@ auto remote_param_name = std::string("a_double_param");
 cb_handle2_ = param_subscriber_->add_parameter_callback(remote_param_name, cb2, remote_node_name);
 ```
 
-然后添加另一个成员变量, `cb_handle2` 用于附加的回调控手柄:
+再添加成员变量 `cb_handle2`，保存新增回调的句柄：
 
-``` C++
+```C++
 private:
   std::shared_ptr<rclcpp::ParameterEventHandler> param_subscriber_;
   std::shared_ptr<rclcpp::ParameterCallbackHandle> cb_handle_;
@@ -296,65 +270,65 @@ private:
 };
 ```
 
-在终端,导航回你工作空间的根部, `ros2_ws`,并像以前一样构建更新的软件包:
+返回工作空间根目录 `ros2_ws` 并重新构建：
 
-``` console
+```console
 $ colcon build --packages-select cpp_parameter_event_handler
 ```
 
-然后源代码设置文件 :
+加载环境。
 
-##### Linux
+Linux：
 
-``` console
+```console
 $ . install/setup.bash
 ```
 
-##### macOS
+macOS：
 
-``` console
+```console
 $ . install/setup.bash
 ```
 
-##### Windows
+Windows：
 
-``` console
+```console
 $ call install/setup.bat
 ```
 
-现在,为了测试远程参数的监测,首先运行新建的参数_event_handler代码:
+先运行更新后的参数事件处理节点：
 
-``` console
+```console
 $ ros2 run cpp_parameter_event_handler parameter_event_handler
 ```
 
-接下来,从另一个终端(已初始化ROS)运行参数_黑板演示应用程序如下:
+在另一个已加载 ROS 环境的终端中，运行 `parameter_blackboard`：
 
-``` console
+```console
 $ ros2 run demo_nodes_cpp parameter_blackboard
 ```
 
-最后,从第三个终端(ROS已初始化),让我们在参数_黑板节点上设置一个参数:
+最后，在第三个已加载 ROS 环境的终端中设置该节点的参数：
 
-``` console
+```console
 $ ros2 param set parameter_blackboard a_double_param 3.45
 ```
 
-执行此命令时, 您应该在参数\_ event\_ handler 窗口中看到输出, 显示在参数更新时引用了召回函数 :
+参数事件处理节点应输出以下内容，说明参数更新触发了回调：
 
-``` console
+```console
 [INFO] [1606952588.237531933] [node_with_parameters]: cb2: Received an update to parameter "a_double_param" of type: double: "3.45"
 ```
 
 <span id="monitor-all-node-parameters-simultaneously"></span>
 
-### 同步监视所有节点参数
+### 同时监控所有节点参数
 
-如果你需要同时监视多个节点或参数,那么不得不调用会很麻烦 `add_parameter_callback` 每人一次,在这种情况下,你可以使用 `add_parameter_event_callback` 以注册一个单调回调值,当 *任何* 参数 *任何* 节点变化.
+要同时监控多个节点或参数，逐个调用 `add_parameter_callback` 会很繁琐。可以用 `add_parameter_event_callback` 注册单个回调，在**任何节点的任何参数**变化时触发。
 
-为此,首先更新标本节点With Parameters构建器,以添加以下代码: 1.
+首先在构造函数中加入：
 
-``` C++
+```C++
 this->declare_parameter("another_double_param", 0.0);
 
 ...
@@ -374,87 +348,85 @@ auto event_cb = [this](const rcl_interfaces::msg::ParameterEvent & parameter_eve
 event_cb_handle_ = param_subscriber_->add_parameter_event_callback(event_cb);
 ```
 
-此声明一个新的双参数 `another_double_param` 并添加一个事件召回,以监视这两个参数。请注意 `parameter_event` 类型 [rcl_interfaces/msg/ParameterEvent](https://docs.ros.org/en/rolling/p/rcl_interfaces/msg/ParameterEvent.html)。尽管在此教程中未显示, 事件召回也可以用于监视参数的添加或删除 。
+这会声明新的 double 参数 `another_double_param`，并添加监控两个参数的事件回调。`parameter_event` 的类型为 [rcl_interfaces/msg/ParameterEvent](https://docs.ros.org/en/rolling/p/rcl_interfaces/msg/ParameterEvent.html)。虽然示例未展示，事件回调也可以监控参数的添加和删除。
 
-以私人身份加入事件召回手柄:
+别忘记将事件回调句柄添加为私有成员：
 
-``` C++
+```C++
 private:
   ...
   std::shared_ptr<rclcpp::ParameterEventCallbackHandle> event_cb_handle_;
 ```
 
-导航回你工作空间的根, `ros2_ws`,并像以前一样重建更新的软件包:
+返回 `ros2_ws` 重新构建：
 
-``` console
+```console
 $ colcon build --packages-select cpp_parameter_event_handler
 ```
 
-然后源代码设置文件 :
+加载环境。
 
-##### Linux
+Linux：
 
-``` console
+```console
 $ . install/setup.bash
 ```
 
-##### macOS
+macOS：
 
-``` console
+```console
 $ . install/setup.bash
 ```
 
-##### Windows
+Windows：
 
-``` console
+```console
 $ call install\setup.bat
 ```
 
-要测试新事件召回, 请先运行参数\_ event\_ handler 节点 :
+运行节点测试事件回调：
 
-``` console
+```console
 $ ros2 run cpp_parameter_event_handler parameter_event_handler
 ```
 
-然后,从第二个终端(使用ROS源代码),让我们设置原始的内置参数:
+在第二个已加载 ROS 环境的终端中设置原来的整数参数：
 
-``` console
+```console
 $ ros2 param set node_with_parameters an_int_param 44
 ```
 
-执行此命令时, 您应该看到单参数回调, 以及事件回调被发射 :
+单参数回调和事件回调都应被触发：
 
-``` console
+```console
 [INFO] [1747144403.418980063] [node_with_parameters]: cb: Received an update to parameter "an_int_param" of type integer: "44"
 [INFO] [1747144403.419086611] [node_with_parameters]: Received parameter event from node "/node_with_parameters"
 [INFO] [1747144403.419114103] [node_with_parameters]: Inside event: "an_int_param" changed to 44
 ```
 
-现在设置新的双参数 :
+再设置新的 double 参数：
 
-``` console
+```console
 $ ros2 param set node_with_parameters another_double_param 4.4
 ```
 
-由于未添加单参数回调(通过 `add_parameter_callback`) 对于双参数,我们应该只看到事件召回火:
+由于没有通过 `add_parameter_callback` 为这个参数添加单参数回调，此时只会触发事件回调：
 
-``` console
+```console
 [INFO] [1747144452.917437113] [node_with_parameters]: Received parameter event from node "/node_with_parameters"
 [INFO] [1747144452.917591649] [node_with_parameters]: Inside event: "another_double_param" changed to 4.400000
 ```
 
-> **说明**
->
-> 当同时设置多个参数时,最好使用 `set_parameters_atomically`,解释在 [参数](../../Concepts/Basic/About-Parameters.md)。这样,事件召回只能发射一次。
+> 一次设置多个参数时，建议使用[参数概念文档](../../Concepts/Basic/About-Parameters.md)介绍的 `set_parameters_atomically`，这样事件回调只触发一次。
 
 <span id="summary"></span>
 
 ## 小结
 
-您创建了一个带有参数的节点, 并使用 ParameterEventHandler 类设置了调用符来监视该参数的更改。 您还使用同一类来监视远程节点的更改, 并监视单个事件调用符中的所有参数。 ParameterEventHandler 是监视参数更改的方便方式, 这样您就可以对更新的值做出响应 。
+本教程创建了带参数的节点，通过 ParameterEventHandler 注册回调，监控自身参数、远程节点参数，以及在单个事件回调中监控全部参数。该类能方便地监听参数变化，以便响应更新后的值。
 
 <span id="related-content"></span>
 
 ## 相关内容
 
-要学习如何修改 ROS 1 的 ROS 2 参数文件,请参见 [将 YAML 参数文件从 ROS 1 移动到 ROS 2](../../How-To-Guides/Migrating-from-ROS1/Migrating-Parameters.md) 教学。
+有关将 ROS 1 参数文件迁移到 ROS 2，参阅[迁移 YAML 参数文件](../../How-To-Guides/Migrating-from-ROS1/Migrating-Parameters.md)。

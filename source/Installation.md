@@ -1,78 +1,65 @@
----
-translation_status: machine_translated
-source: Installation.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
-<span id="installation"></span> <span id="rollinginstall"></span><span id="installationguide"></span>
+<span id="installation"></span>
+<span id="rollinginstall"></span>
+<span id="installationguide"></span>
 
 # 安装
 
-安装 ROS 2 Rolling Ridley 的选项 :
+ROS 2 Rolling Ridley 的安装选项如下。
 
-<span id="binary-packages"></span> <span id="binary-package-platforms"></span>
+<span id="binary-packages"></span>
+<span id="binary-package-platforms"></span>
 
 ## 二进制软件包
 
-只为第一级操作系统创建二进制 [REP-2000号报告](https://reps.openrobotics.org/rep-2000/#rolling-ridley-june-2020---ongoing)。如果您没有运行以下任何操作系统,您可能需要从源头构建或使用一个 [容器溶液](How-To-Guides/Run-2-nodes-in-single-or-separate-docker-containers.md) 运行 ROS 2 在你的平台上。
+我们仅为 [REP-2000](https://reps.openrobotics.org/rep-2000/#rolling-ridley-june-2020---ongoing) 中列出的 Tier 1 操作系统构建二进制软件包。如果你使用的操作系统不在以下列表中，可能需要从源码构建，或使用[容器方案](How-To-Guides/Run-2-nodes-in-single-or-separate-docker-containers.md)在你的平台上运行 ROS 2。
 
-我们为以下平台提供ROS 2 二进制软件包:
+我们为以下平台提供 ROS 2 二进制软件包：
 
-- Ubuntu Linux (amd64 / arch64) - 贾米哲鱼(22.04).
+- Ubuntu Linux（amd64 / aarch64）— Jammy Jellyfish（22.04）：[deb 软件包](Installation/Ubuntu-Install-Debs.md)（推荐）或[二进制归档包](Installation/Alternatives/Ubuntu-Install-Binary.md)。
+- Red Hat Enterprise Linux 8（amd64）：[RPM 软件包](Installation/RHEL-Install-RPMs.md)（推荐）或[二进制归档包](Installation/Alternatives/RHEL-Install-Binary.md)。
+- Windows 10（amd64）：[Windows 二进制归档包（VS 2019）](Installation/Windows-Install-Binary.md)。
 
-  - [deb 软件包](Installation/Ubuntu-Install-Debs.md) (建议)
+<span id="building-from-source"></span>
+<span id="id1"></span>
 
-  - [二进制归档](Installation/Alternatives/Ubuntu-Install-Binary.md)
+## 从源码构建
 
-- 红帽企业 Linux 8 (amd64)
+我们支持在以下平台上从源码构建 ROS 2：
 
-  - [RPM 软件包](Installation/RHEL-Install-RPMs.md) (建议)
-
-  - [二进制归档](Installation/Alternatives/RHEL-Install-Binary.md)
-
-- Windows 10 (amd64) (英语).
-
-  - [Windows 二进制( VS 2019)](Installation/Windows-Install-Binary.md)
-
-<span id="building-from-source"></span> <span id="id1"></span>
-
-## 从源头建楼
-
-我们支持在以下平台上从源头构建ROS 2:
-
-- [Ubuntu Linux 22.04 (英语).](Installation/Alternatives/Ubuntu-Development-Setup.md)
-
-- [视窗 10](Installation/Alternatives/Windows-Development-Setup.md)
-
-- [莱尔-8](Installation/Alternatives/RHEL-Development-Setup.md)
-
+- [Ubuntu Linux 22.04](Installation/Alternatives/Ubuntu-Development-Setup.md)
+- [Windows 10](Installation/Alternatives/Windows-Development-Setup.md)
+- [RHEL 8](Installation/Alternatives/RHEL-Development-Setup.md)
 - [macOS](Installation/Alternatives/macOS-Development-Setup.md)
 
 <span id="which-install-should-you-choose"></span>
 
-## 你选哪一个安装?
+## 应该选择哪种安装方式？
 
-从二进制软件包或来源安装将同时导致一个功能完备且可用的ROS 2安装. 选项之间的差异取决于您计划对ROS 2 做什么.
+通过二进制软件包安装和从源码构建，都能获得功能完整、可用的 ROS 2 环境。选择哪种方式，取决于你打算如何使用 ROS 2。
 
-**二进制软件包** 用于一般用途,并提供已经安装的 ROS 2. 这对想潜入并立即开始使用 ROS 2 的人来说是巨大的。
+**二进制软件包**面向一般用途，提供已经构建好的 ROS 2。这适合希望立即上手、直接使用现成 ROS 2 的用户。
 
-Linux 用户有两种安装二进制包的选项:
+Linux 用户可以选择两种二进制安装方式：
 
-- 软件包(视平台而定,是数据或RPMS)
+- 软件包（根据平台选择 deb 或 RPM）
+- 二进制归档包
 
-- 二进制归档
+推荐通过软件包安装，因为它会自动安装必要的依赖，并随常规系统更新一起更新。不过，安装 deb 软件包需要 root 权限。如果没有 root 权限，二进制归档包是次优选择。
 
-从软件包安装是推荐的方法,因为它会自动安装必要的依赖性,同时也在常规系统更新的同时进行更新。然而,您需要root访问才能安装 deb 软件包。如果您没有root访问权限,二进制归档是下一个最佳选择。
+Windows 用户如果选择二进制安装，则只能使用二进制归档包（deb 软件包仅适用于 Ubuntu/Debian）。
 
-从二进制包中选择安装的Windows用户只有二进制存档选项(deb包是Ubuntu/Debian独家的).
-
-**从源头建楼** 用于正在寻找修改或明确省略 ROS 2 基础的开发者。对于不支持二进制的平台,也建议这样做。从源头建置还允许您选择安装 ROS 2 的绝对最新版本。
+**从源码构建**适合希望修改或明确排除 ROS 2 基础组件中某些部分的开发者。对于不提供二进制软件包的平台，也推荐采用这种方式。从源码构建还可以让你安装 ROS 2 的最新版本。
 
 <span id="contributing-to-ros-2-core"></span>
 
-### 为ROS 2核心做贡献?
+### 想为 ROS 2 核心作贡献？
 
-如果您计划直接为ROS 2 核心软件包做出贡献,您可以安装此软件包 [来源的最新发展](Installation/Alternatives/Latest-Development-Setup.md) 与该设备共享安装指令 [滚动分发](Releases.md#rolling-distribution).
+如果计划直接为 ROS 2 核心软件包作贡献，可以[从源码安装最新开发版本](Installation/Alternatives/Latest-Development-Setup.md)，其安装说明与 [Rolling 发行版](Releases.md#rolling-distribution)相同。
+
+以下是本部分的其他安装相关文档：
+
+- [其他安装方式](Installation/Alternatives.md)
+- [维护源码工作副本](Installation/Maintaining-a-Source-Checkout.md)
+- [使用预发布二进制软件包进行测试](Installation/Testing.md)
+- [RMW 实现](Installation/RMW-Implementations.md)
+- [ROS 2 镜像站](Installation/ROS-2-Mirrors.md)

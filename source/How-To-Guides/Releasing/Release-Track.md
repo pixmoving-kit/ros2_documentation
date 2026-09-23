@@ -1,62 +1,48 @@
----
-translation_status: machine_translated
-source: How-To-Guides/Releasing/Release-Track.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="release-track"></span>
-
 # 发布轨道
 
 <span id="what-is-a-track"></span> <span id="id1"></span>
+## 什么是发布轨道？
 
-## 什么是轨迹?
+首次发布软件包时，Bloom 要求用户输入配置信息。将这些配置保存在发布仓库中，可以避免在后续发布时重复输入不会改变的设置。
 
-Bloom 要求用户在首次发布软件包时输入配置信息。 将此类配置存储在发布存储库中是有益的, 这样我们不必手动输入不会为后续发布而更改的配置 。
+针对不同 ROS 发行版发布软件包时，部分配置会有所不同，因此 bloom 使用**发布轨道（release track）分别保存各发行版的发布配置**。按照惯例，轨道名称应与目标 ROS 发行版名称相同。
 
-由于一些配置在为不同的ROS分配放出包时会有所不同,所以开花使用 **释放用于存储释放配置的音轨** 您应该按常规创建与您所释放的 ROS Distro 名称相同的音轨 。
-
-所有放行轨道配置都存储在 `tracks.yaml` 在您发布存储器的主分支上。
+所有发布轨道配置都保存在发布仓库 `master` 分支的 `tracks.yaml` 中。
 
 <span id="track-configurations"></span>
+## 轨道配置项
 
-## 音轨配置
-
-音轨配置与开花时的提示有更详细的解释.
+下面结合 bloom 的提示，详细说明各项轨道配置。
 
 <span id="release-repository-url"></span> <span id="id2"></span>
+### 发布仓库 URL
 
-### 释放仓库url
+这是发布仓库的 URL。如果仓库托管在 ros2-gbp，地址应采用 `https://github.com/ros2-gbp/my_repo-release.git` 的形式。
 
-这是您放行仓库的url, 应该是形式 `https://github.com/ros2-gbp/my_repo-release.git` 如果您的发布寄存器被托管在 ros2- gbp 上。
-
-``` bash
+```bash
 No reasonable default release repository url could be determined from previous releases.
 Release repository url [press enter to abort]:
 ```
 
-粘贴您的发布仓库 URL 并按 Enter 键。
+粘贴发布仓库 URL，然后按 Enter。
 
-Bloom 可能会另外询问您关于新寄存器初始化的问题, 如下:
+Bloom 还可能询问是否初始化新仓库，如下所示：
 
-``` bash
+```bash
 Freshly initialized git repository detected.
 An initial empty commit is going to be made.
 Continue [Y/n]?
 ```
 
-只需按 Enter 即可接受默认为是 。
+直接按 Enter，接受默认的 yes 即可。
 
 <span id="repository-name"></span> <span id="id3"></span>
-
 ### 仓库名称
 
-寄存器的名称是微不足道的, 但建议将此设置为您的项目名称 。
+仓库名称可以自行选择，但建议使用项目名称。
 
-``` bash
+```bash
 Repository Name:
    upstream
       Default value, leave this as upstream if you are unsure
@@ -65,15 +51,14 @@ Repository Name:
    ['upstream']:
 ```
 
-键入您的工程名称( 例如 ) 。 `my_project`按 Enter 键。
+输入项目名称，例如 `my_project`，然后按 Enter。
 
 <span id="upstream-repository-uri"></span> <span id="id4"></span>
+### 上游仓库 URI
 
-### 上游存储器 URI
+**上游仓库**是保存源码的仓库，通常是 GitHub 或 GitLab 等 Git 托管服务上的项目 HTTPS 链接。
 
-那个... **上游储存库** 是您源代码所在的寄存器。这最有可能是一个在 GitHub 或 GitLab 这样的 git 主机服务中托管您的项目的 https 链接。
-
-``` bash
+```bash
 Upstream Repository URI:
    <uri>
       Any valid URI. This variable can be templated, for example an svn url
@@ -82,15 +67,14 @@ Upstream Repository URI:
    [None]:
 ```
 
-一定要保证你 **使用 https 地址** (e.g. `https://github.com/my_organization/my_repo.git`而不是shsh地址。
+务必**使用 HTTPS 地址**，例如 `https://github.com/my_organization/my_repo.git`，不要使用 SSH 地址。
 
 <span id="upstream-vcs-type"></span> <span id="id5"></span>
+### 上游版本控制系统类型
 
-### 上游 VCS 类型
+这是[上游仓库 URI](#upstream-repository-uri)对应的版本控制系统（VCS）类型。必须从 `svn`、`git`、`hg` 或 `tar` 中选择仓库使用的类型。
 
-这是 [上游存储器 URI](#id4)版本控制系统( VCS) 类型。 您必须指定您寄存器使用的 vc 类型, 从 `svn`, `git`, `hg` 或 时 间 `tar`.
-
-``` bash
+```bash
 Upstream VCS Type:
    svn
       Upstream URI is a svn repository
@@ -103,15 +87,14 @@ Upstream VCS Type:
    ['git']:
 ```
 
-大多数寄存器将使用git,但一些遗留的寄存器可能使用hg或svn.
+大多数仓库使用 Git，但部分旧仓库可能使用 Mercurial（hg）或 SVN。
 
 <span id="version"></span> <span id="id6"></span>
-
 ### 版本
 
-这是您正在释放的软件包的版本 。 (例如 。) `1.0.3`)
+这是所发布软件包的版本，例如 `1.0.3`。
 
-``` bash
+```bash
 Version:
    :{ask}
       This means that the user will be prompted for the version each release.
@@ -126,17 +109,16 @@ Version:
    [':{auto}']:
 ```
 
-设为 `:{auto}` (默认,以及推荐的设置)会自动从devel分支的软件包.xml中确定版本.
+设为 `:{auto}` 时，会根据开发分支中的 `package.xml` 自动确定版本。这是默认且推荐的设置。
 
-设为 `:{ask}` 每次你开花发布时 都会迅速要求版本
+设为 `:{ask}` 时，每次使用 bloom 发布都会提示输入版本。
 
 <span id="release-tag"></span> <span id="id7"></span>
+### 发布标签
 
-### 释放标签
+发布标签指定要从哪个标签或分支导入代码。
 
-释放标记是指您要导入代码的标记或分支 。
-
-``` bash
+```bash
 Release Tag:
    :{version}
       This means that the release tag will match the :{version} tag.
@@ -155,19 +137,18 @@ Release Tag:
    [':{version}']:
 ```
 
-设为 `:{version}` (默认,以及推荐的设置)将使发行标记与版本标记匹配.
+设为 `:{version}` 时，发布标签会与版本标签一致。这是默认且推荐的设置。
 
-一个不太常见的设置是将此设置为分支名称,在从上游项目释放时总是拉入该分支.
+另一种较少使用的方式是设为分支名，这样每次发布时都会从上游项目拉取该分支。
 
-或者,如果每次发布时要被提示输入不同的标签,请输入 `:{ask}`. `:{ask}` 如果上游工程经常有标签发布, 且每次发布时您都想要参考新标签,
+如果希望每次发布都提示输入一个不同的标签，可以设为 `:{ask}`。当上游项目频繁发布带标签的新版本，而你希望每次发布时引用新的标签时，这个选项很有用。
 
 <span id="upstream-devel-branch"></span> <span id="id8"></span>
+### 上游开发分支
 
-### 上游发展处
+上游开发分支是[上游仓库](#upstream-repository-uri)中的分支名称。如果每个 ROS 发行版使用独立分支，那么各发布轨道中的这一字段也会不同。当[版本](#version)设为 `:{auto}` 时，会用此分支来确定待发布软件包的版本。
 
-上游弯曲分支是您所在的分支的名称 [上游储存库](#upstream-repository-uri)。如果您为每个ROS分布使用单独的分支,则每个发布轨道的此字段将不同。用于确定您在发布时发布的软件包的版本。 [版本](#version) 设置为 `:{auto}`.
-
-``` bash
+```bash
 Upstream Devel Branch:
    <vcs reference>
       Branch in upstream repository on which to search for the version.
@@ -175,30 +156,28 @@ Upstream Devel Branch:
    [None]:
 ```
 
-从一个叫"从树枝中释放"的 `rolling`输入 `rolling`。离开这个作为 `None` 将导致从您的寄存器的默认分支中确定版本( 不推荐此选项) 。
+要从名为 `rolling` 的分支发布，请输入 `rolling`。如果保留为 `None`，则会从仓库的默认分支确定版本，不推荐这样做。
 
 <span id="ros-distro"></span> <span id="id9"></span>
+### ROS 发行版
 
-### ROS 地铁
+这是准备将软件包发布到的 ROS 发行版。
 
-这是您计划放入软件包的分布 。
-
-``` bash
+```bash
 ROS Distro:
    <ROS distro>
       This can be any valid ROS distro, e.g. indigo, kinetic, lunar, melodic
    ['indigo']:
 ```
 
-如果你计划放入ROS 滚动,请输入 `rolling`.
+如果计划向 ROS Rolling 发布，请输入 `rolling`。
 
 <span id="patches-directory"></span> <span id="id10"></span>
-
 ### 补丁目录
 
-这是任何额外的补丁所在的目录 。
+这是保存发布所需额外补丁的目录。
 
-``` bash
+```bash
 Patches Directory:
    <path in bloom branch>
       This can be any valid relative path in the bloom branch. The contents
@@ -211,13 +190,12 @@ Patches Directory:
    [None]:
 ```
 
-添加额外的补丁到发布中是很少使用的功能。 对于几乎所有的软件包来说, 这应该留作默认值 `None`.
+为发布添加额外补丁是一项很少使用的功能。对几乎所有软件包而言，都应保留默认值 `None`。
 
 <span id="release-repository-push-url"></span> <span id="id11"></span>
+### 发布仓库推送 URL
 
-### 释放仓库 Push URL
-
-``` bash
+```bash
 Release Repository Push URL:
    :{none}
       This indicates that the default release url should be used.
@@ -229,4 +207,4 @@ Release Repository Push URL:
    [None]:
 ```
 
-在多数情况下,可留作默认值。
+大多数情况下，可以保留默认值。

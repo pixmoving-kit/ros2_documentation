@@ -1,41 +1,30 @@
----
-translation_status: machine_translated
-source: How-To-Guides/Sync-Vs-Async.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
-<span id="synchronous-vs-asynchronous-service-clients"></span> <span id="syncasync"></span>
-
+<span id="synchronous-vs-asynchronous-service-clients"></span>
+<span id="syncasync"></span>
 # 同步与异步服务客户端
 
-**级别 :** 中级
+**难度：** 中级
 
-**用时：** 10分钟
+**用时：** 10 分钟
 
 <span id="introduction"></span>
+## 简介
 
-## 导言
+本指南说明 Python 同步服务客户端 `call()` API 的使用风险。同步调用服务很容易意外造成死锁，因此不建议使用 `call()`。
 
-本指南旨在提醒用户与Python同步服务客户端相关的风险 `call()` API. 在同步调用服务时很容易造成僵局, 所以我们不建议使用 `call()`.
+对于了解这些陷阱、仍希望使用同步调用的有经验用户，本指南给出了正确使用 `call()` 的示例，同时说明可能导致死锁的情况。
 
-我们以实例说明如何使用 `call()` 对于有经验的用户来说,他们希望使用同步电话,并意识到各种陷阱,这是正确无误的。 我们还强调随之而来的陷入僵局的可能情景。
+由于建议避免同步调用，本文也介绍推荐的替代方案——异步调用（`call_async()`）——的特性和用法。
 
-由于我们建议避免同步呼叫,本指南还将述及所建议替代方式的特征和使用,即同步呼叫(Async calls)`call_async()`).
-
-C++服务呼叫API只可用async,因此本指南中的比较和示例与Python服务和客户端相关. 这里给出的async的定义一般适用于C++,但有一些例外.
+C++ 服务调用 API 仅提供异步形式，因此本文的比较和示例针对 Python 服务与客户端。这里对异步的定义大体适用于 C++，但存在一些例外。
 
 <span id="synchronous-calls"></span>
+## 1 同步调用
 
-## 1次同步通话
+同步客户端向服务发送请求后，会阻塞调用线程，直至收到响应。在调用期间，该线程无法执行其他操作。调用完成所需时间没有固定上限；完成后，响应会直接返回给客户端。
 
-同步客户端在向服务发送请求时会屏蔽调用线程, 直到收到回复; 调用时该线程上不会发生其他事。 调用需要任意的时间才能完成。 完成后, 回复会直接返回客户端 。
+以下示例展示如何在客户端节点中正确执行同步服务调用，与[简单服务和客户端](../Tutorials/Beginner-Client-Libraries/Writing-A-Simple-Py-Service-And-Client.md)教程中的异步节点类似。
 
-以下是如何正确执行来自客户端节点的同步服务调用的例子,类似于该节点中的async节点. [简单服务和客户端](../Tutorials/Beginner-Client-Libraries/Writing-A-Simple-Py-Service-And-Client.md) 教学。
-
-``` python
+```python
 import sys
 from threading import Thread
 
@@ -80,19 +69,18 @@ if __name__ == '__main__':
     main()
 ```
 
-内注 `main()` 客户打电话 `rclpy.spin` 在一个单独的线条中。 `send_request` 财务报告和财务报告 `rclpy.spin` 被阻断了,所以它们需要分开的线条。
+注意 `main()` 中的客户端在独立线程里调用 `rclpy.spin`。`send_request` 和 `rclpy.spin` 都会阻塞，因此必须分别放在不同线程中。
 
 <span id="sync-deadlock"></span>
+## 1.1 同步调用死锁
 
-## 1.1 同步陷入僵局
+同步 `call()` API 可在多种情况下造成死锁。
 
-同步有几种方式 `call()` API会导致僵局.
+如上例注释所述，没有在独立线程中运行 `rclpy` 的 spin 就是一个原因。当客户端阻塞线程等待响应，而响应又只能在同一线程上返回时，客户端将永远等待，其他操作也无法进行。
 
-如上例评论所述,未能创建单独的线程来旋转 `rclpy` 当一个客户端正在屏蔽一条等待响应的线条时, 但响应只能在同一线条上返回时, 客户端将永远不会停止等待, 其它的事情也不可能发生 。
+另一个原因是在订阅回调、定时器回调或服务回调中同步调用服务，阻塞了 `rclpy.spin`。例如，将同步客户端的 `send_request` 放进回调：
 
-造成僵局的另一个原因是阻碍 `rclpy.spin` 在订阅、计时器回调或服务回调中同步调用服务。例如,如果同步客户端 `send_request` 放在回调中 :
-
-``` python
+```python
 def trigger_request(msg):
     response = minimal_client.send_request()  # This will cause deadlock
     minimal_client.get_logger().info(
@@ -103,35 +91,32 @@ subscription = minimal_client.create_subscription(String, 'trigger', trigger_req
 rclpy.spin(minimal_client)
 ```
 
-死锁发生的原因是 `rclpy.spin` 将不预先取消 召回与 `send_request` 调用。一般情况下,调用只应进行轻快操作。
+此时会死锁，因为 `rclpy.spin` 不会抢占正在执行 `send_request` 的回调。通常，回调应只执行轻量且快速的操作。
 
-> **警告**
->
-> 当陷入僵局时, 您不会收到任何服务被封杀的迹象 。 不会发出警告或例外, 也不会在堆栈跟踪中显示, 也不会失败 。
+!!! warning "警告"
+    死锁发生时，不会有任何信息提示服务已被阻塞：没有警告，不抛出异常，堆栈跟踪中没有提示，调用也不会以失败返回。
 
 <span id="asynchronous-calls"></span>
+## 2 异步调用
 
-## 2 同步呼叫
+`rclpy` 中的异步调用是推荐的安全服务调用方式。与同步调用不同，可以在任何位置发起异步调用，不会因此阻塞其他 ROS 或非 ROS 处理过程。
 
-Async 调用 `rclpy` 它们是完全安全的,也是推荐的呼叫服务方法。它们可以在任何地方制造,而不会冒阻断其他ROS和非ROS进程的风险,与同步呼叫不同。
+异步客户端向服务发送请求后会立即返回 `future`。它表示调用和响应是否已经完成，并不是响应值本身。可以随时通过返回的 `future` 查询响应。
 
-一个同步的客户端将立即返回 `future`,该值表示在向服务发送请求后,呼叫和响应是否完成(而不是响应本身的价值)。 `future` 可随时询问答复。
+由于发送请求不会阻塞，可以在同一个线程的循环中同时执行 `rclpy` 的 spin 并检查 `future`，例如：
 
-由于发送请求不会阻断任何东西,所以循环可以用于双旋 `rclpy` 检查 `future` 在同一线索中,例如:
-
-``` python
+```python
 while rclpy.ok():
     rclpy.spin_once(node)
     if future.done():
         #Get response
 ```
 
-那个... [简单服务和客户端](../Tutorials/Beginner-Client-Libraries/Writing-A-Simple-Py-Service-And-Client.md) Python 的教程说明如何执行 Async 服务调用并检索 `future` 使用循环。
+Python [简单服务和客户端](../Tutorials/Beginner-Client-Libraries/Writing-A-Simple-Py-Service-And-Client.md)教程展示了如何执行异步服务调用，并在循环中获取 `future` 的结果。
 
-那个... `future` 也可以使用计时器或回调器检索,例如: [此示例](https://github.com/ros2/examples/blob/rolling/rclpy/services/minimal_client/examples_rclpy_minimal_client/client_async_callback.py),专用线程,或者用另一种方法。由您作为呼叫者决定如何存储 `future`,检查其状态,并获取您的回复。
+也可以通过定时器或回调（见[此示例](https://github.com/ros2/examples/blob/rolling/rclpy/services/minimal_client/examples_rclpy_minimal_client/client_async_callback.py)）、专用线程或其他方式获取 `future` 的结果。作为调用者，你可以自行决定如何保存 `future`、检查其状态并获取响应。
 
 <span id="summary"></span>
+## 总结
 
-## 小结
-
-不建议执行同步服务客户端。 它们容易陷入僵局, 但不会在僵局发生时显示任何问题 。 如果您必须使用同步调用, 请用节中的例子 。 [1次同步通话](#synchronous-calls) 这也是一种安全的方法。您还应当了解造成第1节概述的僵局的条件。 [1.1 同步陷入僵局](#sync-deadlock)我们建议使用Aync服务客户端。
+不建议实现同步服务客户端，因为它容易发生死锁，而且死锁时不会给出任何问题提示。如果必须使用同步调用，[1 同步调用](#synchronous-calls)中的示例是一种安全用法；同时应了解 [1.1 同步调用死锁](#sync-deadlock)列出的触发条件。建议使用异步服务客户端。

@@ -1,265 +1,64 @@
----
-translation_status: machine_translated
-source: How-To-Guides/Launch-file-different-formats.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="using-xml-yaml-and-python-for-ros-2-launch-files"></span>
 
 # 使用 XML、YAML 和 Python 编写 ROS 2 启动文件
 
-ROS 2 发射文件可以用 XML, YAML, 和 Python 写成。 本指南显示如何使用这些不同格式来完成相同的任务, 以及讨论何时使用每个格式 。
+ROS 2 启动文件可以使用 XML、YAML 或 Python 编写。
+本指南演示如何使用这些格式完成相同的任务，并讨论各格式的适用情况。
 
 <span id="launch-file-examples"></span>
 
 ## 启动文件示例
 
-下面是一个在XML,YAML,和Python中执行的发射文件. 每个发射文件都执行以下动作:
+下面分别给出 XML、YAML 和 Python 格式的启动文件。每个文件都执行以下操作：
 
-- 设置带有默认的命令行参数
+- 设置命令行参数及其默认值。
+- 包含另一个启动文件。
+- 在另一个命名空间中包含启动文件。
+- 启动一个节点，并设置其命名空间。
+- 启动一个节点，设置其命名空间，并使用传入的参数设置节点参数。
+- 创建一个节点，将消息从一个话题重映射到另一个话题。
 
-- 包含另一个发射文件
+对应的示例文件：
 
-- 在另一个命名空间中包含另一个发射文件
-
-- 启动节点并设置其命名空间
-
-- 启动节点, 设置命名空间, 并在节点中设置参数( 使用参数)
-
-- 创建一个将信件从一个主题重映射到另一个主题的节点
-
-##### XML 数据
-
-``` xml
-<?xml version="1.0" encoding="UTF-8"?>
-<launch>
-  <!-- args that can be set from the command line or a default will be used -->
-  <arg name="background_r" default="0" />
-  <arg name="background_g" default="255" />
-  <arg name="background_b" default="0" />
-  <arg name="chatter_ns" default="my/chatter/ns" />
-
-  <!-- include another launch file -->
-  <include file="$(find-pkg-share demo_nodes_cpp)/launch/topics/talker_listener.launch.py" />
-
-  <!-- include another launch file in the chatter_ns namespace-->
-  <group>
-    <!-- push_ros_namespace to set namespace of included nodes -->
-    <push_ros_namespace namespace="$(var chatter_ns)" />
-    <include file="$(find-pkg-share demo_nodes_cpp)/launch/topics/talker_listener.launch.py" />
-  </group>
-
-  <!-- start a turtlesim_node in the turtlesim1 namespace and use args to set the log level -->
-  <node pkg="turtlesim" exec="turtlesim_node" name="sim" namespace="turtlesim1" args="--ros-args --log-level info" />
-
-  <!-- start another turtlesim_node in the turtlesim2 namespace, use ros_args to set the log level, and child elements to set the parameters -->
-  <node pkg="turtlesim" exec="turtlesim_node" name="sim" namespace="turtlesim2" ros_args="--log-level warn">
-    <param name="background_r" value="$(var background_r)" />
-    <param name="background_g" value="$(var background_g)" />
-    <param name="background_b" value="$(var background_b)" />
-  </node>
-
-  <!-- perform remap so both turtles listen to the same command topic -->
-  <node pkg="turtlesim" exec="mimic" name="mimic">
-    <remap from="/input/pose" to="/turtlesim1/turtle1/pose" />
-    <remap from="/output/cmd_vel" to="/turtlesim2/turtle1/cmd_vel" />
-  </node>
-</launch>
-```
-
-##### 也门
-
-``` yaml
-%YAML 1.2
----
-launch:
-# args that can be set from the command line or a default will be used
-- arg:
-    name: "background_r"
-    default: "0"
-- arg:
-    name: "background_g"
-    default: "255"
-- arg:
-    name: "background_b"
-    default: "0"
-- arg:
-    name: "chatter_ns"
-    default: "my/chatter/ns"
-
-# include another launch file
-- include:
-    file: "$(find-pkg-share demo_nodes_cpp)/launch/topics/talker_listener.launch.py"
-
-# include another launch file in the chatter_ns namespace
-- group:
-    - push_ros_namespace:
-        namespace: "$(var chatter_ns)"
-    - include:
-        file: "$(find-pkg-share demo_nodes_cpp)/launch/topics/talker_listener.launch.py"
-
-# start a turtlesim_node in the turtlesim1 namespace and use args to set the log level
-- node:
-    pkg: "turtlesim"
-    exec: "turtlesim_node"
-    name: "sim"
-    namespace: "turtlesim1"
-    args: "--ros-args --log-level info"
-
-# start another turtlesim_node in the turtlesim2 namespace, use ros_args to set the log level, and param to set the parameters
-- node:
-    pkg: "turtlesim"
-    exec: "turtlesim_node"
-    name: "sim"
-    namespace: "turtlesim2"
-    ros_args: "--log-level warn"
-    param:
-    - name: "background_r"
-      value: "$(var background_r)"
-    - name: "background_g"
-      value: "$(var background_g)"
-    - name: "background_b"
-      value: "$(var background_b)"
-
-# perform remap so both turtles listen to the same command topic
-- node:
-    pkg: "turtlesim"
-    exec: "mimic"
-    name: "mimic"
-    remap:
-    - from: "/input/pose"
-      to: "/turtlesim1/turtle1/pose"
-    - from: "/output/cmd_vel"
-      to: "/turtlesim2/turtle1/cmd_vel"
-```
-
-##### Python
-
-``` python
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
-from launch_ros.actions import Node, PushRosNamespace
-from launch_ros.substitutions import FindPackageShare
-
-
-def generate_launch_description():
-    launch_dir = PathJoinSubstitution([FindPackageShare('demo_nodes_cpp'), 'launch', 'topics'])
-    return LaunchDescription([
-        # args that can be set from the command line or a default will be used
-        DeclareLaunchArgument('background_r', default_value='0'),
-        DeclareLaunchArgument('background_g', default_value='255'),
-        DeclareLaunchArgument('background_b', default_value='0'),
-        DeclareLaunchArgument('chatter_ns', default_value='my/chatter/ns'),
-
-        # include another launch file
-        IncludeLaunchDescription(
-            PathJoinSubstitution([launch_dir, 'talker_listener.launch.py'])
-        ),
-
-        # include a Python launch file in the chatter_py_ns namespace
-        GroupAction(
-            actions=[
-                # push_ros_namespace first to set namespace of included nodes for following actions
-                PushRosNamespace(LaunchConfiguration('chatter_ns')),
-                IncludeLaunchDescription(
-                    PathJoinSubstitution([launch_dir, 'talker_listener.launch.py'])),
-            ]
-        ),
-
-        # include a xml launch file in the chatter_xml_ns namespace
-        GroupAction(
-            actions=[
-                # push_ros_namespace first to set namespace of included nodes for following actions
-                PushRosNamespace('chatter_xml_ns'),
-                IncludeLaunchDescription(
-                    PathJoinSubstitution([launch_dir, 'talker_listener.launch.xml'])),
-            ]
-        ),
-
-        # include a yaml launch file in the chatter_yaml_ns namespace
-        GroupAction(
-            actions=[
-                # push_ros_namespace first to set namespace of included nodes for following actions
-                PushRosNamespace('chatter_yaml_ns'),
-                IncludeLaunchDescription(
-                    PathJoinSubstitution([launch_dir, 'talker_listener.launch.yaml'])),
-            ]
-        ),
-
-        # start a turtlesim_node in the turtlesim1 namespace and use arguments to set the log level
-        Node(
-            package='turtlesim',
-            namespace='turtlesim1',
-            executable='turtlesim_node',
-            name='sim',
-            arguments=['--ros-args', '--log-level', 'info']
-        ),
-
-        # start another turtlesim_node in the turtlesim2 namespace,
-        # use ros_arguments to set the log level, and parameters to set the parameters
-        Node(
-            package='turtlesim',
-            namespace='turtlesim2',
-            executable='turtlesim_node',
-            name='sim',
-            ros_arguments=['--log-level', 'warn'],
-            parameters=[{
-                'background_r': LaunchConfiguration('background_r'),
-                'background_g': LaunchConfiguration('background_g'),
-                'background_b': LaunchConfiguration('background_b'),
-            }]
-        ),
-
-        # perform remap so both turtles listen to the same command topic
-        Node(
-            package='turtlesim',
-            executable='mimic',
-            name='mimic',
-            remappings=[
-                ('/input/pose', '/turtlesim1/turtle1/pose'),
-                ('/output/cmd_vel', '/turtlesim2/turtle1/cmd_vel'),
-            ]
-        ),
-    ])
-```
+- [XML：different_formats_launch.xml](launch/different_formats_launch.xml)
+- [YAML：different_formats_launch.yaml](launch/different_formats_launch.yaml)
+- [Python：different_formats_launch.py](launch/different_formats_launch.py)
 
 <span id="using-the-launch-files-from-the-command-line"></span>
 
-## 使用命令行的发射文件
+## 从命令行运行启动文件
 
 <span id="launching"></span>
 
-### 发射
+### 启动
 
-上面的任何发射文件都可以用 `ros2 launch`。要在本地尝试它们,可以创建新的软件包并使用
+上述任一启动文件都可以通过 `ros2 launch` 运行。
+要在本地尝试这些文件，可以创建一个新软件包，然后执行：
 
-``` console
+```console
 $ ros2 launch <package_name> <launch_file_name>
 ```
 
-或通过指定发射文件的路径直接运行文件
+也可以指定启动文件的路径，直接运行该文件：
 
-``` console
+```console
 $ ros2 launch <path_to_launch_file>
 ```
 
 <span id="setting-arguments"></span>
 
-### 设置参数
+### 设置启动参数
 
-要设置传递到发射文件中的参数,请使用 `key:=value` 语法。例如,您可以设置 `background_r` 以下列方式:
+向启动文件传递参数时，应使用 `key:=value` 语法。
+例如，可以这样设置 `background_r` 的值：
 
-``` console
+```console
 $ ros2 launch <package_name> <launch_file_name> background_r:=255
 ```
 
-或 时 间
+或者：
 
-``` console
+```console
 $ ros2 launch <path_to_launch_file> background_r:=255
 ```
 
@@ -267,24 +66,26 @@ $ ros2 launch <path_to_launch_file> background_r:=255
 
 ### 控制海龟
 
-为了测试重映射是否有效,您可以通过在另一个终端运行以下命令来控制龟类:
+为了验证重映射是否生效，可以在另一个终端中运行以下命令来控制海龟：
 
-``` console
+```console
 $ ros2 run turtlesim turtle_teleop_key --ros-args --remap __ns:=/turtlesim1
 ```
 
-<span id="xml-yaml-or-python-which-should-i-use"></span> <span id="launch-file-different-formats-which"></span>
+<span id="xml-yaml-or-python-which-should-i-use"></span><span id="launch-file-different-formats-which"></span>
 
-## XML, YAML, 或 Python: 我应该用哪一种?
+## 应该使用 XML、YAML 还是 Python？
 
-> **说明**
->
-> ROS 1中的发射文件是用XML写的,所以XML可能是ROS 1中的人最熟悉的. . . [迁移启动文件](Migrating-from-ROS1/Migrating-Launch-Files.md).
+!!! note "说明"
 
-对于大多数应用程序来说,选择哪个ROS 2发射格式会降为开发者的偏好。但是,如果您的发射文件需要灵活性,而你无法用XML或YAML实现,那么您可以使用Python来写入您的发射文件。使用Python来进行ROS 2发射会更加灵活,原因有二:
+    ROS 1 的启动文件使用 XML 编写，因此对于从 ROS 1 迁移的用户，XML 可能最为熟悉。
+    要了解其中的变化，请参阅[迁移启动文件](Migrating-from-ROS1/Migrating-Launch-Files.md)。
 
-- Python是一种脚本语言,因此您可以在您的启动文件中对语言及其库进行杠杆化.
+对于大多数应用，选择哪一种 ROS 2 启动文件格式主要取决于开发者的偏好。
+不过，如果启动文件需要 XML 或 YAML 无法提供的灵活性，就可以使用 Python。
+Python 更灵活，主要有以下两个原因：
 
-- [ros2/launch](https://github.com/ros2/launch) (一般发射特征)和 [ros2/launch_ros](https://github.com/ros2/launch_ros) (ROS 2 特定发射特征)用 Python 写成,因此您对可能不会被 XML 和 YAML 曝光的发射特征的级别较低.
+- Python 是脚本语言，因此可以在启动文件中使用其语言特性和各种库。
+- 提供通用启动功能的 [ros2/launch](https://github.com/ros2/launch) 和提供 ROS 2 专用启动功能的 [ros2/launch_ros](https://github.com/ros2/launch_ros) 都使用 Python 编写，因此可以访问 XML 和 YAML 未必提供的底层启动功能。
 
-尽管如此,用Python写成的发射文件可能比XML或YAML中的一个更为复杂和动词化.
+不过，使用 Python 编写的启动文件也可能比 XML 或 YAML 格式更复杂、篇幅更长。

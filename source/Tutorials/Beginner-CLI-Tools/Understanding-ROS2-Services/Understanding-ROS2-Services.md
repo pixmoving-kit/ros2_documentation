@@ -1,67 +1,56 @@
----
-translation_status: machine_translated
-source: Tutorials/Beginner-CLI-Tools/Understanding-ROS2-Services/Understanding-ROS2-Services.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="understanding-services"></span> <span id="ros2services"></span>
-
 # 理解服务
 
-**目标：** 使用命令行工具学习ROS 2中的服务.
+**目标：** 使用命令行工具了解 ROS 2 服务。
 
-**教程级别：** 入门
+**教程级别：** 初学者
 
-**用时：** 10分钟
+**预计用时：** 10 分钟
 
 <span id="background"></span>
-
 ## 背景
 
-服务是ROS图中节点的另一种通信方法. 服务基于调用和响应模式,而不是主题的发布者-订阅者模式. 虽然主题允许节点订阅数据流并获得持续更新,但服务只有在客户端特别调用时才会提供数据.
+服务是 ROS 计算图中节点通信的另一种方式。话题采用发布/订阅模式，服务则采用调用/响应模式。通过话题，节点可以订阅数据流并持续获取更新；服务只在客户端明确发起调用时才提供数据。
 
-![](images/Service-SingleServiceClient.gif) ![](images/Service-MultipleServiceClient.gif) <span id="prerequisites"></span>
+![单个服务客户端](images/Service-SingleServiceClient.gif)
 
+![多个服务客户端](images/Service-MultipleServiceClient.gif)
+
+<span id="prerequisites"></span>
 ## 前提条件
 
-本教程中提及的一些概念,例如 [节点](../Understanding-ROS2-Nodes/Understanding-ROS2-Nodes.md) 财务报告和财务报告 [话题](../Understanding-ROS2-Topics/Understanding-ROS2-Topics.md),在系列的以往教程中覆盖。
+本教程提到的[节点](../Understanding-ROS2-Nodes/Understanding-ROS2-Nodes.md)和[话题](../Understanding-ROS2-Topics/Understanding-ROS2-Topics.md)等概念，已在本系列前面的教程中介绍。
 
-你需要那个... [龟兹包](../Introducing-Turtlesim/Introducing-Turtlesim.md).
+需要安装 [turtlesim 软件包](../Introducing-Turtlesim/Introducing-Turtlesim.md)。
 
-与往常一样, [您打开的每个新终端](../Configuring-ROS2-Environment.md).
+与往常一样，不要忘记在[每个新打开的终端](../Configuring-ROS2-Environment.md)中加载 ROS 2 环境。
 
 <span id="tasks"></span>
-
 ## 操作步骤
 
 <span id="setup"></span>
+### 1 准备工作
 
-### 1 设置
+启动 turtlesim 的两个节点：`/turtlesim` 和 `/teleop_turtle`。
 
-启动两个乌龟结点, `/turtlesim` 财务报告和财务报告 `/teleop_turtle`.
+打开新终端，运行：
 
-打开新的终端并运行 :
-
-``` console
+```console
 $ ros2 run turtlesim turtlesim_node
 ```
 
-打开另一个终端并运行 :
+打开另一个终端，运行：
 
-``` console
+```console
 $ ros2 run turtlesim turtle_teleop_key
 ```
 
 <span id="ros2-service-list"></span>
+### 2 ros2 service list
 
-### 2 ros2 服务列表
+在新终端中运行 `ros2 service list`，会返回系统中当前所有活动服务的列表：
 
-运行 `ros2 service list` 命令在新终端中将返回当前系统中所有正在运行的服务列表 :
-
-``` console
+```console
 $ ros2 service list
 /clear
 /kill
@@ -84,38 +73,36 @@ $ ros2 service list
 /turtlesim/set_parameters_atomically
 ```
 
-你会看到两个节点都有同样的六个服务 `parameters` 。几乎所有 ROS 2 中的节点都有参数所构建的这些基础设施服务。下一个教程中将有更多关于参数的内容。在此教程中,讨论时将省略参数服务。
+可以看到，两个节点都有六个名称中包含 `parameters` 的同类服务。ROS 2 中几乎每个节点都提供这些基础服务，参数功能就建立在它们之上。下一篇教程会详细介绍参数，本教程暂不讨论这些参数服务。
 
-现在,让我们集中关注针对龟类的服务, `/clear`, `/kill`, `/reset`, `/spawn`, `/turtle1/set_pen`, `/turtle1/teleport_absolute`,以及 `/turtle1/teleport_relative`。您可能记得使用 rqt 在 [使用龟形、 ros2 和 rqt](../Introducing-Turtlesim/Introducing-Turtlesim.md) 教学。
+现在重点关注 turtlesim 特有的服务：`/clear`、`/kill`、`/reset`、`/spawn`、`/turtle1/set_pen`、`/turtle1/teleport_absolute` 和 `/turtle1/teleport_relative`。在[使用 turtlesim、ros2 和 rqt](../Introducing-Turtlesim/Introducing-Turtlesim.md)教程中，你已经通过 rqt 使用过其中一些服务。
 
 <span id="ros2-service-type"></span>
+### 3 ros2 service type
 
-### 3 ros2 服务类型
+服务类型描述了请求数据和响应数据的结构。它的定义方式与话题类型类似，但服务类型包含两部分：一条用于请求的消息，以及一条用于响应的消息。
 
-服务有类型来描述一个服务的请求和响应数据的结构. 服务类型的定义与主题类型相似,但服务类型有两个部分:一个是请求的信息,另一个是回应信息.
+用以下命令查看服务类型：
 
-要找到服务的类型, 请使用命令 :
-
-``` console
+```console
 $ ros2 service type <service_name>
 ```
 
-让我们看看龟兹的作品 `/clear` 服务。在新的终端中,输入命令:
+以 turtlesim 的 `/clear` 服务为例，在新终端中输入：
 
-``` console
+```console
 $ ros2 service type /clear
 std_srvs/srv/Empty
 ```
 
-那个... `Empty` type 表示服务调用在请求时不发送数据,在收到回复时不接收数据.
+`Empty` 类型表示调用服务时，请求不携带数据，响应也不携带数据。
 
 <span id="ros2-service-list-t"></span>
+#### 3.1 ros2 service list -t
 
-#### 3.1 ros2 服务列表 - t
+要同时查看所有活动服务的类型，可以为 `list` 命令添加 `--show-types` 选项，缩写为 `-t`：
 
-要同时看到所有活动服务的类型,您可以附加 `--show-types` 选项,缩写为 `-t`,改为: `list` 命令 :
-
-``` console
+```console
 $ ros2 service list -t
 /clear [std_srvs/srv/Empty]
 /kill [turtlesim/srv/Kill]
@@ -129,47 +116,45 @@ $ ros2 service list -t
 ```
 
 <span id="ros2-service-find"></span>
+### 4 ros2 service find
 
-### 4个 ros2 服务查找器
+使用以下命令查找指定类型的所有服务：
 
-如果您想要找到特定类型的所有服务, 您可以使用命令 :
-
-``` console
+```console
 $ ros2 service find <type_name>
 ```
 
-例如,你可以找到所有 `Empty` 像这样的输入服务 :
+例如，查找所有 `Empty` 类型的服务：
 
-``` console
+```console
 $ ros2 service find std_srvs/srv/Empty
 /clear
 /reset
 ```
 
 <span id="ros2-interface-show"></span>
+### 5 ros2 interface show
 
-### 5 ros2 接口显示
+可以通过命令行调用服务，不过首先需要了解输入参数的结构：
 
-您可以从命令行调用服务,但首先需要了解输入参数的结构.
-
-``` console
+```console
 $ ros2 interface show <type_name>
 ```
 
-试试这个 `/clear` 服务类型, `Empty`:
+对 `/clear` 服务的 `Empty` 类型试一下：
 
-``` console
+```console
 $ ros2 interface show std_srvs/srv/Empty
 ---
 ```
 
-那个... `---` 将请求结构(以上)与响应结构(以下)分开。但是,正如你先前所得知的那样, `Empty` 类型不会发送或接收任何数据。所以自然,其结构是空白的。
+`---` 将上方的请求结构和下方的响应结构分开。前面已经知道，`Empty` 类型不发送或接收任何数据，所以两部分都是空的。
 
-让我们回顾一下一个服务,它的类型是发送和接收数据,比如: `/spawn`。从结果来看 `ros2 service list -t`我们知道 `/spawn`其类型是: `turtlesim/srv/Spawn`.
+接下来查看一个请求和响应都包含数据的服务，例如 `/spawn`。根据 `ros2 service list -t` 的输出，它的类型是 `turtlesim/srv/Spawn`。
 
-以了解缔约国的请求和答复论点 `/spawn` 服务,运行命令 :
+运行以下命令，查看 `/spawn` 服务的请求和响应参数：
 
-``` console
+```console
 $ ros2 interface show turtlesim/srv/Spawn
 float32 x
 float32 y
@@ -179,35 +164,34 @@ string name # Optional.  A unique name will be created and returned if this is e
 string name
 ```
 
-以上资料 `---` 线条告诉我们需要调用哪些参数 `/spawn`. `x`, `y` 财务报告和财务报告 `theta` 确定产卵海龟的2D姿势, `name` 很明显是可选的。
+`---` 上方列出了调用 `/spawn` 所需的参数。`x`、`y` 和 `theta` 决定新生成海龟的二维位姿，`name` 则是可选项。
 
-线下的信息并不是你需要了解的,
+当前调用不需要使用分隔线下方的信息，但这些信息有助于理解调用返回的响应数据类型。
 
 <span id="ros2-service-call"></span>
+### 6 ros2 service call
 
-### 6 ros2 服务呼叫
+现在已经了解服务类型、查找服务类型的方法，以及查看类型参数结构的方法，可以用以下命令调用服务：
 
-既然您知道服务类型是什么,如何找到服务类型,以及如何找到该类型参数的结构,您可以使用:
-
-``` console
+```console
 $ ros2 service call <service_name> <service_type> <arguments>
 ```
 
-那个... `<arguments>` 部分是可选的。例如,你知道, `Empty` 输入服务没有任何论据:
+`<arguments>` 是可选部分。例如，`Empty` 类型的服务不需要任何参数：
 
-``` console
+```console
 $ ros2 service call /clear std_srvs/srv/Empty
 ```
 
-此命令会清除您所绘制的任何线条的龟图窗口 。
+该命令会清除 turtlesim 窗口中海龟画出的所有线条。
 
-![](images/clear.png)
+![清除绘制的轨迹](images/clear.png)
 
-现在,让我们通过呼叫来产出一只新乌龟 `/spawn` 和设置参数。输入 `<arguments>` 在命令行发出的服务呼叫中,需要用YAML语法。
+现在通过调用 `/spawn` 并指定参数，生成一只新海龟。通过命令行调用服务时，`<arguments>` 必须使用 YAML 语法。
 
-输入命令 :
+输入以下命令：
 
-``` console
+```console
 $ ros2 service call /spawn turtlesim/srv/Spawn "{x: 2, y: 2, theta: 0.2, name: ''}"
 requester: making request: turtlesim.srv.Spawn_Request(x=2.0, y=2.0, theta=0.2, name='')
 
@@ -215,28 +199,27 @@ response:
 turtlesim.srv.Spawn_Response(name='turtle2')
 ```
 
-您会得到这个方法式的视角, 了解正在发生的事情, 然后得到服务响应。
+终端会先以类似方法调用的形式显示请求，再显示服务响应。
 
-你的新产海龟的窗口会马上更新:
+turtlesim 窗口会立即更新，显示新生成的海龟：
 
-![](images/spawn.png) <span id="summary"></span>
+![通过服务生成新海龟](images/spawn.png)
 
+<span id="summary"></span>
 ## 小结
 
-节点可以使用ROS 2. 不同的是,一个主题 - 一个节点发布信息,可以被一个或多个订阅者消费的一种方式的通信模式 - 一个服务是一个请求/响应模式,客户端向一个提供该服务的节点提出请求,服务处理请求并生成响应.
+ROS 2 节点可以通过服务通信。话题是单向通信模式，一个节点发布的信息可以由一个或多个订阅者接收；服务则是请求/响应模式，客户端向提供服务的节点发送请求，服务端处理请求并生成响应。
 
-您通常不想使用服务进行连续通话; 话题甚至动作更合适 。
+通常不应使用服务进行连续调用；话题，或某些情况下的动作，会更加合适。
 
-在此教程中, 您使用命令行工具来识别、 透视和调用服务 。
+本教程使用命令行工具查找、查看和调用了服务。
 
 <span id="next-steps"></span>
-
 ## 后续步骤
 
-在接下来的辅导中, [理解参数](../Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md),您将学习配置节点设置。
+下一篇教程[理解参数](../Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md)将介绍如何配置节点。
 
 <span id="related-content"></span>
-
 ## 相关内容
 
-检查出来 [此教程](https://discourse.ubuntu.com/t/call-services-in-ros-2/15261)使用机器人臂的ROS服务,
+[这篇教程](https://discourse.ubuntu.com/t/call-services-in-ros-2/15261)使用 Robotis 机械臂，展示了 ROS 服务在真实场景中的应用。

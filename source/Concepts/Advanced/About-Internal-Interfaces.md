@@ -1,154 +1,135 @@
----
-translation_status: machine_translated
-source: Concepts/Advanced/About-Internal-Interfaces.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="internal-ros-2-interfaces"></span>
 
 # ROS 2 内部接口
 
-内部ROS接口为公用C [APIs 辅助程序](../../Glossary.md#term-API) 用于正在创建的开发者 [客户端库](../../Glossary.md#term-client_library) 或添加新的内置中间软件,但并非用于典型的ROS用户。 [客户端库](../../Glossary.md#term-client_library) 提供用户面对的 [APIs 辅助程序](../../Glossary.md#term-API) 大多数ROS用户熟悉,并且可能以多种编程语言出现.
+ROS 内部接口是公开的 C API，供开发客户端库或接入新底层中间件的开发者使用，并非面向普通 ROS 用户。大多数 ROS 用户熟悉的用户层 API 由 ROS 客户端库提供，这些库可以使用多种编程语言实现。
 
 <span id="internal-api-architecture-overview"></span>
 
-## 内部 API 架构概览
+## 内部 API 架构概述
 
-主要有两种内部接口:
+主要有两类内部接口：
 
-- ROS 中间软件接口(`rmw` [API](../../Glossary.md#term-API))
+- ROS 中间件接口（`rmw` API）。
+- ROS 客户端库接口（`rcl` API）。
 
-- ROS 客户端库接口( )`rcl` [API](../../Glossary.md#term-API))
+`rmw` API 位于 ROS 2 软件栈与底层中间件实现之间。本文介绍的 ROS 2 底层中间件采用 DDS 或 RTPS 实现，负责发现、发布与订阅、服务的请求与响应，以及消息类型的序列化。
 
-那个... `rmw` [API](../../Glossary.md#term-API) 是ROS 2 软件堆栈与基础中件执行的接口。ROS 2 使用的基础中件要么是DDS,要么是RTPS执行,负责发现、发布和订阅力学、服务请求复制力学以及消息类型的序列化。
+`rcl` API 的层次稍高，用于实现客户端库。它不直接访问中间件实现，而是通过 ROS 中间件接口（`rmw` API）这一抽象层访问。
 
-那个... `rcl` [API](../../Glossary.md#term-API) 是一个稍高的级别 [API](../../Glossary.md#term-API) 用于执行 [客户端库](../../Glossary.md#term-client_library) 并且不直接触摸中间软件执行,而是通过ROS中间软件接口进行(`rmw` [API](../../Glossary.md#term-API))抽象化.
+![ROS 2 软件栈](../images/ros_client_library_api_stack.png)
 
-<figure class="align-default">
-<img src="../images/ros_client_library_api_stack.png" alt="ros2 软件堆栈" />
-</figure>
+如图所示，这些 API 逐层叠加：普通 ROS 用户通过 `rclcpp` 等客户端库 API 编写可执行程序或库。客户端库（例如 `rclcpp`）通过 `rcl` 接口访问 ROS 计算图和图事件；`rcl` 的实现再通过 `rmw` API 访问 ROS 计算图。`rcl` 的作用是为多个客户端库提供较复杂的 ROS 概念和实用功能的通用实现，同时不依赖特定底层中间件。`rmw` 接口则仅包含支持 ROS 客户端库所必需的最少中间件功能。最终，`rmw` API 由特定中间件的软件包（如 `rmw_fastrtps_cpp`）实现，其库使用对应供应商的 DDS 接口和类型进行编译。
 
-如图所示,这些 [APIs 辅助程序](../../Glossary.md#term-API) 堆叠到这样一来,典型的ROS用户将使用 [客户端库](../../Glossary.md#term-client_library) [API](../../Glossary.md#term-API), e.g. `rclcpp`,以实施其代码(可执行或库)。 [客户端库](../../Glossary.md#term-client_library), e.g. `rclcpp`时,使用 `rcl` 用于访问 ROS 图形和图表事件的界面。 `rcl` 反过来又使用 `rmw` [API](../../Glossary.md#term-API) 以访问 ROS 图表。 `rcl` 执行的目的是为更复杂的ROS概念和公用设施提供一个共同的实施,这些概念和公用设施可供各种企业使用。 [客户端库](../../Glossary.md#term-client_library),同时对正在使用的基本中间软件保持不可知性。 `rmw` 界面是获取支持 ROS 客户端库所需的绝对最小的中间软件功能。 `rmw` [API](../../Glossary.md#term-API) 由中间软件具体执行提供 [软件包](../../Glossary.md#term-package), e.g. `rmw_fastrtps_cpp`,其库根据供应商特定的DDS接口和类型编译.
+上图中还有一个标为 `ros_to_dds` 的方框，代表一类可能的软件包：它们允许用户通过 ROS 对应对象访问 DDS 供应商专有的对象和设置。抽象接口的目标之一，是将 ROS 用户代码与所用的中间件完全隔离，使切换 DDS 供应商甚至中间件技术时，对用户代码的影响尽可能小。不过，有时确实需要深入实现内部手动调整设置，即使这样做可能带来一些影响。通过要求使用这类专用软件包才能访问底层 DDS 供应商对象，可以避免在常规接口中暴露供应商专用的符号和头文件。此外，只需检查软件包是否依赖某个 `ros_to_dds` 软件包，就能识别哪些代码可能影响跨供应商的可移植性。
 
-上面的图中还有一个框标注着 `ros_to_dds`, 而这个框的目的是要代表一组可能的软件包, 允许用户使用 ROS 等同软件访问 DDS 供应商的特定对象和设置。 这个抽象界面的目标之一是将 ROS 用户的空间代码与正在使用的中间软件完全隔绝, 这样改变 DDS 供应商甚至中间软件技术对用户代码影响最小。 然而, 我们承认, 有时尽管有后果, 仍可以接触到执行并手动调整设置。 通过要求使用其中一种软件包来访问基本的 DDS 供应商对象, 我们就可以避免在正常界面中暴露出供应商的特定符号和标题 。 还可以通过检查软件包的依赖性以查看其中之一, 很容易看到哪些代码可能违反供应商的可移植性 。 `ros_to_dds` 正在使用软件包。
+<span id="type-specific-interfaces"></span>
+<span id="id1"></span>
 
-<span id="type-specific-interfaces"></span> <span id="id1"></span>
+## 类型专用接口
 
-## 类型 特定接口
-
-一直以来,这里有些地方 [APIs 辅助程序](../../Glossary.md#term-API) 必然针对正在交换的信件类型,例如发布一个信件或签署一个主题,因此需要为每个信件类型生成代码。以下图表从用户定义的路径进行布局 `rosidl` 文档,例如: `.msg` 文件,到用户和系统用于执行类型特定功能的特定类型代码:
+在整个调用链中，某些 API 必须针对所交换的消息类型，例如发布消息或订阅话题。因此，需要为每种消息类型生成代码。下图展示了用户定义的 `rosidl` 文件（如 `.msg` 文件）如何转化为类型专用代码，供用户和系统执行与类型有关的操作。
 
 <span id="id2"></span>
 
-<figure class="align-default">
-<img src="../images/ros_idl_api_stack_static.png" alt="ros2 idl 静态类型支持堆栈" />
-<figcaption><p>图: " 静态 " 类型支持生成流程图,来自 <code class="docutils literal notranslate">rosidl</code> 用于用户面对代码的文件。</p></figcaption>
-</figure>
+![ROS 2 IDL 静态类型支持栈](../images/ros_idl_api_stack_static.png)
 
-图表的右手侧显示 `.msg` 文件直接传递给特定语言的代码生成器,例如: `rosidl_generator_cpp` 或 时 间 `rosidl_generator_py`。这些生成器负责创建用户将包含(或导入)的代码,并用作信件的内在表示。 `.msg` 文件。例如,考虑信件 `std_msgs/String`,用户可能会使用 C++ 中的此文件并配有语句 `#include <std_msgs/msg/string.hpp>`,或者他们可能使用声明 `from std_msgs.msg import String` 在 Python 中。这些语句工作是因为这些语言特定(但中间软件不可知)生成的生成器软件包所产生的文件。
+*图：从 `rosidl` 文件到用户代码的“静态”类型支持生成流程。*
 
-分别是: `.msg` 文档用于生成每种类型的类型支持代码。在这种情况下,类型支持意味着:特定类型并被系统用于执行特定类型特定任务的元数据或函数。对特定信息的类型支持可能包含诸如消息中每个字段的名称和类型列表等内容。它也可能包含可以执行该类型特定任务的代码的引用,例如发布消息。
+图的右侧展示了 `.msg` 文件如何直接传递给特定语言的代码生成器，例如 `rosidl_generator_cpp` 或 `rosidl_generator_py`。生成器创建相应代码，供用户包含或导入，并用作 `.msg` 文件所定义消息的内存表示。例如，使用 `std_msgs/String` 消息时，C++ 用户可以编写 `#include <std_msgs/msg/string.hpp>`，Python 用户可以编写 `from std_msgs.msg import String`。这些语句所引用的文件，正是由特定语言但与中间件无关的生成器软件包创建的。
 
-<span id="static-type-support"></span> <span id="internal-interfaces-static-type-support"></span>
+另一方面，`.msg` 文件还用于为每种类型生成类型支持代码。这里的“类型支持”是指针对某种类型的元数据或函数，系统依靠它们完成该类型的特定任务。例如，某个消息的类型支持可能包含其所有字段的名称和类型列表，也可能包含指向执行特定操作（例如发布消息）的代码的引用。
+
+<span id="static-type-support"></span>
+<span id="internal-interfaces-static-type-support"></span>
 
 ### 静态类型支持
 
-当类型支持引用代码来为特定信息类型执行特定功能时,该代码有时需要做中件特定的工作。例如,考虑特定类型发布功能,当使用“vendor A”时,该功能需要调用一些“vendor A's” [API](../../Glossary.md#term-API),但是在使用“供应商B”时,需要将“供应商B”称为“供应商B”\`s”。 [API](../../Glossary.md#term-API)为允许中件供应商特定代码,用户定义 `.msg` 文件可能导致生成供应商特定代码。这种供应商特定代码仍然通过类型支持抽象来隐藏在用户的手中,这与“私人执行”(或简便)模式的运作方式相似。
+当类型支持引用代码来执行某种消息类型的特定操作时，这些代码有时需要执行中间件专有的操作。例如，类型专用的发布函数在使用“供应商 A”时需要调用 A 的 API，使用“供应商 B”时则需要调用 B 的 API。为支持这类代码，用户定义的 `.msg` 文件可能会用于生成供应商专用的代码。这些代码仍通过类型支持抽象层对用户隐藏，其方式类似于“私有实现”（Private Implementation，Pimpl）模式。
 
 <span id="static-type-support-with-dds"></span>
 
-### 带有 DDS 的静态类型支持
+### DDS 的静态类型支持
 
-对于基于DDS的中间软件供应商,特别是那些基于OMG IDL文件生成代码的供应商(`.idl` 文件,用户定义 `rosidl` 文档( E)`.msg` 文件)被转换成等效的OMG IDL文件(`.idl` 。从这些 OMG IDL 文件中,创建了供应商特定代码,然后在类型特定函数范围内使用,这些函数由给定类型的类型支持引用。上面的图表在左手边显示这一点。 `.msg` 文件为 `rosidl_dds` 要生产的软件包 `.idl` 文档,然后是 `.idl` 文件提供给特定语言和DDS供应商特定类型的支持生成软件包。
+对于基于 DDS、尤其是根据 OMG IDL 文件（`.idl` 文件）生成代码的中间件，用户定义的 `rosidl` 文件（`.msg` 文件）会转换为等价的 OMG IDL 文件。随后根据这些文件生成供应商专用代码，并在类型支持所引用的类型专用函数中使用这些代码。上图左侧展示了这一过程：`rosidl_dds` 软件包读取 `.msg` 文件并生成 `.idl` 文件，再将 `.idl` 文件交给特定语言和 DDS 供应商的类型支持生成软件包。
 
-例如,考虑快速DDS执行,其中有一个软件包叫做 `rosidl_typesupport_fastrtps_cpp`。这个软件包负责生成代码来处理诸如将一个 C++ 消息对象转换成一个序列化的 octet 缓冲器,以便在网络上写入。这个代码虽然是针对快速DS的,但由于类型支持代码中的抽象,仍然不向用户曝光。
+以 Fast DDS 实现为例，`rosidl_typesupport_fastrtps_cpp` 软件包负责生成代码，将 C++ 消息对象转换为待通过网络发送的序列化字节缓冲区等。尽管这些代码专用于 Fast DDS，但由于类型支持代码提供了抽象层，它们仍不会暴露给用户。
 
-<span id="dynamic-type-support"></span> <span id="internal-interfaces-dynamic-type-support"></span>
+<span id="dynamic-type-support"></span>
+<span id="internal-interfaces-dynamic-type-support"></span>
 
 ### 动态类型支持
 
-执行类型支持的另一种方式是,对诸如发布到一个主题之类的事物具有通用功能,而不是为每个消息类型生成一个版本的功能。为了实现这一点,这个通用功能需要一些关于正在发布消息类型的元信息,比如按消息类型中出现的顺序列出字段名称和类型。然后,要发布一个消息,您就叫作通用发布功能,并传递一个包含关于消息类型的必要元数据的结构。这被称为“动态”类型支持,而不是“静态”类型支持,它需要为每个类型生成一个函数的版本。
+实现类型支持的另一种方式，是使用通用函数来执行向话题发布消息等操作，而不为每种消息类型分别生成函数。为此，通用函数需要消息类型的元信息，例如按消息中出现顺序排列的字段名称和类型列表。发布消息时，调用通用发布函数，同时传入消息和包含所需类型元数据的结构即可。这称为“动态”类型支持；与之相对，“静态”类型支持需要为每种类型生成专用函数。
 
 <span id="id3"></span>
 
-<figure class="align-default">
-<img src="../images/ros_idl_api_stack_dynamic.png" alt="ros2 idl 动态类型支持堆栈" />
-<figcaption><p>图: " 动态 " 类型支持生成流程图,来自 <code class="docutils literal notranslate">rosidl</code> 用于用户面对代码的文件。</p></figcaption>
-</figure>
+![ROS 2 IDL 动态类型支持栈](../images/ros_idl_api_stack_dynamic.png)
 
-上图显示了用户定义的流量 `rosidl` 用于生成的用户面对代码。它与静态类型支持的图表非常相似,并且仅以图的左手侧代表类型支持的生成方式有所不同。在动态类型中, `.msg` 文件直接转换为面临代码的用户。
+*图：从 `rosidl` 文件到用户代码的“动态”类型支持生成流程。*
 
-这个代码也是中间软件不可知的,因为它只包含关于信件的元信息。 实际进行工作的功能, 如发布到一个主题, 是信件类型的通用功能, 并且会给中间软件进行任何必要的呼叫 。 [APIs 辅助程序](../../Glossary.md#term-API)。请注意,该方法不是dds供应商提供类型支持代码的特定软件包,而是对每种语言都有中间软件不可知软件包,例如。 `rosidl_typesupport_introspection_c` 财务报告和财务报告 `rosidl_typesupport_introspection_cpp`。该词 `introspection` 软件包名称的一部分是指能够用生成的元数据对消息类型进行回顾。这是基本能力,能够对“向一个主题”等功能进行通用执行。
+上图展示了从用户定义的 `rosidl` 文件到生成用户代码的过程。它与静态类型支持的流程非常相似，区别仅在图左侧所示的类型支持生成方式。在动态类型支持中，`.msg` 文件直接转换为用户代码。
 
-这个方法的优点是所有生成的代码都是中件不可知的,这意味着只要允许动态类型支持,它就可以被重复用于不同的中件执行,这也会导致生成的代码较少,从而减少编译时间和代码大小.
+这些代码只包含消息的元信息，因此同样与中间件无关。实际执行操作（例如向话题发布消息）的函数适用于各种消息类型，并在必要时调用特定中间件的 API。静态类型支持由 DDS 供应商专用的软件包提供代码；动态类型支持则为每种语言提供与中间件无关的软件包，例如 `rosidl_typesupport_introspection_c` 和 `rosidl_typesupport_introspection_cpp`。软件包名称中的 `introspection` 指的是使用生成的消息类型元数据，对任意消息实例进行内省的能力。这正是以通用方式实现“向话题发布消息”等功能的基础。
 
-然而,动态类型支持需要基础的中间软件支持类似形式的动态类型支持。在DDS的情况下,DDS-XTypes标准允许使用元信息而不是生成代码发布消息。DDS-XTypes,或类似的东西,需要在基础中间软件中支持动态类型支持。此外,这种类型支持方法通常比静态类型支持替代方法慢。静态类型支持中的特定类型生成代码可以被写入来提高效率,因为它不需要在消息类型的元数据上进行排列,以完成序列化等事务。
+这种方式的优点是：所有生成的代码都与中间件无关，只要其他中间件实现支持动态类型支持，就可以复用这些代码。此外，生成代码更少，也降低了编译时间和代码体积。
+
+不过，动态类型支持要求底层中间件具备类似的能力。在 DDS 中，DDS-XTypes 标准允许使用元信息而非生成代码来发布消息。因此，底层中间件必须支持 DDS-XTypes 或类似机制。另外，动态类型支持通常比静态类型支持更慢。静态类型支持的类型专用生成代码，在序列化等操作中无需遍历类型元数据，因此可以实现更高的效率。
 
 <span id="the-rcl-repository"></span>
 
-## 那个... `rcl` 存储器
+## `rcl` 仓库
 
-ROS客户端库界面(`rcl` [API](../../Glossary.md#term-API))可用于: [客户端库](../../Glossary.md#term-client_library) (e.g. `rclc`, `rclcpp`, `rclpy`,以避免重复逻辑和特性。 `rcl` [API](../../Glossary.md#term-API),客户端库可以更小,更相互一致. 客户端库的某些部分被故意省去. `rcl` [API](../../Glossary.md#term-API) 因为应该使用语言平庸的方法来实施系统的这些部分。一个很好的例子就是执行模式。 `rcl` 。相反,客户端库应该提供语言平庸的解决方案,比如 `pthreads` 中文本无需改动。 `std::thread` 在 C++11 中,以及 `threading.Thread` 在 Python 中。一般为 `rcl` 界面提供了非特定语言模式且非特定信息类型的功能。
+ROS 客户端库接口（`rcl` API）可供 `rclc`、`rclcpp`、`rclpy` 等客户端库使用，避免重复实现逻辑和功能。复用 `rcl` API 能使客户端库更精简，也使不同库之间更一致。某些功能有意不纳入 `rcl` API，因为这些部分应采用符合各语言习惯的方式实现。执行模型就是一个例子：`rcl` 完全不涉及它，而由客户端库提供符合语言习惯的方案，如 C 中的 `pthreads`、C++11 中的 `std::thread` 和 Python 中的 `threading.Thread`。总体而言，`rcl` 提供既不依赖特定语言模式、也不依赖特定消息类型的函数。
 
-那个... `rcl` [API](../../Glossary.md#term-API) 位于该 [ros2/rcl](https://github.com/ros2/rcl) 运行于 [GitHub](https://github.com/) 并包含作为 C 标题的接口。 `rcl` C 执行由 `rcl` [软件包](../../Glossary.md#term-package) 此执行可避免直接与中间软件接触,而是使用 `rmw` 财务报告和财务报告 `rosidl` [APIs 辅助程序](../../Glossary.md#term-API).
+`rcl` API 位于 GitHub 上的 [ros2/rcl](https://github.com/ros2/rcl) 仓库，以 C 头文件定义接口。同一仓库中的 `rcl` 软件包提供其 C 实现。该实现通过 `rmw` 和 `rosidl` API 工作，避免直接接触中间件。
 
-完整定义: `rcl` [API](../../Glossary.md#term-API),见 [rcl 文档](http://docs.ros.org/en/rolling/p/rcl/).
+完整 API 定义参见 [rcl 文档](http://docs.ros.org/en/rolling/p/rcl/)。
 
 <span id="the-rmw-repository"></span>
 
-## 那个... `rmw` 存储器
+## `rmw` 仓库
 
-ROS 中间软件接口(`rmw` [API](../../Glossary.md#term-API))是顶部构建ROS所需的最低限度的原始中件能力. 不同中件执行的供应商必须执行这个接口,以便支持顶部的整个ROS堆栈. 目前大多数中件执行是针对不同的DDS供应商的.
+ROS 中间件接口（`rmw` API）定义了在中间件之上构建 ROS 所需的最少基础能力。不同中间件的提供者必须实现此接口，才能支撑完整的 ROS 软件栈。目前，大多数中间件实现面向不同的 DDS 供应商。
 
-那个... `rmw` [API](../../Glossary.md#term-API) 位于该 [ros2/rmw](https://github.com/ros2/rmw) 数据库。 `rmw` [软件包](../../Glossary.md#term-package) 包含定义接口的 C 标题,其执行由各种 [软件包](../../Glossary.md#term-package) 用于不同DDS供应商的 Rmw 执行。
+`rmw` API 位于 [ros2/rmw](https://github.com/ros2/rmw) 仓库。`rmw` 软件包包含定义接口的 C 头文件；接口的实际实现由面向不同 DDS 供应商的各个 rmw 实现软件包提供。
 
-定义: `rmw` [API](../../Glossary.md#term-API),见 [rmw 文件](http://docs.ros.org/en/rolling/p/rmw/).
-
-关于ROS 2如何与不同的中间软件执行集成的更实际的深入概述,参见: [中间软件执行教程](../../Tutorials/Advanced/Creating-An-RMW-Implementation.md).
+API 定义参见 [rmw 文档](http://docs.ros.org/en/rolling/p/rmw/)。关于 ROS 2 与不同中间件集成的深入实践介绍，参见[中间件实现教程](../../Tutorials/Advanced/Creating-An-RMW-Implementation.md)。
 
 <span id="the-rosidl-repository"></span>
 
-## 那个... `rosidl` 存储器
+## `rosidl` 仓库
 
-那个... `rosidl` [API](../../Glossary.md#term-API) 包含一些与信件相关的静态功能和类型,以及定义不同语言信件应生成何种代码。 [API](../../Glossary.md#term-API) 将指定语言,但可能重复使用或可能不重复使用其他语言生成的代码。 [API](../../Glossary.md#term-API) 包含信件数据结构、用于构建、销毁等功能。 [API](../../Glossary.md#term-API) 还将执行一种方法,以获取消息类型的类型支持结构,在发布或签名该消息类型主题时使用该类型。
+`rosidl` API 包含一些与消息有关的静态函数和类型，并规定了针对不同语言应生成哪些消息代码。这些生成代码面向特定语言，可以复用其他语言的生成代码，也可以独立实现。API 规定的生成内容包括消息数据结构、构造和析构函数等，还提供获取消息类型支持结构的方法；发布或订阅该类型的话题时需要使用这一结构。
 
-有几个寄存器在其中发挥作用。 `rosidl` [API](../../Glossary.md#term-API) 执行。
+多个仓库共同参与 `rosidl` API 及其实现。
 
-那个... `rosidl` 寄存器,位于 [GitHub](https://github.com/) 现时 [ros2/rosidl](https://github.com/ros2/rosidl),定义信件 IDL 语法,即: `.msg` 文档, `.srv` 文件等,并包含 [软件包](../../Glossary.md#term-package) 用于解析文件、提供 CMake 基础设施以生成信件中的代码、生成执行不可知代码(标题和源文件)以及建立默认的生成器集。寄存器包含这些 [软件包](../../Glossary.md#term-package):
+GitHub 上的 [ros2/rosidl](https://github.com/ros2/rosidl) 仓库定义消息 IDL 语法，即 `.msg`、`.srv` 等文件的语法，并包含用于解析文件、提供消息代码生成的 CMake 基础设施、生成与实现无关的头文件和源文件，以及确定默认生成器集合的软件包：
 
-- `rosidl_cmake`: 提供 CMake 函数和模块,用于从 `rosidl` 文档,例如: `.msg` 文档, `.srv` 文档等。
+- `rosidl_cmake`：提供根据 `.msg`、`.srv` 等 `rosidl` 文件生成代码的 CMake 函数和模块。
+- `rosidl_default_generators`：定义默认生成器列表，确保这些生成器作为依赖被安装；也可以使用额外注入的生成器。
+- `rosidl_generator_c`：提供根据 `rosidl` 文件生成 C 头文件（`.h`）的工具。
+- `rosidl_generator_cpp`：提供根据 `rosidl` 文件生成 C++ 头文件（`.hpp`）的工具。
+- `rosidl_generator_py`：提供根据 `rosidl` 文件生成 Python 模块的工具。
+- `rosidl_parser`：提供解析 `rosidl` 文件的 Python API。
 
-- `rosidl_default_generators`: 定义默认发电机列表, 以确保它们作为依赖性安装, 但其他注入的发电机也可以使用.
+其他语言的生成器（如 `rosidl_generator_java`）位于外部仓库，但会使用与上述生成器相同的机制，将自身注册为 `rosidl` 生成器。
 
-- `rosidl_generator_c`: 提供生成 C 页眉文件的工具 (`.h`用于: `rosidl` 文档。
+除解析 `rosidl` 文件和生成头文件的软件包外，`rosidl` 仓库还包含为文件中定义的消息类型提供“类型支持”的软件包。类型支持是指解释和操作特定类型的 ROS 消息实例所表示的信息的能力，例如发布消息。它既可以由编译时生成的代码提供，也可以通过内省，根据 `.msg`、`.srv` 等 `rosidl` 文件内容和接收到的数据在运行时实现。在运行时解释消息的情况下，ROS 2 生成的消息代码可以与具体 rmw 实现无关。通过数据内省提供类型支持的软件包包括：
 
-- `rosidl_generator_cpp`: 提供生成 C++ 头文件的工具( )`.hpp`用于: `rosidl` 文档。
+- `rosidl_typesupport_introspection_c`：提供生成 C 代码的工具，以支持 `rosidl` 消息数据类型。
+- `rosidl_typesupport_introspection_cpp`：提供生成 C++ 代码的工具，以支持 `rosidl` 消息数据类型。
 
-- `rosidl_generator_py`: 提供生成 Python 模块的工具 `rosidl` 文档。
+如果类型支持在编译时生成，而不是在运行时通过程序解释实现，就需要使用针对特定 rmw 实现的软件包。这是因为，特定 rmw 实现通常要求按照 DDS 供应商专用的方式存储和操作数据，以便 DDS 实现使用它。详情参见前文的[类型专用接口](#type-specific-interfaces)。
 
-- `rosidl_parser`: 提供 Python 语句 [API](../../Glossary.md#term-API) 用于解析 `rosidl` 文档。
-
-其他语文的发电机,例如: `rosidl_generator_java`,在外部(不同储存库)托管,但将使用上述发电机所用的相同机制,作为“登记”本身的一种。 `rosidl` 发电机。
-
-除上述情况外, [软件包](../../Glossary.md#term-package) 用于解析和生成标题 `rosidl` 文档中, `rosidl` 存储器还包含 [软件包](../../Glossary.md#term-package) 对于文件中定义的信息类型,类型支持是指能够解释和操纵特定类型的ROS消息实例(例如,发布消息)所代表的信息。类型支持可以是编译时生成的代码提供的,也可以是程序上基于编辑时的内容提供的。 `rosidl` 文档,例如 `.msg` 或 时 间 `.srv` 文件,以及收到的数据,通过对数据的回顾。对于后者,如果类型支持是通过对消息的运行时间解释来完成的,ROS 2生成的消息代码可以对rmw执行进行不可知论。通过对数据的回顾来提供这种类型的支持的软件包有:
-
-- `rosidl_typesupport_introspection_c`: 提供生成用于支持的 C 代码的工具 `rosidl` 消息数据类型。
-
-- `rosidl_typesupport_introspection_cpp`: 提供生成支持的 C++ 代码的工具 `rosidl` 消息数据类型。
-
-如果在编译时生成类型支持而不是程序生成,则需要使用一个针对rmw执行的软件包。这是因为,典型的rmw执行需要以DDS供应商特有的方式存储和操纵数据,以便DDS执行加以利用。 [类型 特定接口](#type-specific-interfaces) 详见上文一节。
-
-欲了解更多关于《公约》中具体内容的信息。 `rosidl` [API](../../Glossary.md#term-API) (静态和生成)参见此页:
+关于 `rosidl` API（静态部分和生成部分）的具体内容，原文在此提到了进一步阅读的页面，但未提供链接。
 
 <span id="the-rcutils-repository"></span>
 
-## 那个... `rcutils` 存储器
+## `rcutils` 仓库
 
-ROS 2 C 公用事业`rcutils`)为C. [API](../../Glossary.md#term-API) 由整个ROS 2 代码库中使用的宏、函数和数据结构组成。这些主要用于错误处理、命令行参数解析和记录,这些不是客户端或中间软件层所特有的,可以由两者共享。
+ROS 2 C 工具库（`rcutils`）是由宏、函数和数据结构组成的 C API，在 ROS 2 代码中广泛使用。它主要用于错误处理、命令行参数解析和日志记录等不专属于客户端层或中间件层的功能，因此可由两层共用。
 
-那个... `rcutils` [API](../../Glossary.md#term-API) 执行地点在 [ros2/rcutils](https://github.com/ros2/rcutils) 运行于 [GitHub](https://github.com/) 它包含作为 C 标题的接口。
+`rcutils` API 及其实现位于 GitHub 上的 [ros2/rcutils](https://github.com/ros2/rcutils) 仓库，接口通过 C 头文件定义。
 
-完整定义: `rcutils` [API](../../Glossary.md#term-API),见 [rcutils 文档](https://docs.ros.org/en/rolling/p/rcutils/).
+完整 API 定义参见 [rcutils 文档](https://docs.ros.org/en/rolling/p/rcutils/)。

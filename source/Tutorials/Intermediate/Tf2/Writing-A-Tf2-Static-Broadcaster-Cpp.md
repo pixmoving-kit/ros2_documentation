@@ -1,91 +1,80 @@
----
-translation_status: machine_translated
-source: Tutorials/Intermediate/Tf2/Writing-A-Tf2-Static-Broadcaster-Cpp.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="writing-a-static-broadcaster-c"></span>
 
 # 编写静态广播器（C++）
 
-**目标：** 学习如何向 tf2 播放静态坐标帧.
+**目标：** 学习向 tf2 广播静态坐标系。
 
 **教程级别：** 中级
 
-**用时：** 15分钟
+**预计耗时：** 15 分钟
 
 <span id="background"></span>
 
 ## 背景
 
-公布静态变换对于定义机器人基础与其传感器或非移动部件之间的关系很有用,例如,在激光扫描仪中心一个框架里进行激光扫描测量是最容易解释的.
+静态变换用于描述机器人基座与传感器或不动部件之间的关系。例如，在以激光扫描器中心为原点的坐标系中理解扫描测量值最为方便。
 
-这是一个独立的教程,涵盖静态变换的基本内容,它由两部分组成。在第一部分,我们将写出代码,发布静态变换到 tf2. 在第二部分,我们将解释如何使用命令行。 `static_transform_publisher` 可执行工具在 `tf2_ros`.
+这是介绍静态变换基础的独立教程，分为两部分：先编写代码发布静态变换，再介绍 `tf2_ros` 中的命令行工具 `static_transform_publisher`。
 
-在接下来的两个教程中,我们会写出代码来复制演示文稿 [tf2 介绍](Introduction-To-Tf2.md) 教程。在此之后,以下的教程侧重于扩展具有更高级的 tf2 特性的演示。
+后面两篇教程会编写代码，复现 [tf2 入门](Introduction-To-Tf2.md)中的示例，再进一步扩展更高级的 tf2 功能。
 
 <span id="prerequisites"></span>
 
 ## 前提条件
 
-在之前的教程中,你学会了如何 [创建工作空间](../../Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.md) 财务报告和财务报告 [创建软件包](../../Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.md).
+应已学习[创建工作空间](../../Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.md)和[创建软件包](../../Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.md)。
 
 <span id="tasks"></span>
 
-## 操作步骤
+## 任务
 
 <span id="create-a-package"></span>
 
 ### 1 创建软件包
 
-首先我们将创建一个用于此教程和以下教程的软件包。 软件包叫做 `learning_tf2_cpp` 将依赖于 `geometry_msgs`, `rclcpp`, `tf2`, `tf2_ros`,以及 `turtlesim`。此教程的代码被存储 [这儿](https://raw.githubusercontent.com/ros/geometry_tutorials/rolling/turtle_tf2_cpp/src/static_turtle_tf2_broadcaster.cpp).
+创建本篇及后续教程使用的 `learning_tf2_cpp` 包，它依赖 `geometry_msgs`、`rclcpp`、`tf2`、`tf2_ros` 和 `turtlesim`。完整代码见[源文件](https://raw.githubusercontent.com/ros/geometry_tutorials/rolling/turtle_tf2_cpp/src/static_turtle_tf2_broadcaster.cpp)。
 
-打开一个新的终端 [源代码 ROS 2 安装](../../Beginner-CLI-Tools/Configuring-ROS2-Environment.md) 这样一来 `ros2` 命令将会起作用。导航到工作空间 `src` 文件夹并创建新软件包 :
+打开新终端，[加载 ROS 2 环境](../../Beginner-CLI-Tools/Configuring-ROS2-Environment.md)，进入工作空间的 `src` 目录并创建软件包：
 
-``` console
+```console
 $ ros2 pkg create --build-type ament_cmake --license Apache-2.0 --dependencies geometry_msgs rclcpp tf2 tf2_ros turtlesim -- learning_tf2_cpp
 ```
 
-您的终端将返回一个消息, 以验证您的软件包的创建 `learning_tf2_cpp` 以及所有必要的文件和文件夹。
+终端会确认 `learning_tf2_cpp` 及所需文件和目录已创建。
 
 <span id="write-the-static-broadcaster-node"></span>
 
-### 2 写入静态播音器节点
+### 2 编写静态广播器节点
 
-让我们首先创建源文件。 `src/learning_tf2_cpp/src` 目录通过输入以下命令来下载示例静态播音器代码:
+在 `src/learning_tf2_cpp/src` 目录中下载示例源码。
 
-##### Linux
+Linux：
 
-``` console
+```console
 $ wget https://raw.githubusercontent.com/ros/geometry_tutorials/rolling/turtle_tf2_cpp/src/static_turtle_tf2_broadcaster.cpp
 ```
 
-##### macOS
+macOS：
 
-``` console
+```console
 $ wget https://raw.githubusercontent.com/ros/geometry_tutorials/rolling/turtle_tf2_cpp/src/static_turtle_tf2_broadcaster.cpp
 ```
 
-##### Windows
+Windows 命令提示符：
 
-在 Windows 命令行提示中 :
-
-``` console
+```console
 $ curl -sk https://raw.githubusercontent.com/ros/geometry_tutorials/rolling/turtle_tf2_cpp/src/static_turtle_tf2_broadcaster.cpp -o static_turtle_tf2_broadcaster.cpp
 ```
 
-或于权壳中:
+或 PowerShell：
 
-``` console
+```console
 $ curl https://raw.githubusercontent.com/ros/geometry_tutorials/rolling/turtle_tf2_cpp/src/static_turtle_tf2_broadcaster.cpp -o static_turtle_tf2_broadcaster.cpp
 ```
 
-使用您首选的文本编辑器打开文件 。
+用编辑器打开 `static_turtle_tf2_broadcaster.cpp`：
 
-``` C++
+```C++
 #include <memory>
 
 #include "geometry_msgs/msg/transform_stamped.hpp"
@@ -161,52 +150,46 @@ int main(int argc, char * argv[])
 }
 ```
 
-> **说明**
->
-> `rclcpp/rclcpp.hpp` 是一个 *便利性* 头部 整个都拉着 `rclcpp` API同时——节点,出版商,订阅,服务,定时器,参数,执行器,速率,等位集,等等——所以每个包含它的翻译单元都是根据它从未使用过的特性编译的.
->
-> 在教程之外, 偏爱只包含您实际使用的 API 特定调用时的页眉 。 例如, `rclcpp::Node` 已声明为 `rclcpp/node.hpp`, `rclcpp::spin` 输入 `rclcpp/executors.hpp`,以及 `rclcpp::init` 财务报告和财务报告 `rclcpp::shutdown` 输入 `rclcpp/utilities.hpp`。保存量最大的是从未创建或旋转节点的翻译单位——标题、插件和辅助工具库,它们只需要像 `rclcpp/qos.hpp` 或 时 间 `rclcpp/time.hpp` - 因为... `rclcpp/node.hpp` 财务报告和财务报告 `rclcpp/executors.hpp` 他们本身就很大。 `rclcpp/rclcpp.hpp` 只不过是这些信头的列表,所以在研究你需要哪个信头的时候,这是一个很好的开始。
+参阅 [rclcpp 便捷头文件说明](../../../_internal/Rclcpp-Convenience-Header-Note.md)。
 
 <span id="examine-the-code"></span>
 
-#### 2.1 审查守则
+#### 2.1 分析代码
 
-现在让我们看看与公布静态龟姿势 tf2 相关的代码。 头几行包括所需的页眉文件。 首先,我们包括 `geometry_msgs/msg/transform_stamped.hpp` 访问 `TransformStamped` 消息类型, 我们将发布到变换树上 。
+下面重点介绍向 tf2 发布海龟静态位姿的部分。首先引入 `TransformStamped` 消息类型，用于向变换树发布消息：
 
-``` C++
+```C++
 #include "geometry_msgs/msg/transform_stamped.hpp"
 ```
 
-事后, `rclcpp` 因此,列入《公约》 `rclcpp::Node` 可使用类。
+再引入 `rclcpp`，以使用其节点类：
 
-``` C++
+```C++
 #include "rclcpp/rclcpp.hpp"
 ```
 
-`tf2::Quaternion` 是四角星的类,为将欧勒角转换成四角星提供了方便的函数,反之亦然。我们还包括 `tf2_ros/static_transform_broadcaster.h` 用于使用 `StaticTransformBroadcaster` 使静态变换的出版变得容易。
+`tf2::Quaternion` 提供欧拉角和四元数互相转换的便捷方法。同时引入 `tf2_ros/static_transform_broadcaster.h`，以使用 `StaticTransformBroadcaster`。
 
-``` C++
+```C++
 #include "tf2/LinearMath/Quaternion.h"
 #include "tf2_ros/static_transform_broadcaster.h"
 ```
 
-那个... `StaticFramePublisher` 类构造器以名称初始化节点 `static_turtle_tf2_broadcaster`. 然后 . . . . . `StaticTransformBroadcaster` 被创建,在启动时会发出一个静态转换。
+`StaticFramePublisher` 构造函数将节点名设为 `static_turtle_tf2_broadcaster`，然后创建 `StaticTransformBroadcaster`，在启动时发送一次静态变换。
 
-``` C++
+```C++
 tf_static_broadcaster_ = std::make_shared<tf2_ros::StaticTransformBroadcaster>(this);
 
 this->make_transforms(transformation);
 ```
 
-在这里,我们创建 `TransformStamped` 对象,它将成为我们一旦有人居住后发送的信息。在传递实际变换值之前,我们需要给它适当的元数据。
+创建待发送的 `TransformStamped` 对象。在填写实际变换值之前，先设置元数据：
 
-1.  我们需要给正在出版的变形图贴上时间戳, `this->get_clock()->now()`
+1. 用 `this->get_clock()->now()` 设置当前时间戳。
+2. 将父坐标系设为 `world`。
+3. 设置子坐标系名称。
 
-2.  那么我们需要设定我们所创建的链接的父框架的名称,在这种情况下 `world`
-
-3.  最后,我们需要设定我们创建的链接的儿童框架的名称。
-
-``` C++
+```C++
 geometry_msgs::msg::TransformStamped t;
 
 t.header.stamp = this->get_clock()->now();
@@ -214,9 +197,9 @@ t.header.frame_id = "world";
 t.child_frame_id = transformation[1];
 ```
 
-在这里,我们填充龟的6D姿势(翻译和旋转).
+填入海龟的六维位姿，即平移和旋转：
 
-``` C++
+```C++
 t.transform.translation.x = atof(transformation[2]);
 t.transform.translation.y = atof(transformation[3]);
 t.transform.translation.z = atof(transformation[4]);
@@ -231,37 +214,33 @@ t.transform.rotation.z = q.z();
 t.transform.rotation.w = q.w();
 ```
 
-最后,我们广播静态变换使用 `sendTransform()` 函数。
+最后通过 `sendTransform()` 广播静态变换：
 
-``` C++
+```C++
 tf_static_broadcaster_->sendTransform(t);
 ```
 
 <span id="update-package-xml"></span>
 
-#### 2.2 更新软件包.xml
+#### 2.2 更新 package.xml
 
-导航一个关卡返回 `src/learning_tf2_cpp` 目录,其中 `CMakeLists.txt` 财务报告和财务报告 `package.xml` 已经为您创建文件 。
+返回 `src/learning_tf2_cpp`，其中已有 `CMakeLists.txt` 和 `package.xml`。用编辑器打开 `package.xml`，按照[创建软件包](../../Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.md)教程，填写 `<description>`、`<maintainer>` 和 `<license>`：
 
-打开 `package.xml` 与您的文本编辑器。
-
-如本报告所述, [创建软件包](../../Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.md) 教程,确保填入 `<description>`, `<maintainer>` 财务报告和财务报告 `<license>` 标签 :
-
-``` xml
+```xml
 <description>Learning tf2 with rclcpp</description>
 <maintainer email="you@email.com">Your Name</maintainer>
 <license>Apache License 2.0</license>
 ```
 
-确保保存文件 。
+保存文件。
 
 <span id="cmakelists-txt"></span>
 
-#### 2.3 CMakeLists.txt (中文(简体) ).
+#### 2.3 CMakeLists.txt
 
-将可执行文件添加到 CMakeLists.txt 并命名 `static_turtle_tf2_broadcaster`,您稍后将使用 `ros2 run`.
+添加名为 `static_turtle_tf2_broadcaster` 的可执行目标，之后通过 `ros2 run` 调用：
 
-``` console
+```console
 add_executable(static_turtle_tf2_broadcaster src/static_turtle_tf2_broadcaster.cpp)
 ament_target_dependencies(
    static_turtle_tf2_broadcaster
@@ -272,9 +251,9 @@ ament_target_dependencies(
 )
 ```
 
-最后,添加: `install(TARGETS…)` 第 15 条 `ros2 run` 能找到您的可执行文件 :
+最后添加安装规则，使 `ros2 run` 能找到程序：
 
-``` console
+```console
 install(TARGETS
    static_turtle_tf2_broadcaster
    DESTINATION lib/${PROJECT_NAME})
@@ -284,67 +263,59 @@ install(TARGETS
 
 ### 3 构建
 
-运行是好的做法 `rosdep` 在工作空间的根中, 在构建前检查缺失的依赖性 :
+构建前，建议在工作空间根目录运行 `rosdep` 检查缺失依赖。
 
-##### Linux
+Linux：
 
-``` console
+```console
 $ rosdep install -i --from-path src --rosdistro rolling -y
 ```
 
-##### macOS
+本教程的 macOS 和 Windows 流程需自行安装 `geometry_msgs`、`turtlesim`，因为此处的 rosdep 步骤仅用于 Linux。
 
-rosdep 只运行在 Linux 上, 因此您需要安装 `geometry_msgs` 财务报告和财务报告 `turtlesim` 依附关系
+仍在工作空间根目录构建。
 
-##### Windows
+Linux：
 
-rosdep 只运行在 Linux 上, 因此您需要安装 `geometry_msgs` 财务报告和财务报告 `turtlesim` 依附关系
-
-仍然在工作空间的根部,构建您的新软件包:
-
-##### Linux
-
-``` console
+```console
 $ colcon build --packages-select learning_tf2_cpp
 ```
 
-##### macOS
+macOS：
 
-``` console
+```console
 $ colcon build --packages-select learning_tf2_cpp
 ```
 
-##### Windows
+Windows：
 
-``` console
+```console
 $ colcon build --merge-install --packages-select learning_tf2_cpp
 ```
 
-打开新终端, 导航到您工作空间的根, 并源代码设置文件 :
+打开新终端，进入工作空间根目录并加载环境。
 
-##### Linux
+Linux：
 
-``` console
+```console
 $ . install/setup.bash
 ```
 
-##### macOS
+macOS：
 
-``` console
+```console
 $ . install/setup.bash
 ```
 
-##### Windows
+Windows 命令提示符：
 
-在 Windows 命令行提示中 :
-
-``` console
+```console
 $ call install\setup.bat
 ```
 
-或于权壳中:
+或 PowerShell：
 
-``` console
+```console
 $ .\install\setup.ps1
 ```
 
@@ -352,17 +323,17 @@ $ .\install\setup.ps1
 
 ### 4 运行
 
-现在运行 `static_turtle_tf2_broadcaster` 节点 :
+运行静态广播器节点：
 
-``` console
+```console
 $ ros2 run learning_tf2_cpp static_turtle_tf2_broadcaster mystaticturtle 0 0 1 0 0 0
 ```
 
-这个是海龟的姿势 播放给 `mystaticturtle` 将1米的高度浮在地上
+这将发布 `mystaticturtle` 的位姿，使其位于地面上方 1 米。
 
-我们现在可以检查一下静态变换是否已经通过回荡 `tf_static` 主题。如果一切都好,你应该看到一个单一的静态转变:
+查看 `tf_static` 话题以验证发布成功，正常情况下应看到一个静态变换：
 
-``` console
+```console
 $ ros2 topic echo /tf_static
 transforms:
 - header:
@@ -385,69 +356,32 @@ transform:
 
 <span id="the-proper-way-to-publish-static-transforms"></span>
 
-## 公布静态变换的正确方式
+## 推荐的静态变换发布方式
 
-此教程旨在显示 `StaticTransformBroadcaster` 用于发布静态变换 。 在您真正的开发过程中, 您不需要自己写这个代码, 并且应该使用专用代码 。 `tf2_ros` 用于实现该目标的工具。 `tf2_ros` 提供名为可执行文件 `static_transform_publisher` ,可以用作命令行工具或节点,您可以添加到您的发射文件中。
+本教程通过编写代码展示 `StaticTransformBroadcaster` 的用法。实际开发中，通常无须自己编写这些代码，可直接使用 `tf2_ros` 提供的 `static_transform_publisher`，既能从命令行运行，也可作为节点加入启动文件。
 
-以下命令发布静态坐标转换为 tf2 , 从而在 z 中抵消 1 公尺, 且框架之间没有旋转 `world` 财务报告和财务报告 `mystaticturtle`在ROS 2中,卷/pitch/yaw分别指x/y/z轴的旋转.
+以下命令发布 `world` 和 `mystaticturtle` 之间的静态变换：z 方向偏移 1 米，无旋转。ROS 2 中 roll、pitch、yaw 分别表示绕 x、y、z 轴的旋转。
 
-``` console
+```console
 $ ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 1 --yaw 0 --pitch 0 --roll 0 --frame-id world --child-frame-id mystaticturtle
 ```
 
-以下命令发布相同的静态坐标转换为tf2,但使用四角表示进行旋转.
+下面使用四元数表示旋转，发布相同的变换：
 
-``` console
+```console
 $ ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 1 --qx 0 --qy 0 --qz 0 --qw 1 --frame-id world --child-frame-id mystaticturtle
 ```
 
-`static_transform_publisher` 既作为命令行工具设计,供手工使用,也供内部使用。 `launch` 用于设置静态变换的文件。例如:
+启动文件中的使用示例：
 
-##### XML 数据
+- [XML](launch/static_transform_publisher_launch.xml)
+- [YAML](launch/static_transform_publisher_launch.yaml)
+- [Python](launch/static_transform_publisher_launch.py)
 
-``` xml
-<launch>
-  <node
-    pkg="tf2_ros" exec="static_transform_publisher"
-    args="--x 0 --y 0 --z 1 --yaw 0 --pitch 0 --roll 0 --frame-id world --child-frame-id mystaticturtle"
-  />
-</launch>
-```
-
-##### 也门
-
-``` yaml
-launch:
-  - node:
-      pkg: "tf2_ros"
-      exec: "static_transform_publisher"
-      args: "--x 0 --y 0 --z 1 --yaw 0 --pitch 0 --roll 0 --frame-id world --child-frame-id mystaticturtle"
-```
-
-##### Python
-
-``` python
-from launch import LaunchDescription
-from launch_ros.actions import Node
-
-
-def generate_launch_description():
-    return LaunchDescription([
-        Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            arguments=[
-                '--x', '0', '--y', '0', '--z', '1',
-                '--yaw', '0', '--pitch', '0', '--roll',
-                '0', '--frame-id', 'world', '--child-frame-id', 'mystaticturtle']
-        ),
-    ])
-```
-
-请注意,除下列情况外,其他所有论据均不在此列: `--frame-id` 财务报告和财务报告 `--child-frame-id` 是可选的; 如果未指定特定选项, 则将假定身份 。
+除 `--frame-id` 和 `--child-frame-id` 外，其余参数均可省略。未指定的选项按单位变换的相应分量处理。
 
 <span id="summary"></span>
 
 ## 小结
 
-在这个教程中,你学会了静态变换如何对定义帧之间的静态关系有用,比如: `mystaticturtle` 与《公约》第2条有关的 `world` 此外,您还学习了静态变换如何有助于理解传感器数据,例如激光扫描仪,将数据与一个共同坐标帧联系起来。最后,您自己写了节点,以发布静态变换到 tf2,并学会了如何使用静态变换来发布所需的静态变换 `static_transform_publisher` 可执行文件并启动文件 。
+本教程介绍了如何用静态变换定义坐标系间固定的关系，例如 `mystaticturtle` 相对于 `world` 的关系；也介绍了将激光扫描器等传感器数据关联到公共坐标系的用途。你编写了静态变换发布节点，并学习了通过 `static_transform_publisher` 和启动文件发布所需变换。

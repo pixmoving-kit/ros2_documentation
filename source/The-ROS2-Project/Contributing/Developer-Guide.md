@@ -3,10 +3,6 @@ translation_status: machine_translated
 source: The-ROS2-Project/Contributing/Developer-Guide.rst
 ---
 
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="ros-2-developer-guide"></span>
 
 # ROS 2 开发者指南

@@ -1,48 +1,35 @@
----
-translation_status: machine_translated
-source: The-ROS2-Project/Marketing.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
-<span id="marketing"></span> <span id="id1"></span>
+<span id="marketing"></span>
+<span id="id1"></span>
 
 # 宣传资料
 
 <span id="general-use-ros-artwork"></span>
 
-## 一般使用 ROS 艺术作品
+## 通用 ROS 图像素材
 
-ROS 2媒体套件,包括品牌语言,高分辨率ROS标识图形,以及发布图像,可见于 [ROS艺术库.](https://github.com/ros-infrastructure/artwork) 请参看ROS艺术作品的这个寄存器和我们的品牌指南.
+ROS 2 媒体资料包包含品牌文案、高分辨率 ROS 标志和发行版图像，可在 [ROS 图像素材仓库](https://github.com/ros-infrastructure/artwork)中找到。ROS 图像素材及品牌使用规范均请参考该仓库。
 
 <span id="stickers-posters-and-canvas-prints"></span>
 
-## 贴纸、海报和印画
+## 贴纸、海报和画布印刷品
 
-打开 Robotics 的在线商店前端主机 [(原始内容存档于2017-09-21). Zlazzing.com](https://www.zazzle.com/store/openrobotics?rf=238583394320947238) 以各种形式提供艺术品。
+Open Robotics 在 [Zazzle.com](https://www.zazzle.com/store/openrobotics?rf=238583394320947238) 开设了在线商店，提供多种形式的图像印刷品。
 
-- [海报](https://www.zazzle.com/store/openrobotics/products?dp=0&cg=196892405499231339&rf=238583394320947238) 打印在纸上,可选择尺寸。
-
-- [画册打印](https://www.zazzle.com/store/openrobotics/products?dp=0&cg=196964974640243022&rf=238583394320947238) 用可选择的尺寸打印在包裹的画布上。
-
-- [标签页](https://www.zazzle.com/store/openrobotics/products?dp=0&cg=196936312033387169&rf=238583394320947238) 打印在一张工作表上,小的每张20张,大大的每张6张。
+- [海报](https://www.zazzle.com/store/openrobotics/products?dp=0&cg=196892405499231339&rf=238583394320947238)：纸质印刷，可选尺寸。
+- [画布印刷品](https://www.zazzle.com/store/openrobotics/products?dp=0&cg=196964974640243022&rf=238583394320947238)：绷框画布印刷，可选尺寸。
+- [贴纸页](https://www.zazzle.com/store/openrobotics/products?dp=0&cg=196936312033387169&rf=238583394320947238)：小号每页 20 张，大号每页 6 张。
 
 <span id="brochure-why-ros-2"></span>
 
-## 小册子:为什么是ROS 2?
+## 宣传册：为什么选择 ROS 2？
 
-利用该小册子宣传《规则2》的目标和特点,并鼓励采用该手册。
+可以使用这份宣传册介绍 ROS 2 的目标和功能，鼓励更多人采用 ROS 2。
 
-许可证 : [CC BY-ND 4.0 (英语).](https://creativecommons.org/licenses/by-nd/4.0/)
+许可证：[CC BY-ND 4.0](https://creativecommons.org/licenses/by-nd/4.0/)。
 
-可用格式 :
+可用格式：
 
-- [`A4 (for web/email)`](Marketing/documents/ros2-brochure-a4-web.pdf)
-
-- [`A4 (for print)`](Marketing/documents/ros2-brochure-a4-print.pdf)
-
-- [`US Letter (for web/email)`](Marketing/documents/ros2-brochure-ltr-web.pdf)
-
-- [`US Letter (for print)`](Marketing/documents/ros2-brochure-ltr-print.pdf)
+- [A4（网页/电子邮件版）](Marketing/documents/ros2-brochure-a4-web.pdf)
+- [A4（印刷版）](Marketing/documents/ros2-brochure-a4-print.pdf)
+- [US Letter（网页/电子邮件版）](Marketing/documents/ros2-brochure-ltr-web.pdf)
+- [US Letter（印刷版）](Marketing/documents/ros2-brochure-ltr-print.pdf)

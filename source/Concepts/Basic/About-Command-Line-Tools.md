@@ -1,81 +1,53 @@
----
-translation_status: machine_translated
-source: Concepts/Basic/About-Command-Line-Tools.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="introspection-with-command-line-tools"></span>
 
 # 使用命令行工具进行内省
 
-ROS 2包括一套指令线工具,用于回顾ROS 2系统.
+ROS 2 提供了一组命令行工具，用于查看和检查 ROS 2 系统的运行状态。
 
 <span id="usage"></span>
 
-## 使用量
+## 用法
 
-工具的主要切入点是命令 `ros2`,它本身有各种子命令,用于回顾和与节点,主题,服务等合作.
+这些工具的主入口是 `ros2` 命令。它包含多个子命令，用于检查和操作节点、话题、服务等实体。
 
-查看所有可用的子命令运行 :
+查看所有可用子命令：
 
-``` console
+```console
 $ ros2 --help
 ```
 
-可用子命令的例子包括:
+可用的子命令包括：
 
-- `action`: 内视/与ROS动作互动
-
-- `bag`: 记录/玩一个罗什包
-
-- `component`: 管理组件容器
-
-- `daemon`: 内视/配置 ROS 2 守护进程
-
-- `doctor`:检查ROS的设置以了解潜在的问题
-
-- `interface`: 显示关于ROS接口的信息
-
-- `launch`: 运行/检查发射文件
-
-- `lifecycle`: 有管理寿命周期的内视/管理节点
-
-- `multicast`: 多播调试命令
-
-- `node`: 内视ROS节点
-
-- `param`: 节点上的内视/配置参数
-
-- `pkg`: 内视ROS软件包
-
-- `plugin`: 内视ROS插件
-
-- `run`: 运行 ROS 节点
-
-- `security`: 配置安全设置
-
-- `service`:内视/呼叫ROS服务
-
-- `test`: 进行ROS发射测试
-
-- `topic`:回顾/介绍ROS专题
-
-- `trace`: 追踪工具以获取关于ROS节点执行的信息(仅在Linux上可用)
-
-- `wtf`: 一个别名 `doctor`
+- `action`：检查 ROS 动作并与之交互。
+- `bag`：录制或回放 rosbag。
+- `component`：管理组件容器。
+- `daemon`：检查或配置 ROS 2 守护进程。
+- `doctor`：检查 ROS 配置中的潜在问题。
+- `interface`：显示 ROS 接口信息。
+- `launch`：运行或检查启动文件。
+- `lifecycle`：检查或管理具有受控生命周期的节点。
+- `multicast`：多播调试命令。
+- `node`：检查 ROS 节点。
+- `param`：检查或配置节点参数。
+- `pkg`：检查 ROS 软件包。
+- `plugin`：检查 ROS 插件。
+- `run`：运行 ROS 节点。
+- `security`：配置安全设置。
+- `service`：检查或调用 ROS 服务。
+- `test`：运行 ROS 启动测试。
+- `topic`：检查 ROS 话题或发布消息。
+- `trace`：追踪节点执行情况，仅在 Linux 上可用。
+- `wtf`：`doctor` 的别名。
 
 <span id="example"></span>
 
 ## 示例
 
-要使用命令行工具生成典型的谈话者-听众示例, `topic` 子命令可以用于发布和回声某个主题上的信息。
+可以使用 `topic` 子命令向话题发布消息并显示收到的消息，从而通过命令行工具实现典型的 talker-listener 示例。
 
-在一个终端发布信件,地址是:
+在一个终端中发布消息：
 
-``` console
+```console
 $ ros2 topic pub /chatter std_msgs/msg/String "data: Hello world"
 publisher: beginning loop
 publishing #1: std_msgs.msg.String(data='Hello world')
@@ -83,9 +55,9 @@ publishing #1: std_msgs.msg.String(data='Hello world')
 publishing #2: std_msgs.msg.String(data='Hello world')
 ```
 
-在另一个终端收到的回声信息有:
+在另一个终端中显示收到的消息：
 
-``` console
+```console
 $ ros2 topic echo /chatter
 data: Hello world
 
@@ -94,36 +66,44 @@ data: Hello world
 
 <span id="ros-2-daemon-background-discovery-service"></span>
 
-## ROS 2 守护进程: 背景发现服务
+## ROS 2 守护进程：后台发现服务
 
-ROS 2使用分布式的发现过程来连接节点,由于这个过程目的不使用集中的发现机制,ROS节点需要时间才能发现ROS图中所有其他参与者. 为了解决这个问题,ROS 2运行一个背景守护进程,保存关于ROS图的信息,以提供更快的查询响应,如节点名称列表.
+ROS 2 通过分布式发现机制让节点相互连接。
+这一机制有意避免使用集中式发现，因此节点可能需要一段时间才能发现 ROS 图中的所有其他参与者。
+为此，ROS 2 运行一个后台守护进程来维护 ROS 图信息，从而更快地响应节点名称列表等查询。
 
-ROS 2 守护进程在您首先使用命令行工具时自动启动, 如 `ros2 node list`, `ros2 topic list`,或者其他反省命令。如果没有守护进程正在运行,这些工具将在执行请求的命令之前,在背景中即时执行一个新的守护进程。
+首次使用 `ros2 node list`、`ros2 topic list` 等内省命令时，ROS 2 守护进程会自动启动。
+如果当前没有运行中的守护进程，工具会先在后台创建一个，再执行请求的命令。
 
-守护进程使用本地主机网络接口( 127. 0.0.1) 进行通信, 并使用 [ROS_DOMAIN_ID](../Intermediate/About-Domain-ID.md) 环境变量作为端口数的偏移。这意味着如果您想要控制特定的守护进程实例(例如,使用 `ros2 daemon stop`),您必须保证您的 [ROS_DOMAIN_ID](../Intermediate/About-Domain-ID.md) 匹配守护进程所用的域 ID。 不同 [ROS_DOMAIN_ID](../Intermediate/About-Domain-ID.md) 值将导致在不同端口运行单独的守护进程。
+守护进程通过本地主机网络接口（127.0.0.1）通信，并使用 [ROS_DOMAIN_ID](../Intermediate/About-Domain-ID.md) 环境变量的值作为端口号偏移量。
+因此，要控制某个特定守护进程实例，例如运行 `ros2 daemon stop`，必须确保当前的 `ROS_DOMAIN_ID` 与该实例使用的域 ID 一致。
+不同的 `ROS_DOMAIN_ID` 值对应不同端口上的独立守护进程实例。
 
-你跑得开 `ros2 daemon --help` 用于与守护进程互动的更多选项,包括启动、停止或检查守护进程状态的命令。
+运行 `ros2 daemon --help`，可以查看启动、停止、查询状态等更多操作。
 
 <span id="running-the-daemon-in-the-foreground"></span>
 
-### 在前景中运行守护进程
+### 在前台运行守护进程
 
-为了调试目的, 在前台运行 ROS 2 守护进程可以有用, 以便其输出直接打印到 stdout 和 stderr 。 您可以使用 `_ros2_daemon` 命令,这是守护进程本身的切入点:
+调试时，可以让 ROS 2 守护进程在前台运行，将输出直接打印到标准输出和标准错误。
+使用守护进程自身的入口命令 `_ros2_daemon` 即可实现：
 
-``` console
+```console
 $ _ros2_daemon --ros-domain-id 0 --rmw-implementation rmw_fastrtps_cpp
 ```
 
-这将启动守护进程而不执行守护进程, 允许您实时观察所有发现活动和 XML- RPC 请求 。 替换 `--ros-domain-id` 财务报告和财务报告 `--rmw-implementation` 与您的设置相适应的值。
+这样启动的进程不会转入后台，因此可以实时观察发现活动和 XML-RPC 请求。
+请根据实际配置调整 `--ros-domain-id` 和 `--rmw-implementation` 的值。
 
-> **说明**
->
-> 确保停止任何已存在的守护进程实例( Q)`ros2 daemon stop`),在前缘开始一个以避免港口冲突.
+!!! note "说明"
+
+    在前台启动守护进程之前，先用 `ros2 daemon stop` 停止已有实例，避免端口冲突。
 
 <span id="implementation"></span>
 
-## 执行情况
+## 实现
 
-源代码 : `ros2` 命令在 <https://github.com/ros2/ros2cli>.
+`ros2` 命令的源码位于 <https://github.com/ros2/ros2cli>。
 
-那个... `ros2` 工具已作为框架执行,可通过插件扩展。例如, [斜线2](https://github.com/ros2/sros2) 软件包提供 `security` 自动检测到的子命令 `ros2` 工具,如果 `sros2` 软件包已安装。
+`ros2` 工具采用可通过插件扩展的框架。
+例如，[sros2](https://github.com/ros2/sros2) 软件包提供了 `security` 子命令。安装该软件包后，`ros2` 会自动发现这个子命令。

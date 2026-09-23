@@ -1,47 +1,41 @@
----
-translation_status: machine_translated
-source: Tutorials/Advanced/Simulators/MVSim/Defining-Worlds-MVSim.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="defining-worlds-robots-and-sensors"></span>
+<span id="background"></span>
+<span id="prerequisites"></span>
+<span id="tasks"></span>
+<span id="minimal-world-file"></span>
+<span id="using-predefined-vehicles-and-sensors"></span>
+<span id="world-environment-elements"></span>
+<span id="vehicle-dynamics-models"></span>
+<span id="sensor-noise-and-configuration"></span>
+<span id="additional-features"></span>
+<span id="comparison-with-other-simulators"></span>
+<span id="further-resources"></span>
 
 # 定义世界、机器人和传感器
 
-**目标：** 学习定义MVSim世界文件的基本原理,添加车辆和传感器,以及可用的主要功能.
+**目标：** 学习 MVSim 世界文件的基本定义方法、如何添加车辆和传感器，以及主要可用功能。
 
 **教程级别：** 高级
 
-**用时：** 30分钟
-
-<span id="background"></span>
+**耗时：** 30 分钟
 
 ## 背景
 
-MVSim Worlds在XML文件中定义(`.world.xml`),一个世界文件描述了环境(地面,墙壁,障碍),载体(动力模型,形状,传感器),以及模拟参数(物理时序,GUI选项).
+MVSim 世界由 XML 文件（`.world.xml`）定义。世界文件描述环境（地面、墙壁、障碍物）、车辆（动力学模型、形状、传感器），以及仿真参数（物理时间步长、图形界面选项）。
 
-MVSim 提供了一个预定义的载体和传感器定义库,您可以通过 XML 包括的XML 在您的世界中重新使用。您也可以从头到尾定义全部控制 。
-
-<span id="prerequisites"></span>
+MVSim 提供预定义的车辆和传感器库，可通过 XML 包含机制在世界中复用。你也可以从零定义所有内容，以实现完全控制。
 
 ## 前提条件
 
-你应该完成的 [MVSim 入门](Getting-Started-MVSim.md) 教程并安装了 MVSim 。
+应已安装 MVSim，并完成 [MVSim 入门](Getting-Started-MVSim.md)教程。
 
-<span id="tasks"></span>
-
-## 操作步骤
-
-<span id="minimal-world-file"></span>
+## 任务
 
 ### 1 最小世界文件
 
-以下是一个最小的世界文件,它用一个机器人创造了一个空的环境:
+以下最小世界文件创建一个包含一台机器人的空环境：
 
-``` xml
+```xml
 <mvsim_world version="1.0">
   <!-- Simulation settings -->
   <simul_timestep>5e-3</simul_timestep>
@@ -88,53 +82,39 @@ MVSim 提供了一个预定义的载体和传感器定义库,您可以通过 XML
 </mvsim_world>
 ```
 
-另存为 `my_world.world.xml` 并发射:
+将其保存为 `my_world.world.xml` 并启动：
 
-``` console
+```console
 $ mvsim launch my_world.world.xml
 ```
 
-<span id="using-predefined-vehicles-and-sensors"></span>
+### 2 使用预定义车辆和传感器
 
-### 2 使用预先界定的车辆和传感器
+无需从零开始定义车辆，可以使用 MVSim 自带的预定义文件。这些 XML 文件位于 MVSim 软件包的 `definitions/` 目录中。
 
-而不是从零开始定义车辆, 您可以使用使用 MVSim 的预定义。 这些是 XML 文件 。 `definitions/` MVSim软件包目录.
+**可用车辆：**
 
-**可用车辆:**
+- `turtlebot3_burger.vehicle.xml`：TurtleBot3 Burger（差速驱动）。
+- `jackal.vehicle.xml`：Clearpath Jackal 无人地面车辆（四轮差速驱动）。
+- `ackermann.vehicle.xml`：通用阿克曼转向车辆（类似汽车）。
+- `pickup.vehicle.xml`：皮卡（阿克曼转向）。
+- `agricobiot2.vehicle.xml`：农业机器人（阿克曼传动系统）。
 
-- `turtlebot3_burger.vehicle.xml` - TurtleBot3汉堡(差别驱动器)
+**可用传感器：**
 
-- `jackal.vehicle.xml` - Clearpath Jackal UGV(轮差)
+- `lidar2d.sensor.xml`：通用二维激光扫描仪。
+- `rplidar-a2.sensor.xml`：RPLidar A2。
+- `velodyne-vlp16.sensor.xml`：Velodyne VLP-16 三维激光雷达。
+- `ouster-os1.sensor.xml`：Ouster OS1 三维激光雷达。
+- `helios-32-FOV-70.sensor.xml`：Helios 32 线三维激光雷达。
+- `camera.sensor.xml`：RGB 摄像头。
+- `rgbd_camera.sensor.xml`：深度摄像头（RGBD）。
+- `imu.sensor.xml`：惯性测量单元。
+- `gnss.sensor.xml`：GPS/GNSS 接收器。
 
-- `ackermann.vehicle.xml` - 一般Ackermann(类似汽车)车辆
+通过 XML 包含机制使用带传感器的预定义车辆：
 
-- `pickup.vehicle.xml` - 皮卡车(阿克曼)
-
-- `agricobiot2.vehicle.xml` - 农业机器人(Ackermann drivetrain)
-
-**可用的传感器 :**
-
-- `lidar2d.sensor.xml` - 通用2D激光扫描仪
-
-- `rplidar-a2.sensor.xml` - RPLidar A2号
-
-- `velodyne-vlp16.sensor.xml` - Velodyne VLP-16 3D LiDAR(英语:
-
-- `ouster-os1.sensor.xml` – Ouster OS1 3D LiDAR(英语:Ouster OS1 3D LiDAR) 互联网电影数据库(IMDb)上"Ouster OS1"的资料(英文)
-
-- `helios-32-FOV-70.sensor.xml` - 赫利俄斯32波 3D LiDAR
-
-- `camera.sensor.xml` - RGB摄像头
-
-- `rgbd_camera.sensor.xml` - 深度摄像头(RGBD)
-
-- `imu.sensor.xml` - 惰性计量单位
-
-- `gnss.sensor.xml` - 全球定位系统/全球导航卫星系统接收器
-
-使用带有传感器的预定义飞行器,使用XML包括:
-
-``` xml
+```xml
 <mvsim_world version="1.0">
   <simul_timestep>5e-3</simul_timestep>
 
@@ -186,24 +166,22 @@ $ mvsim launch my_world.world.xml
 </mvsim_world>
 ```
 
-<span id="world-environment-elements"></span>
+### 3 世界环境元素
 
-### 3 世界环境要素
+MVSim 支持多种环境元素。
 
-MVSim支持几种类型的环境元素:
+**占据栅格地图**将灰度图像加载为二维障碍物地图，常用于室内导航测试：
 
-**占用网格图** 装入灰度图像作为二维障碍图,通常用于室内导航测试:
-
-``` xml
+```xml
 <element class="occupancy_grid">
   <file>map.png</file>
   <resolution>0.05</resolution>  <!-- meters/pixel -->
 </element>
 ```
 
-**升降图** 从灰度高度图图像定义地形高度, 对室外情景有用 :
+**高程地图**根据灰度高度图定义地形高度，适合室外场景：
 
-``` xml
+```xml
 <element class="elevation_map">
   <resolution>1.0</resolution>
   <elevation_image>terrain.png</elevation_image>
@@ -212,9 +190,9 @@ MVSim支持几种类型的环境元素:
 </element>
 ```
 
-**有纹理的飞机** 添加视觉地面表面 :
+**纹理平面**用于添加可视化地面：
 
-``` xml
+```xml
 <element class="horizontal_plane">
   <cull_face>BACK</cull_face>
   <x_min>-25</x_min> <x_max>25</x_max>
@@ -226,9 +204,9 @@ MVSim支持几种类型的环境元素:
 </element>
 ```
 
-**块** 属于静态或动态的刚性体(框,自定义形状),可用作障碍或可操纵对象:
+**块体**是静态或动态刚体（箱子、自定义形状），可用作障碍物或可操作物体：
 
-``` xml
+```xml
 <block class="obstacle1">
   <shape_from_visual/>
   <visual>
@@ -239,35 +217,26 @@ MVSim支持几种类型的环境元素:
 </block>
 ```
 
-<span id="vehicle-dynamics-models"></span>
-
 ### 4 车辆动力学模型
 
-MVSim提供三个主要动态模型:
+MVSim 提供三种主要动力学模型：
 
-- **差异驱动器** (`class="differential"`:TurtleBot3等双轮机器人,通过线性速度和角速度控制.
+- **差速驱动**（`class="differential"`）：用于 TurtleBot3 等双轮机器人，通过线速度和角速度控制。
+- **阿克曼转向**（`class="ackermann"`）：用于前轮转向的汽车类车辆，通过线速度和转向角控制。
+- **阿克曼传动系统**（`class="ackermann_drivetrain"`）：包含开放式或托森差速器的逼真传动系统模型，可更精确地仿真车辆行为。
 
-- **阿克尔曼** (`class="ackermann"`:具有前轮转向架的车型车辆,通过线性速度和转向角度控制.
+每辆车可以使用不同的电机控制器：
 
-- **阿克尔曼驱动列车** (`class="ackermann_drivetrain"`:具有开放或托尔森差分的实事求是的驱动列车模型,可用于更精确的车辆行为模拟.
+- `twist_pid`：接收 `geometry_msgs/msg/Twist` 指令，通过 PID 跟踪速度。这是集成 ROS 2 时最常见的选择。
+- `twist_ideal`：即时速度指令，没有动力学延迟。
+- `twist_front_steer_pid`：用于通过线速度和转向角控制的阿克曼车辆。
+- `raw`：直接控制车轮扭矩。
 
-每辆车可以使用不同的机动控制器:
+### 5 传感器噪声和配置
 
-- `twist_pid`编号: 接受 `geometry_msgs/msg/Twist` 命令使用 PID 速度跟踪。这是ROS 2 集成的最常用选择。
+MVSim 传感器支持可配置的噪声模型。例如，包含噪声参数的 IMU 传感器：
 
-- `twist_ideal`:即时速度指令(无动态延迟).
-
-- `twist_front_steer_pid`:用于通过线性速度和转向角控制的Ackermann车辆.
-
-- `raw`:直接轮扭控制.
-
-<span id="sensor-noise-and-configuration"></span>
-
-### 5 传感器噪音和配置
-
-MVSim中的传感器支持可配置噪声模型。例如,具有噪声参数的IMU传感器:
-
-``` xml
+```xml
 <sensor class="imu" name="imu1">
   <pose>0 0 0.5 0 0 0</pose>  <!-- x y z roll pitch yaw -->
   <rate_hz>100</rate_hz>
@@ -288,9 +257,9 @@ MVSim中的传感器支持可配置噪声模型。例如,具有噪声参数的IM
 </sensor>
 ```
 
-射程、角分辨率和噪声的LiDAR传感器支持参数:
+激光雷达支持量程、角分辨率和噪声等参数：
 
-``` xml
+```xml
 <sensor class="laser" name="laser1">
   <pose>0.15 0 0.3 0 0 0</pose>
   <rate_hz>10</rate_hz>
@@ -302,58 +271,42 @@ MVSim中的传感器支持可配置噪声模型。例如,具有噪声参数的IM
 </sensor>
 ```
 
-<span id="additional-features"></span>
+### 6 其他功能
 
-### 6 其他特点
+**多机器人仿真：** MVSim 原生支持同一世界中的多辆车。每辆车拥有独立的 ROS 2 命名空间、TF 树和话题集合。机器人可以通过传感器检测彼此，并通过碰撞发生物理交互。
 
-**多机器人模拟 :** MVSim在本土上支持同一世界的多种车辆,每辆车辆都得到了自己的ROS 2命名空间,TF树,以及一组主题. 机器人可以用他们的传感器互相探测,并通过碰撞进行物理交互.
+**属性区域：** 可以在世界中定义具有不同物理属性的区域，例如摩擦系数不同的区域，或 GNSS 传感器停止报告位置的 GPS 拒止区域。
 
-**地产区:** 您可以定义世界上具有不同物理特性的区域,如不同摩擦系数或全球导航卫星系统传感器停止报告位置的GPS拒绝区。
+**动画角色：** MVSim 支持沿航路点运动的骨骼动画三维角色（例如行人），可用于测试动态环境中的感知和规划。
 
-**动画演员:** MVSim支持遵循路标路径的骨骼动画3D字符(如行人),在动态环境中用于测试知觉和规划.
+**关节和铰接车辆：** 车辆可以通过距离关节（绳索／线缆）或旋转关节（铰链）连接，从而仿真拖车、牵引绳和铰接系统。
 
-**接头和装配的车辆:** 车辆可以使用距离关节(ropes/cables)或回转关节(hinges)连接,可以模拟拖车,拖绳,以及清晰的系统.
+**XML 高级功能：** 世界文件支持 `<include>` 指令、变量替换、数学表达式、`<for>` 循环和 `<if>` 条件语句，可据此以程序化方式生成复杂环境。
 
-**XML 高级特性 :** World 文件支持 `<include>` 指令、可变替换、数学表达式、 `<for>` 循环,和 `<if>` 有条件的,使得在程序上产生复杂的环境成为可能.
+**无界面及超实时仿真：** MVSim 可以不启动图形界面，并按可配置速度运行，适合自动化测试和强化学习工作流。
 
-**无头且速度快于实时 :** MVSim可以在没有图形用户界面和可配置的模拟速度的情况下运行,这对自动化测试和强化学习工作流程有用.
+## 与其他仿真器比较
 
-<span id="comparison-with-other-simulators"></span>
+MVSim 与其他仿真器的侧重点不同。
 
-## 与其他模拟器的比较
+**优势：**
 
-MVSim 与其他模拟器相比占据了不同的位置:
+- 非常轻量：CPU 和内存占用低，启动快。
+- 专注于车辆动力学，提供多种摩擦和传动系统模型。
+- 世界格式基于简单的 XML，易于上手。
+- 原生支持多机器人，并为每辆车提供独立 ROS 2 命名空间。
+- 支持超实时仿真，适合批量测试。
+- 可通过 XML 循环和条件语句以程序化方式生成世界。
 
-**强度 :**
+**局限：**
 
-- 非常轻量级:低CPU和内存使用率,快速启动时间.
+- 物理仿真是二维的（Box2D），不具备完整的三维刚体动力学。物体不会倾倒或飞起。高程地图添加了地形高度，但物理模型本质上仍为二维。
+- 传感器仿真不及完整三维仿真器精细：摄像头渲染和激光雷达模型具有相应功能，但不追求照片级真实感。
+- 与 Gazebo 相比，预构建模型和环境的生态较小。
+- 主要面向轮式移动机器人。
 
-- 具有多种摩擦力和驱动力模型的有重点车辆动力学.
-
-- 基于 XML 的简单世界格式, 容易启动 。
-
-- 原生多机器人支持 与车辆 ROS 2 命名空间。
-
-- 批量测试的比实时更快的模拟.
-
-- 通过XML循环和条件程序世界生成.
-
-**限制:**
-
-- 物理是2D(Box2D):没有完整的3D刚性体动力学,物体不会向上倾斜或飞翔,高度图会增加地形高度,但物理基本上仍然是2D.
-
-- 传感器模拟比完整的3D模拟器更不详细:相机渲染和LiDAR模型是功能性的,但并非光现实性的.
-
-- 与Gazebo相比,预建模型和环境的生态系统较小.
-
-- 专注于轮式移动机器人.
-
-<span id="further-resources"></span>
-
-## 进一步资源
+## 更多资源
 
 - [MVSim 文档](https://mvsimulator.readthedocs.io/)
-
-- [MVSim GitHub 存储器](https://github.com/MRPT/mvsim)
-
-- [MVSim纸(软件X)](https://doi.org/10.1016/j.softx.2023.101443)
+- [MVSim GitHub 仓库](https://github.com/MRPT/mvsim)
+- [MVSim 论文（SoftwareX）](https://doi.org/10.1016/j.softx.2023.101443)

@@ -3,10 +3,6 @@ translation_status: machine_translated
 source: Releases/Release-Lyrical-Luth.rst
 ---
 
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="lyrical-luth-codename-lyrical-may-2026"></span> <span id="lyrical-release"></span><span id="latest-release"></span>
 
 # Lyrical Luth（代号 lyrical；2026 年 5 月）

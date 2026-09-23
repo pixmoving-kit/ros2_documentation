@@ -1,136 +1,109 @@
----
-translation_status: machine_translated
-source: Tutorials/Beginner-CLI-Tools/Using-Rqt-Console/Using-Rqt-Console.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="using-rqt-console-to-view-logs"></span> <span id="rqt-console"></span>
+# 使用 rqt_console 查看日志
 
-# 使用( E) `rqt_console` 查看日志
+**目标：** 了解用于查看日志消息的工具 `rqt_console`。
 
-**目标：** 来了解一下 `rqt_console`,用于回顾日志信息的工具。
+**教程级别：** 初学者
 
-**教程级别：** 入门
-
-**用时：** 5分钟
+**预计用时：** 5 分钟
 
 <span id="background"></span>
-
 ## 背景
 
-`rqt_console` 是一个 GUI 工具, 用于在 ROS 2. 中对日志信息进行回顾 。 通常情况下, 日志信息会出现在您的终端中 。 `rqt_console`,您可以随时间而收集这些消息,仔细查看,并且更有条理地查看,过滤,保存,甚至将保存的文件重新装入到不同的时段进行回顾.
+`rqt_console` 是 ROS 2 中用于查看日志消息的图形界面工具。通常，日志消息显示在终端中。使用 `rqt_console`，可以持续收集这些消息，以更有条理的方式仔细查看、筛选和保存它们，还可以在以后重新加载保存的文件继续分析。
 
-节点使用日志以各种方式输出关于事件和状态的信息,其内容通常是信息化的,为用户着想.
+节点通过日志输出与事件和状态相关的各类消息，通常是为了向用户提供信息。
 
 <span id="prerequisites"></span>
-
 ## 前提条件
 
-你需要帮助 [rqt\_ console 和 龟兹姆](../Introducing-Turtlesim/Introducing-Turtlesim.md) 已安装。
+需要安装 [rqt_console 和 turtlesim](../Introducing-Turtlesim/Introducing-Turtlesim.md)。
 
-与往常一样, [您打开的每个新终端](../Configuring-ROS2-Environment.md).
+与往常一样，不要忘记在[每个新打开的终端](../Configuring-ROS2-Environment.md)中加载 ROS 2 环境。
 
 <span id="tasks"></span>
-
 ## 操作步骤
 
 <span id="setup"></span>
+### 1 准备工作
 
-### 1 设置
+在新终端中运行以下命令，启动 `rqt_console`：
 
-开始 `rqt_console` 在一个新的终端中,有以下命令:
-
-``` console
+```console
 $ ros2 run rqt_console rqt_console
 ```
 
-那个... `rqt_console` 窗口将打开 :
+随后会打开 `rqt_console` 窗口：
 
-![](images/console.png)
+![rqt_console 日志查看界面](images/console.png)
 
-控制台的第一部分是显示您系统中的日志信息。
+控制台上方区域显示系统的日志消息。
 
-在中间,您可以选择通过排除重度级别来过滤信件。您还可以使用加号按钮在右侧添加更多的排除过滤器。
+中间区域可以按严重程度排除消息，从而筛选日志。点击右侧的加号按钮，还可以添加更多排除过滤器。
 
-下一节用于突出显示包含您输入的字符串的信件。您也可以在本节中添加更多的过滤器 。
+底部区域用于高亮包含指定字符串的消息，也可以添加更多过滤器。
 
-现在开始 `turtlesim` 在一个新的终端中,有以下命令:
+现在打开新终端，运行以下命令启动 `turtlesim`：
 
-``` console
+```console
 $ ros2 run turtlesim turtlesim_node
 ```
 
 <span id="messages-on-rqt-console"></span>
+### 2 在 rqt_console 中查看消息
 
-### 2 封在 rqt\_ 控制台上的信件
+让海龟撞向墙壁，产生一些可供 `rqt_console` 显示的日志消息。在新终端中输入以下 `ros2 topic pub` 命令，其详细用法见[话题教程](../Understanding-ROS2-Topics/Understanding-ROS2-Topics.md)：
 
-生成日志信件用于 `rqt_console` 让乌龟进入墙壁。在一个新的终端中,请输入 `ros2 topic pub` 命令(详细讨论于 [主题教程](../Understanding-ROS2-Topics/Understanding-ROS2-Topics.md)(a) 将:
-
-``` console
+```console
 $ ros2 topic pub -r 1 /turtle1/cmd_vel geometry_msgs/msg/Twist "{linear: {x: 2.0, y: 0.0, z: 0.0}, angular: {x: 0.0,y: 0.0,z: 0.0}}"
 ```
 
-由于以上命令正在以稳定的速度发布这个话题,龟形不断奔向墙壁.  in. `rqt_console` 你将会看到同样的信息 与 `Warn` 重度水平反复显示, 像这样 :
+由于命令以固定频率持续向话题发布数据，海龟会不断撞向墙壁。`rqt_console` 中会反复显示相同的 `Warn` 级别消息：
 
-![](images/warn.png)
+![反复出现的警告日志](images/warn.png)
 
-新闻 `Ctrl+C` 在终端里你运行 `ros2 topic pub` 命令阻止你的乌龟进入墙壁。
+在运行 `ros2 topic pub` 的终端中按 `Ctrl+C`，停止让海龟撞墙。
 
 <span id="logger-levels"></span>
+### 3 日志级别
 
-### 3 伐木工级别
+ROS 2 的日志级别按严重程度从高到低排列如下：
 
-ROS 2的对流水平按严重程度排序:
+1. Fatal：致命错误
+2. Error：错误
+3. Warn：警告
+4. Info：信息
+5. Debug：调试
 
-> 1.  致命的
->
-> 2.  错误
->
-> 3.  警告
->
-> 4.  资讯
->
-> 5.  调试
+各级别没有严格统一的含义标准，但通常可以这样理解：
 
-每个级别都没有确切的标准,但可以假定:
+- `Fatal`：系统即将终止运行，以避免进一步损害。
+- `Error`：出现了严重问题，虽然不一定会损坏系统，但已经妨碍系统正常工作。
+- `Warn`：出现了意外行为或不理想的结果，可能意味着更深层的问题，但尚未直接破坏功能。
+- `Info`：报告事件和状态更新，让用户直观看到系统正在按预期运行。
+- `Debug`：详细记录系统执行过程中的各个步骤。
 
-- `Fatal` 消息显示系统将终止 试图保护自己免受损害。
+默认日志级别是 `Info`。只会显示所设级别以及比它更严重的消息。
 
-- `Error` 讯息指出一些未必会破坏系统,
-
-- `Warn` 但不要直接损害功能。
-
-- `Info` 信件中显示事件和状态更新,作为系统运行如预期那样的直观验证。
-
-- `Debug` 消息详细介绍了系统执行的整个逐步过程。
-
-默认关卡是 `Info`。您将只看到默认重度级别和更严重级别的信息。
-
-正常情况下,只有 `Debug` 信件之所以被隐藏,是因为它们是唯一比 `Info`。例如,如果设置默认关卡为 `Warn`,你只会看到严重的信息 `Warn`, `Error`,以及 `Fatal`.
+通常只有 `Debug` 消息被隐藏，因为它是唯一低于 `Info` 的级别。例如，将默认级别设为 `Warn` 后，就只会看到 `Warn`、`Error` 和 `Fatal` 消息。
 
 <span id="set-the-default-logger-level"></span>
-
 #### 3.1 设置默认日志级别
 
-您可以在您第一次运行时设置默认的日志级别 `/turtlesim` 使用重映射的节点。 在终端中输入以下命令 :
+首次运行 `/turtlesim` 节点时，可以通过命令行指定默认日志级别。在终端中输入：
 
-``` console
+```console
 $ ros2 run turtlesim turtlesim_node --ros-args --log-level WARN
 ```
 
-现在,你不会看到开头 `Info` 上次在控制台上传的关卡消息 `turtlesim`. 那是因为 `Info` 消息的优先权低于新的默认重度, `Warn`.
+现在不会再看到上次启动 `turtlesim` 时控制台显示的初始 `Info` 消息，因为 `Info` 的严重程度低于新设置的默认级别 `Warn`。
 
 <span id="summary"></span>
-
 ## 小结
 
-`rqt_console` 如果您需要仔细检查您的系统中的日志消息, 将会很有帮助。 您可能出于各种原因想要检查日志消息, 通常是为了找出出错的地方和导致这种情况的一系列事件 。
+需要仔细检查系统日志时，`rqt_console` 很有帮助。查看日志的原因有很多，通常是为了找出问题发生的位置，以及导致问题的一系列事件。
 
 <span id="next-steps"></span>
-
 ## 后续步骤
 
-下一个教程会教你如何同时启动多个节点 [ROS 2 发射](../Launching-Multiple-Nodes/Launching-Multiple-Nodes.md).
+下一篇教程将介绍使用 [ROS 2 Launch](../Launching-Multiple-Nodes/Launching-Multiple-Nodes.md)一次启动多个节点。

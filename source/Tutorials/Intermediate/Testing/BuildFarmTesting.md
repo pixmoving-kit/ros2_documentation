@@ -1,79 +1,56 @@
----
-translation_status: machine_translated
-source: Tutorials/Intermediate/Testing/BuildFarmTesting.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="testing-your-code-with-the-ros-build-farm"></span>
 
 # 使用 ROS 构建农场测试代码
 
-那个... [ROS 2 建设农场](https://build.ros2.org/) 除了创建二进制外, 它也会通过在 PR 合并之前为您的ROS 软件包编译和运行所有测试来测试拉动请求 。
+[ROS 2 构建农场](https://build.ros2.org/)功能强大。除了生成二进制包，它还可以在拉取请求（PR）合并之前编译 ROS 软件包并运行全部测试，从而检查 PR。
 
-有四个先决条件。
+需要满足四个前提条件：
 
-> - GitHub 用户 [@ros-pull-request-buildinger (英语).](https://github.com/ros-pull-request-builder) 必须能够进入仓库。
->
-> - GitHub 寄存器必须设置 Webhooks 。
->
-> - [您的软件包必须用 rosdistro 索引](../../../How-To-Guides/Releasing/Index-Your-Packages.md)
->
-> - 那个... `test_pull_requests` 旗帜必须是真实的。
+- GitHub 用户 [@ros-pull-request-builder](https://github.com/ros-pull-request-builder)具有仓库访问权限。
+- GitHub 仓库已配置 webhook。
+- [软件包已被 rosdistro 收录](../../../How-To-Guides/Releasing/Index-Your-Packages.md)。
+- `test_pull_requests` 标志设为 true。
 
 <span id="github-access"></span>
 
-## GitHub 访问
+## GitHub 访问权限
 
-您可以在 GitHub 组织级别上或只给单一的 GitHub 存储器访问 PR 构建器 。
+可以在 GitHub 组织层面授予 PR Builder 权限，也可以只授予其单个 GitHub 仓库的访问权限。
 
 <span id="github-organization"></span>
 
 ### GitHub 组织
 
-1.  打开 [https://github.com/orgs/%YOUR_ORG%/people](https://github.com/orgs/%YOUR_ORG%/people) (替换时) `%YOUR_ORG%` (与有关组织联系)
-
-2.  单击 `Invite Member` 输入 `ros-pull-request-builder`
+1. 打开 `https://github.com/orgs/%YOUR_ORG%/people`，将 `%YOUR_ORG%` 替换为相应组织名称。
+2. 点击 `Invite Member`，输入 `ros-pull-request-builder`。
 
 <span id="github-repository"></span>
 
 ### GitHub 仓库
 
-1.  打开 [https://github.com/%YOUR_ORG%/%YOUR_REPO%/settings/access](https://github.com/%YOUR_ORG%/%YOUR_REPO%/settings/access) (替换时) `%YOUR_ORG%/%YOUR_REPO$` 与适当的组织/repo)
-
-2.  单击 `Add people` 输入 `ros-pull-request-builder`
-
-3.  选择 `Admin` 或 时 间 `Write` (见下节)
+1. 打开 `https://github.com/%YOUR_ORG%/%YOUR_REPO%/settings/access`，将占位符替换为相应组织和仓库名称。
+2. 点击 `Add people`，输入 `ros-pull-request-builder`。
+3. 为其选择 `Admin` 或 `Write` 角色，具体区别见下一节。
 
 <span id="webhooks"></span>
 
-## WebHooks 网络用户
+## Webhook
 
-若您对下列事项给予充分的行政权利: `ros-pull-request-builder`它会自动设置钩子。
+如果向 `ros-pull-request-builder` 授予完整管理员权限，它会自动配置 webhook。
 
-或者,你可以避免完全行政权的需要,只设置行政权。 **写入** 权限。
+也可以只授予 **write** 权限，手动配置 webhook，从而不必提供完整管理员权限。
 
-1.  打开 [https://github.com/%YOUR_ORG%/%YOUR_REPO%/settings/hooks/new](https://github.com/%YOUR_ORG%/%YOUR_REPO%/settings/hooks/new))
-
-2.  输入 `"https://build.ros2.org/ghprbhook/` 作为有效载荷 URL
-
-3.  检查以下选项 :  
-    - 让我选择个别事件。
-
-    - 问题评论
-
-    - 调用请求
+1. 打开 `https://github.com/%YOUR_ORG%/%YOUR_REPO%/settings/hooks/new`。
+2. 将 Payload URL 设置为 `https://build.ros2.org/ghprbhook/`。
+3. 勾选 `Let me select individual events.`、`Issue comments` 和 `Pull requests`。
 
 <span id="test-pull-requests"></span>
 
 ## test_pull_requests
 
-对于您想要进行牵引请求测试的每个ROS distro, 您必须启用 `test_pull_requests` 标记在表格中的适当部分中 [rostro 维基月球](https://github.com/ros/rosdistro/).
+对于每个希望启用 PR 测试的 ROS 发行版，都必须在 [rosdistro](https://github.com/ros/rosdistro/) 对应部分启用 `test_pull_requests` 标志。
 
-> - **备选案文1** - 你跑步的时候有选择权 [开花](../../../How-To-Guides/Releasing/Releasing-a-Package.md) 以启动拉动请求测试。
->
-> - **备选案文2** - 你当然可以 **小心点** 手动编辑 rosdistro repo 中相应的文件,并提交新的拉动请求. [示例](https://github.com/ros/rosdistro/blob/3c295f76b0755989e9ed526c0b5f28a5f6a94da3/rolling/distribution.yaml#L4708). [载于REP 143号文件](http://docs.ros.org/en/independent/api/rep/html/rep-0143.html#distribution-file).
+- **方法 1**：运行 [bloom](../../../How-To-Guides/Releasing/Releasing-a-Package.md) 时选择启用 PR 测试。
+- **方法 2**：**谨慎地**手动编辑 rosdistro 仓库中的相应文件，然后提交新的 PR。参见[示例](https://github.com/ros/rosdistro/blob/3c295f76b0755989e9ed526c0b5f28a5f6a94da3/rolling/distribution.yaml#L4708)及 [REP 143 文档](http://docs.ros.org/en/independent/api/rep/html/rep-0143.html#distribution-file)。
 
-请注意,在拉力请求被添加后,通常直到晚间Jenkins重组后才创建该工作.
+注意，添加 PR 后，通常要等到 Jenkins 夜间重新配置时才会创建相应任务。

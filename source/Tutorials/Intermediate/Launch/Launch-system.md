@@ -1,90 +1,79 @@
----
-translation_status: machine_translated
-source: Tutorials/Intermediate/Launch/Launch-system.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="integrating-launch-files-into-ros-2-packages"></span>
 
-# 将启动文件集成到 ROS 2 软件包
+# 将启动文件集成到 ROS 2 软件包中
 
-**目标：** 将发射文件添加到 ROS 2 软件包
+**目标：** 为 ROS 2 软件包添加启动文件。
 
 **教程级别：** 中级
 
-**用时：** 10分钟
+**预计耗时：** 10 分钟
 
 <span id="prerequisites"></span>
 
 ## 前提条件
 
-你本该去教书的 [创建 ROS 2 软件包](../../Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.md).
+应先完成[创建 ROS 2 软件包](../../Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.md)教程。
 
-与往常一样, [您打开的每个新终端](../../Beginner-CLI-Tools/Configuring-ROS2-Environment.md).
+与往常一样，别忘记在[每个新打开的终端](../../Beginner-CLI-Tools/Configuring-ROS2-Environment.md)中加载 ROS 2 环境。
 
 <span id="background"></span>
 
 ## 背景
 
-在那个 [上一个教程](Creating-Launch-Files.md),我们看到了如何写一个独立的发射文件。这个教程将显示如何将发射文件添加到现有的软件包中,以及通常使用的常规。
+[上一篇教程](Creating-Launch-Files.md)介绍了如何编写独立的启动文件。本教程介绍如何将启动文件添加到现有软件包中，以及通常遵循的约定。
 
 <span id="tasks"></span>
 
-## 操作步骤
+## 任务
 
 <span id="create-a-package"></span>
 
 ### 1 创建软件包
 
-创建工作空间供软件包在 :
+为软件包创建工作空间。
 
-##### Linux
+Linux：
 
-``` console
+```console
 $ mkdir -p launch_ws/src
 $ cd launch_ws/src
 ```
 
-##### macOS
+macOS：
 
-``` console
+```console
 $ mkdir -p launch_ws/src
 $ cd launch_ws/src
 ```
 
-##### Windows
+Windows：
 
-``` console
+```console
 $ md launch_ws\src
 $ cd launch_ws\src
 ```
 
-##### Python 软件包
+创建 Python 包：
 
-``` console
+```console
 $ ros2 pkg create --build-type ament_python --license Apache-2.0 py_launch_example
 ```
 
-##### C++ 软件包
+或创建 C++ 包：
 
-``` console
+```console
 $ ros2 pkg create --build-type ament_cmake --license Apache-2.0 cpp_launch_example
 ```
 
 <span id="creating-the-structure-to-hold-launch-files"></span>
 
-### 2 创建保存发射文件的结构
+### 2 创建存放启动文件的目录结构
 
-根据惯例,一个软件包的所有发射文件都储存在 `launch` 软件包中的目录。确保创建 `launch` 在您在上面创建的软件包的顶层设置目录。
+按照惯例，软件包的所有启动文件都存放在包内的 `launch` 目录中。在刚创建的软件包顶层建立 `launch` 目录。
 
-##### Python 软件包
+对于 Python 包，目录结构应为：
 
-对于 Python 软件包,包含您的软件包的目录应该像这样:
-
-``` console
+```console
 src/
   py_launch_example/
     launch/
@@ -96,9 +85,9 @@ src/
     test/
 ```
 
-为了让colcon找到和使用我们的发射文件,我们需要告知Python的安装工具是否存在。 `setup.py` 文件,请添加必要的内容 `import` 上方的语句,并将发射文件输入 `data_files` 参数 `setup`:
+要让 colcon 找到并使用启动文件，需要通知 Python 的安装工具。打开 `setup.py`，在顶部添加所需的 `import` 语句，并将启动文件加入 `setup` 的 `data_files` 参数：
 
-``` python
+```python
 import os
 from glob import glob
 # Other imports ...
@@ -115,11 +104,9 @@ setup(
 )
 ```
 
-##### C++ 软件包
+对于 C++ 包，只需在 `CMakeLists.txt` 末尾、`ament_package()` 之前添加：
 
-对于 C++ 软件包,我们将只调整 `CMakeLists.txt` 通过添加文件 :
-
-``` cmake
+```cmake
 # Install launch files.
 install(DIRECTORY
   launch
@@ -127,106 +114,55 @@ install(DIRECTORY
 )
 ```
 
-到文件的结尾( 但在此之前) `ament_package()`).
-
 <span id="writing-the-launch-file"></span>
 
-### 3 写入发射文件
+### 3 编写启动文件
 
-##### XML 发射文件
+**XML 启动文件：** 在 `launch` 目录创建 `my_script_launch.xml`，内容见 [XML 示例](launch/my_script_launch.xml)。推荐使用 `_launch.xml` 后缀，但并非强制要求。
 
-在你体内 `launch` 目录,创建名为 `my_script_launch.xml`. `_launch.xml` 作为 XML 发射文件的文件后缀。
+**YAML 启动文件：** 在 `launch` 目录创建 `my_script_launch.yaml`，内容见 [YAML 示例](launch/my_script_launch.yaml)。推荐使用 `_launch.yaml` 后缀，但并非强制要求。
 
-``` xml
-<?xml version="1.0" encoding="UTF-8"?>
-<launch>
-  <node pkg="demo_nodes_cpp" exec="talker" name="talker"/>
-</launch>
-```
+**Python 启动文件：** 在 `launch` 目录创建 `my_script_launch.py`，内容见 [Python 示例](launch/my_script_launch.py)。推荐使用 `_launch.py` 后缀，但并非强制要求。不过，为了让 `ros2 launch` 识别并自动补全文件名，名称必须以 `launch.py` 结尾。
 
-##### YAML 发射文件
-
-在你体内 `launch` 目录,创建名为 `my_script_launch.yaml`. `_launch.yaml` 作为YAML发射文件的文件后缀。
-
-``` yaml
-%YAML 1.2
----
-launch:
-  - node:
-      pkg: "demo_nodes_cpp"
-      exec: "talker"
-      name: "talker"
-```
-
-##### Python 发射文件
-
-在你体内 `launch` 目录,创建名为 `my_script_launch.py`. `_launch.py` 由于 Python 发射文件的文件后缀,建议但不需要。然而,发射文件名称需要以 `launch.py` 待确认和自动完成 `ros2 launch`.
-
-您的发射文件应该定义 `generate_launch_description()` 函数返回 a `launch.LaunchDescription()` 供《京都议定书》 `ros2 launch` 动词.
-
-``` python
-import launch
-import launch_ros.actions
-
-
-def generate_launch_description():
-    return launch.LaunchDescription([
-        launch_ros.actions.Node(
-            package='demo_nodes_cpp',
-            executable='talker',
-            name='talker'),
-    ])
-```
+Python 启动文件应定义 `generate_launch_description()` 函数，返回供 `ros2 launch` 子命令使用的 `launch.LaunchDescription()`。
 
 <span id="building-and-running-the-launch-file"></span>
 
-### 4 建立和运行发射文件
+### 4 构建并运行启动文件
 
-进入工作空间的顶层,并建造:
+进入工作空间顶层目录并构建：
 
-``` console
+```console
 $ colcon build
 ```
 
-之后 `colcon build` 已经成功, 您已经从工作空间中找到, 您应该能够运行发射文件如下 :
+`colcon build` 成功后，加载工作空间环境，即可运行启动文件。
 
-##### Python 软件包
+Python 包中的 XML、YAML、Python 启动文件分别使用：
 
-##### XML 发射文件
-
-``` console
+```console
 $ ros2 launch py_launch_example my_script_launch.xml
 ```
 
-##### YAML 发射文件
-
-``` console
+```console
 $ ros2 launch py_launch_example my_script_launch.yaml
 ```
 
-##### Python 发射文件
-
-``` console
+```console
 $ ros2 launch py_launch_example my_script_launch.py
 ```
 
-##### C++ 软件包
+C++ 包中的 XML、YAML、Python 启动文件分别使用：
 
-##### XML 发射文件
-
-``` console
+```console
 $ ros2 launch cpp_launch_example my_script_launch.xml
 ```
 
-##### YAML 发射文件
-
-``` console
+```console
 $ ros2 launch cpp_launch_example my_script_launch.yaml
 ```
 
-##### Python 发射文件
-
-``` console
+```console
 $ ros2 launch cpp_launch_example my_script_launch.py
 ```
 
@@ -234,6 +170,6 @@ $ ros2 launch cpp_launch_example my_script_launch.py
 
 ## 文档
 
-[发射文件](https://github.com/ros2/launch/blob/rolling/launch/doc/source/architecture.rst) 提供更详细的资料,说明在《公约》中也采用的概念。 `launch_ros`.
+[launch 文档](https://github.com/ros2/launch/blob/rolling/launch/doc/source/architecture.rst)详细介绍了 `launch_ros` 同样使用的概念。
 
-其他文件/发射能力实例即将提交。<https://github.com/ros2/launch> 财务报告和财务报告 <https://github.com/ros2/launch_ros>在此期间。
+更多关于启动功能的文档和示例将陆续补充。目前可以参阅 [launch 源代码](https://github.com/ros2/launch)和 [launch_ros 源代码](https://github.com/ros2/launch_ros)。

@@ -1,37 +1,28 @@
----
-translation_status: machine_translated
-source: How-To-Guides/Releasing/_Install-Dependencies.rst
----
+根据所用平台，安装后续步骤需要的工具：
 
-!!! info "翻译说明"
+**deb 系统（例如 Ubuntu）**
 
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
-安装您将在即将到来的步骤中根据您的平台使用的工具 :
-
-##### db(例如Ubuntu) (中文(简体) ).
-
-``` console
+```console
 $ sudo apt install python3-bloom python3-catkin-pkg
 ```
 
-##### RPM(例如,RHEL)
+**RPM 系统（例如 RHEL）**
 
-``` console
+```console
 $ sudo dnf install python3-bloom python3-catkin_pkg
 ```
 
-##### 其他人员
+**其他平台**
 
-``` console
+```console
 $ pip3 install -U bloom catkin_pkg
 ```
 
-确定您已经初始化 :
+确保已经初始化 rosdep：
 
-``` console
+```console
 $ sudo rosdep init
 $ rosdep update
 ```
 
-请注意, `rosdep init` 命令如果在过去已经初始化,则可能失败;这可以安全地忽略。
+如果以前已经初始化过 rosdep，`rosdep init` 命令可能会失败；这种情况下可以忽略该错误。

@@ -1,52 +1,330 @@
----
-translation_status: machine_translated
-source: The-ROS2-Project/Adopters.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="ros-2-adopters"></span>
 
-# ROS 2 应用案例
+# ROS 2 使用者
 
-此页面以任何身份显示使用 ROS 的组织和项目。 这是一个由社区维护的自报目录。 如果您使用 ROS , 我们鼓励您添加您的项目 。
+本页展示以各种方式使用 ROS 的组织和项目。这是一份由社区维护、由使用者自行提交的目录。如果你正在使用 ROS，欢迎添加自己的项目。
 
-要添加您的组织或项目,请查看 [添加你的项目](Adopters/Add-Your-Project.md).
+要添加组织或项目，请参阅[添加你的项目](Adopters/Add-Your-Project.md)。
 
-| 组织 | 项目 | 域 域 | 已添加日期 | 国家 | 说明 |
-|----|----|----|----|----|----|
-| [艾格鲁](https://aigro.nl/index_en.html) | [农业使用的自主工具载体](https://aigro.nl/index_en.html#products) | 农业 | 2026-04-13 | NL 数字 | 一个小型自闭式工具载体,用于树苗圃、葡萄园、果园、果酱水果中的应用,任务包括除草、苦艾酒、紫外线-C、扫瞄、侦察。机器人可以在可互换电池上全天工作。 |
-| [组装器](https://botronics.be) | [习近平](https://ixi.golf) | 服务机器人 | 2026-04-13 | {\fn华文楷体\fs16\1cHE0E0E0}是的 | 自主导航iXi 未来高尔夫球车. |
-| [布拉格捷克技术大学](https://cvut.cz) | [机器人和自主系统愿景](https://cyber.felk.cvut.cz/research/groups-teams/vras/) | 国防/政府、教育、人文、研究 | 2026-04-13 | CZ区 | 研究实验室专注于地势恶劣的室外机器人,既有真正的硬件,也有不同的模拟. #MonoForce #DarpaSubT. |
-| [目录](https://www.dexory.com/) | 仓库后勤 | Logistics/Warehouse | 2026-04-19 | GB 语句 | 使用ROS 2 和 Nav2 自动导航仓库物流. Nav2 的创始赞助商和贡献者. |
-| [虚构词牌](https://fictionlab.pl/) | [里欧·罗弗](https://fictionlab.pl/leo-rover/) | 教育、研究、空间 | 2026-04-20 | PL 语句 | 里欧·罗弗(Leo Rover)是一个崎岖,开源,模块化的移动机器人,由ROS 2. 为多功能和可靠性而设计,为工程师,研究人员,教育工作者和机器人爱好者提供了无障碍的发展平台. |
-| [虚构词牌](https://fictionlab.pl/) | [拉夫·罗弗](https://fictionlab.pl/raph-rover/) | 教育、研究、空间 | 2026-04-20 | PL 语句 | Raph Rover是一个高级,开源,模块化的移动机器人平台,由ROS 2. 基于历年的经验和Leo Rover用户的反馈而开发,它结合了经过验证的,实地准备的设计与自主导航,绘图,远程无人任务的新能力. Raph Rover作为开放研发平台设计,为空间工业,国防,监测,技术检查,精密农业等部门的研发项目提供了坚实的基础. |
-| [弗劳恩霍费尔·IOSB(英语:Fraunhofer IOSB)](https://www.iosb.fraunhofer.de/en.html) | [ATB 自动调试](https://www.iosb.fraunhofer.de/en/competences/system-technology/systems-measurement-control-diagnosis/research-topics/autonomous-robot-systems.html) | 农业、建筑、国防/政府、海洋、研究 | 2026-05-08 | 代 办 | 通用算法工具箱/自主堆栈,用于无结构环境下的机器人. 配置用于不同平台,从无人驾驶水面飞船到自主挖掘器. RIG的大型越野机器人实验室(德国Robotics Institute)的一部分. |
-| [赫尔赫特](https://www.helhest.com/) | [赫尔赫斯特机器人](https://www.helhest.com/) | 国防/政府、研究 | 2026-04-13 | CZ区 | DARPA subT 决赛选手为要求最高的地形提供独特的三轮室外平台。 用智能硬件缩小不完善的自主软件的缺口! 机器人翻转或翻转? 没问题! |
-| [意 见](https://insaion.com) | [印萨恩代理](https://app.insaion.com/login) | 农业、航空/航空、汽车、建筑、能源、物流/仓库、制造、海洋、服务机器人 | 2026-04-14 | ES(英语) | INSAION是一个专门的监测和可观察性平台,在本土上与ROS2生态系统融合,为机器人机队的性能提供深刻的能见度. 它通过利用MCAP标准,将数据记录和实时遥测无缝地统一为可伸缩机器人操作的简化工作流程. |
-| [东余凯](https://lgdxrobot.uk/cloud/) | [LGDX Robot 云适应器](https://github.com/yukaitung/lgdxrobot-cloud-adapter) | 教育、后勤/住房、研究 | 2026-05-16 | GB 语句 | LGDX Robot Cloud是AGVs的开源机器人管理系统,用于监测机器人的状况和管理自动化物流任务. LGDX Robot Cloud Adapter是ROS 2兼容机器人的集成软件,使用话题和服务. |
-| [东余凯](https://lgdxrobot.uk/lgdxrobot2/) | [LGDX 机器人2](https://github.com/yukaitung/lgdxrobot2-ros2) | 教育、研究 | 2026-04-13 | GB 语句 | LGDXRobot2是一款mecanum轮式移动机器人,旨在以低成本硬件实现体面的性能,它与ROS 2生态系统完全融合,包括Nav2和Gazebo,其硬件和软件均具有完全开放的源头. |
-| [卡玛斯机器人](https://kamathrobotics.com) | 勒基维区域办事处2 | 教育、研究 | 2026-04-17 | NL 数字 | ROS 2动力移动机器人用于教育和研究,基于勒基维平台,升级后采用泛平板机机制,深度相机,激光扫描仪,IMU,轻量级AI代理,具有ROS 2特异性代理技能. |
-| [马南·哈尔瓦尔](https://github.com/manankharwar) | [聚合核心](https://github.com/manankharwar/fusioncore) | 农业、部件、研究 | 2026-04-13 | 加利福尼亚州 | ROS 2 传感器聚变 SDK 取代已腐烂的机器人\_ 本地化. Fuses IMU, 轮码器, 和 GPS 通过 100Hz 的 Unscented Kalman Filter. 自动 IMU 偏差估计, Mahalanobis 异常拒绝, 适应性噪声共变, TF 启动时验证. Apache 2.0. |
-| [内森·尚卡尔](https://nathanshankar.github.io/) | [终端 RViz](https://github.com/nathanshankar/terminal_rviz) | 农业、航空/航空、汽车、部件、建筑、消费者机器人、国防/政府、教育、能源、保健/医疗、人造、物流/仓库、制造、海洋、研究、空间、服务机器人 | 2026-04-14 | GB,内 | 终端RViz是ROS 2的高性能3D可视化器,完全运行在终端环境中. 使用FTXUI和定制的盲文软件渲染器建成,它为无头系统,远程SSH会话,或资源约束环境提供了丰富的特性替代标准RViz. |
-| [米兰理工学院](https://www.polimi.it) | [ROSETEA实验室](https://rosetea.deib.polimi.it/) | 农业、空中/德龙、教育、研究 | 2026-04-15 | 信息技术 | 米兰理工大学的Robotic Sensors环境与农业技术实验室研究了创新方法和技术,以支持发展可持续的粮食生产系统,以及具有复原力的农业做法,提高生产力和产量,同时减少环境足迹。 |
-| [机器人学](https://www.polymathrobotics.com/) | 高速公路外自治 | 农业、建筑、国防/政府、后勤/住房、研究 | 2026-04-20 | 美国 | Polymath Robotics为生产级高速公路自动化提供了核心基石。 |
-| [电源](https://www.powerstow.com) | 自动行李处理 | 航空 | 2026-04-16 | 丹麦语 | 使用自定义操纵器自动处理行李, 并使用 ROS 2, ros2\_ 控制和移动工具 |
-| [罗马尼亚](https://robotis.com/en/) | [AI 工人组织](https://ai.robotis.com/ai_worker/introduction_ai_worker.html) | 人类、物流/仓库、研究 | 2026-04-22 | 韩语 | 使用ROS 2进行双臂操纵和全向导航的控制架构和仿真学习. |
-| [罗马尼亚](https://robotis.com/en/) | [机器人手( 机器人手)](https://ai.robotis.com/hands/introduction_hands.html) | 人体、研究、组件 | 2026-04-22 | 韩语 | 实时20-DOF控制和触觉传感器广播,用于使用ROS 2进行高超度操纵. |
-| [罗马尼亚](https://robotis.com/en/) | [奥米](https://ai.robotis.com/omy/introduction_omy.html) | 后勤/仓库、制造、研究 | 2026-04-22 | 韩语 | 物理AI驱动 6-DOF 头领跟踪操纵和实时控制架构使用ROS 2. |
-| [罗马尼亚](https://robotis.com/en/) | [OMX 系统](https://ai.robotis.com/omx/introduction_omx.html) | 教育、研究 | 2026-04-22 | 韩语 | 物理AI驱动的5-DOF操控和以用户为中心的头领-跟随控制架构使用ROS 2. |
-| [罗马尼亚](https://robotis.com/en/) | [龟瓶3](https://emanual.robotis.com/docs/en/platform/turtlebot3/overview/) | 教育、研究 | 2026-04-22 | 韩语 | SLAM驱动的移动机器人以及使用ROS 2. 高度定制的导航架构. |
-| [罗马尼亚](https://robotis.com/en/) | [OpenmanMATALATOR-X (西班牙语)](https://emanual.robotis.com/docs/en/platform/openmanipulator_x/overview/) | 教育、研究 | 2026-04-22 | 韩语 | 使用ROS2的开源DYNAMIXEL驱动操纵和嵌入式实时控制架构. |
-| [RT公司](https://rt-net.jp) | [克兰-X7](https://github.com/rt-net/crane_x7_ros) | 教育、研究 | 2026-04-02 | 日记 | 用于研究动力学和协作机器人的7轴机器人臂. |
-| [SMAROBIX 股份有限公司](https://smarobix.com) | 透视引擎与发展环境 | 农业、航空/航空、建筑、消费者机器人、保健/医疗、人造、物流/仓库、制造、海洋、研究、空间、服务机器人 | 2026-05-13 | 代 办 | SMAROBIX构建了一个AI增强软件,为工程师提供可解释的系统见解和指导,整个工程过程中的机器人即时工作流程来诊断瓶颈,验证安全性,实时行为,并在可测量证据的基础上反复提高性能. |
-| [索尼集团公司](https://www.sony.com) | [爱博](https://aibo.sony.jp) | 消费者机器人 | 2026-03-25 | 日记 | 一种自主的机器人伴狗,它发展出自己的独特个性. |
-| [索尼集团公司](https://www.sony.com) | [Poiq 语录](https://www.sony.com/en/brand/futureproof/project/poiq/) | 消费者机器人 | 2026-03-25 | 日记 | 具有对话能力的小型AI娱乐机器人. |
-| [索尼集团公司](https://www.sony.com) | [空峰 S1](https://www.sony.com/en/articles/product-specifications-airpeak-s1) | Aerial/Drone | 2026-03-25 | 日记 | 专业无人机携带全帧无镜摄像头. |
-| [索尼半导体解决方案](https://www.sony-semicon.com) | [ATRIOS 机器人软件包](https://www.aitrios.sony-semicon.com/robotics) | 后勤/仓库、制造、服务机器人 | 2026-03-25 | 日记 | 自主移动机器人跨越物流,建筑,零售的开发平台. |
-| 苏拉夫·哈瓦尔达尔 | [ROS2工作室](https://github.com/Sourav0607/ROS2-STUDIO) | 研究 | 2026-04-14 | 代 办 | 一个基于 PyQt5 的 CLI 监测工具,用于 ROS 2 节点,主题,包记录,包播放,包转换器从 .db3 到 csv 用于分析和系统诊断 |
-| [立体声Labs](https://stereolabs.com) | [ZED ROS 2 包装器](https://www.stereolabs.com/docs/ros2) | 构成部分 | 2026-04-18 | 美国、法国 | 环绕ZED SDK,将ZED立体和单光摄像头的所有能力带入ROS 2生态系统. |
-| [Széchenyi大学车辆研究中心](https://jkk-research.github.io/latest/) | 自动 Roboshuttle | 航空/Drone、汽车、能源、研究 | 2026-05-20 | 汉字 | 研究和开发以自动软件为基础的自动航天飞机 |
-| [TriOrb Inc. (英语).](https://triorb.co.jp/en/) | [三ORB 基准](https://github.com/TriOrb-Inc) | 后勤/仓库、制造、研究 | 2026-07-16 | 日记 | Ball-Driven Omnifer Movement平台,由三个领域和三个马达驱动,能够无缝地朝任何方向移动,它解决了常规机器人所无法应付的挑战——导航步骤、不规则的地面、毫米精确定位和重载运输。 |
+<div class="adopters-filters">
+<label for="adopters-filter-domain">领域：</label>
+<select id="adopters-filter-domain">
+<option value="">全部</option>
+<option value="Aerial/Drone">航空／无人机</option>
+<option value="Agriculture">农业</option>
+<option value="Automotive">汽车</option>
+<option value="Aviation">航空运输</option>
+<option value="Components">组件</option>
+<option value="Construction">建筑</option>
+<option value="Consumer Robot">消费级机器人</option>
+<option value="Defense/Government">国防／政府</option>
+<option value="Education">教育</option>
+<option value="Energy">能源</option>
+<option value="Healthcare/Medical">医疗健康</option>
+<option value="Humanoid">人形机器人</option>
+<option value="Logistics/Warehouse">物流／仓储</option>
+<option value="Manufacturing">制造</option>
+<option value="Marine">海洋</option>
+<option value="Research">研究</option>
+<option value="Service Robot">服务机器人</option>
+<option value="Space">航天</option>
+</select>
+<label for="adopters-filter-country">国家代码：</label>
+<select id="adopters-filter-country">
+<option value="">全部</option>
+<option value="BE">BE</option>
+<option value="CA">CA</option>
+<option value="CZ">CZ</option>
+<option value="DE">DE</option>
+<option value="DK">DK</option>
+<option value="ES">ES</option>
+<option value="FR">FR</option>
+<option value="GB">GB</option>
+<option value="HU">HU</option>
+<option value="IN">IN</option>
+<option value="IT">IT</option>
+<option value="JP">JP</option>
+<option value="KR">KR</option>
+<option value="NL">NL</option>
+<option value="PL">PL</option>
+<option value="US">US</option>
+</select>
+<label for="adopters-filter-search">搜索：</label>
+<input id="adopters-filter-search" placeholder="按关键词筛选……" type="text"/>
+<label class="adopters-toggle-label"><input id="adopters-show-all" type="checkbox"/> 显示全部历史记录</label><span class="adopters-filter-note">默认显示过去 3 年内添加的记录。勾选“显示全部历史记录”可查看所有条目。</span>
+</div>
+<table class="adopters-table">
+<thead><tr>
+<th>组织</th>
+<th>项目</th>
+<th>领域</th>
+<th>添加日期</th>
+<th>国家代码</th>
+<th>说明</th>
+</tr></thead>
+<tbody>
+<tr data-countries="NL" data-date-added="2026-04-13" data-domains="Agriculture">
+<td><a href="https://aigro.nl/index_en.html" rel="noopener" target="_blank">Aigro</a></td>
+<td><a href="https://aigro.nl/index_en.html#products" rel="noopener" target="_blank">Autonomous tool carrier for agricultural use</a></td>
+<td>农业</td>
+<td>2026-04-13</td>
+<td>NL</td>
+<td>小型自主农具搭载平台，适用于苗圃、葡萄园、果园及浆果种植场景，可执行除草、耙地、UV-C 处理、喷洒和巡查等任务。机器人使用可更换电池，可工作一整天。</td>
+</tr>
+<tr data-countries="BE" data-date-added="2026-04-13" data-domains="Service Robot">
+<td><a href="https://botronics.be" rel="noopener" target="_blank">Botronics</a></td>
+<td><a href="https://ixi.golf" rel="noopener" target="_blank">iXi</a></td>
+<td>服务机器人</td>
+<td>2026-04-13</td>
+<td>BE</td>
+<td>为面向未来的高尔夫球包推车 iXi 提供自主导航。</td>
+</tr>
+<tr data-countries="CZ" data-date-added="2026-04-13" data-domains="Defense/Government Education Humanoid Research">
+<td><a href="https://cvut.cz" rel="noopener" target="_blank">Czech Technical University in Prague</a></td>
+<td><a href="https://cyber.felk.cvut.cz/research/groups-teams/vras/" rel="noopener" target="_blank">Vision for Robotics and Autonomous Systems</a></td>
+<td>国防／政府, 教育, 人形机器人, 研究</td>
+<td>2026-04-13</td>
+<td>CZ</td>
+<td>专注于复杂地形户外机器人的研究实验室，同时使用真实硬件和可微分仿真开展研究。#MonoForce #DarpaSubT</td>
+</tr>
+<tr data-countries="GB" data-date-added="2026-04-19" data-domains="Logistics/Warehouse">
+<td><a href="https://www.dexory.com/" rel="noopener" target="_blank">Dexory</a></td>
+<td>Warehouse logistics</td>
+<td>物流／仓储</td>
+<td>2026-04-19</td>
+<td>GB</td>
+<td>使用 ROS 2 和 Nav2 实现仓储物流自主导航。是 Nav2 的创始赞助方和贡献者。</td>
+</tr>
+<tr data-countries="PL" data-date-added="2026-04-20" data-domains="Education Research Space">
+<td><a href="https://fictionlab.pl/" rel="noopener" target="_blank">Fictionlab</a></td>
+<td><a href="https://fictionlab.pl/leo-rover/" rel="noopener" target="_blank">Leo Rover</a></td>
+<td>教育, 研究, 航天</td>
+<td>2026-04-20</td>
+<td>PL</td>
+<td>Leo Rover 是一款由 ROS 2 驱动、坚固耐用、开源且模块化的移动机器人。它兼顾通用性与可靠性，为工程师、研究人员、教育工作者和机器人爱好者提供易于使用的开发平台。</td>
+</tr>
+<tr data-countries="PL" data-date-added="2026-04-20" data-domains="Education Research Space">
+<td><a href="https://fictionlab.pl/" rel="noopener" target="_blank">Fictionlab</a></td>
+<td><a href="https://fictionlab.pl/raph-rover/" rel="noopener" target="_blank">Raph Rover</a></td>
+<td>教育, 研究, 航天</td>
+<td>2026-04-20</td>
+<td>PL</td>
+<td>Raph Rover 是一款由 ROS 2 驱动的先进开源模块化移动机器人平台，基于多年经验和 Leo Rover 用户反馈开发。它将经过验证、适用于实地工作的设计与自主导航、建图和远程无人任务的新能力相结合。作为开放的研发平台，Raph Rover 为航天、国防、监测、技术检查和精准农业等领域的研发项目提供坚实基础。</td>
+</tr>
+<tr data-countries="DE" data-date-added="2026-05-08" data-domains="Agriculture Construction Defense/Government Marine Research">
+<td><a href="https://www.iosb.fraunhofer.de/en.html" rel="noopener" target="_blank">Fraunhofer IOSB</a></td>
+<td><a href="https://www.iosb.fraunhofer.de/en/competences/system-technology/systems-measurement-control-diagnosis/research-topics/autonomous-robot-systems.html" rel="noopener" target="_blank">ATB</a></td>
+<td>农业, 建筑, 国防／政府, 海洋, 研究</td>
+<td>2026-05-08</td>
+<td>DE</td>
+<td>面向非结构化环境机器人的通用算法工具箱与自主系统软件栈，可针对从无人水面艇到自主挖掘机等不同平台进行配置。它属于 RIG（Robotics Institute Germany）的大型越野机器人实验室。</td>
+</tr>
+<tr data-countries="CZ" data-date-added="2026-04-13" data-domains="Defense/Government Research">
+<td><a href="https://www.helhest.com/" rel="noopener" target="_blank">Helhest</a></td>
+<td><a href="https://www.helhest.com/" rel="noopener" target="_blank">Helhest Robot</a></td>
+<td>国防／政府, 研究</td>
+<td>2026-04-13</td>
+<td>CZ</td>
+<td>由 DARPA SubT 决赛团队打造的独特三轮户外平台，适用于极其复杂的地形。用巧妙的硬件设计弥补尚不完善的自主软件：机器人翻倒或侧翻也不是问题！</td>
+</tr>
+<tr data-countries="ES" data-date-added="2026-04-14" data-domains="Agriculture Aerial/Drone Automotive Construction Energy Logistics/Warehouse Manufacturing Marine Service Robot">
+<td><a href="https://insaion.com" rel="noopener" target="_blank">INSAION</a></td>
+<td><a href="https://app.insaion.com/login" rel="noopener" target="_blank">Insaion Agent</a></td>
+<td>农业, 航空／无人机, 汽车, 建筑, 能源, 物流／仓储, 制造, 海洋, 服务机器人</td>
+<td>2026-04-14</td>
+<td>ES</td>
+<td>INSAION 是专门的监控和可观测性平台，与 ROS 2 生态系统原生集成，帮助深入了解机器人集群的性能。它采用 MCAP 标准，将数据记录和实时遥测无缝整合到简洁的工作流程中，支持可扩展的机器人运营。</td>
+</tr>
+<tr data-countries="GB" data-date-added="2026-05-16" data-domains="Education Logistics/Warehouse Research">
+<td><a href="https://lgdxrobot.uk/cloud/" rel="noopener" target="_blank">Kai Tung Yu</a></td>
+<td><a href="https://github.com/yukaitung/lgdxrobot-cloud-adapter" rel="noopener" target="_blank">LGDXRobot Cloud Adapter</a></td>
+<td>教育, 物流／仓储, 研究</td>
+<td>2026-05-16</td>
+<td>GB</td>
+<td>LGDXRobot Cloud 是面向 AGV 的开源机器人管理系统，用于监控机器人状态和管理自动化物流任务。LGDXRobot Cloud Adapter 通过话题和服务，为兼容 ROS 2 的机器人提供集成软件。</td>
+</tr>
+<tr data-countries="GB" data-date-added="2026-04-13" data-domains="Education Research">
+<td><a href="https://lgdxrobot.uk/lgdxrobot2/" rel="noopener" target="_blank">Kai Tung Yu</a></td>
+<td><a href="https://github.com/yukaitung/lgdxrobot2-ros2" rel="noopener" target="_blank">LGDXRobot2</a></td>
+<td>教育, 研究</td>
+<td>2026-04-13</td>
+<td>GB</td>
+<td>LGDXRobot2 是一款麦克纳姆轮移动机器人，旨在使用低成本硬件实现良好性能。它与包括 Nav2 和 Gazebo 在内的 ROS 2 生态系统全面集成，软硬件均完全开源。</td>
+</tr>
+<tr data-countries="NL" data-date-added="2026-04-17" data-domains="Education Research">
+<td><a href="https://kamathrobotics.com" rel="noopener" target="_blank">Kamath Robotics</a></td>
+<td>LeKiwi ROS 2</td>
+<td>教育, 研究</td>
+<td>2026-04-17</td>
+<td>NL</td>
+<td>基于 LeKiwi 平台、由 ROS 2 驱动的教育与研究用移动机器人，增加了云台机构、深度相机、激光扫描仪、IMU，以及具备 ROS 2 专用技能的轻量级 AI 智能体。</td>
+</tr>
+<tr data-countries="CA" data-date-added="2026-04-13" data-domains="Agriculture Components Research">
+<td><a href="https://github.com/manankharwar" rel="noopener" target="_blank">Manan Kharwar</a></td>
+<td><a href="https://github.com/manankharwar/fusioncore" rel="noopener" target="_blank">FusionCore</a></td>
+<td>农业, 组件, 研究</td>
+<td>2026-04-13</td>
+<td>CA</td>
+<td>用于替代已弃用的 robot_localization 的 ROS 2 传感器融合 SDK。通过无迹卡尔曼滤波器，以 100 Hz 融合 IMU、轮编码器和 GPS 数据。支持自动估计 IMU 偏置、通过马氏距离剔除异常值、自适应噪声协方差，以及启动时验证 TF。采用 Apache 2.0 许可。</td>
+</tr>
+<tr data-countries="GB IN" data-date-added="2026-04-14" data-domains="Agriculture Aerial/Drone Automotive Components Construction Consumer Robot Defense/Government Education Energy Healthcare/Medical Humanoid Logistics/Warehouse Manufacturing Marine Research Space Service Robot">
+<td><a href="https://nathanshankar.github.io/" rel="noopener" target="_blank">Nathan Shankar</a></td>
+<td><a href="https://github.com/nathanshankar/terminal_rviz" rel="noopener" target="_blank">Terminal RViz</a></td>
+<td>农业, 航空／无人机, 汽车, 组件, 建筑, 消费级机器人, 国防／政府, 教育, 能源, 医疗健康, 人形机器人, 物流／仓储, 制造, 海洋, 研究, 航天, 服务机器人</td>
+<td>2026-04-14</td>
+<td>GB, IN</td>
+<td>Terminal RViz 是一款完全运行在终端环境中的高性能 ROS 2 三维可视化工具。它使用 FTXUI 和基于盲文字符的自定义软件渲染器构建，为无图形界面的系统、远程 SSH 会话或资源受限环境提供功能丰富的标准 RViz 替代方案。</td>
+</tr>
+<tr data-countries="IT" data-date-added="2026-04-15" data-domains="Agriculture Aerial/Drone Education Research">
+<td><a href="https://www.polimi.it" rel="noopener" target="_blank">Politecnico di Milano</a></td>
+<td><a href="https://rosetea.deib.polimi.it/" rel="noopener" target="_blank">ROSETEA laboratory</a></td>
+<td>农业, 航空／无人机, 教育, 研究</td>
+<td>2026-04-15</td>
+<td>IT</td>
+<td>Politecnico di Milano 的环境与农业机器人传感器技术（ROSETEA）实验室研究创新方法与技术，支持可持续粮食生产系统及具有韧性的农业实践发展，在提高生产率和产量的同时降低环境影响。</td>
+</tr>
+<tr data-countries="US" data-date-added="2026-04-20" data-domains="Agriculture Construction Defense/Government Logistics/Warehouse Research">
+<td><a href="https://www.polymathrobotics.com/" rel="noopener" target="_blank">Polymath Robotics</a></td>
+<td>Off-highway autonomy</td>
+<td>农业, 建筑, 国防／政府, 物流／仓储, 研究</td>
+<td>2026-04-20</td>
+<td>US</td>
+<td>Polymath Robotics 为可投入实际生产使用的非公路自主驾驶系统提供核心基础组件。</td>
+</tr>
+<tr data-countries="DK" data-date-added="2026-04-16" data-domains="Aviation">
+<td><a href="https://www.powerstow.com" rel="noopener" target="_blank">Power Stow</a></td>
+<td>Autonomous Luggage Handling</td>
+<td>航空运输</td>
+<td>2026-04-16</td>
+<td>DK</td>
+<td>使用 ROS 2、ros2_control 和 MoveIt，通过定制机械臂和工具实现自主行李搬运。</td>
+</tr>
+<tr data-countries="KR" data-date-added="2026-04-22" data-domains="Humanoid Logistics/Warehouse Research">
+<td><a href="https://robotis.com/en/" rel="noopener" target="_blank">ROBOTIS</a></td>
+<td><a href="https://ai.robotis.com/ai_worker/introduction_ai_worker.html" rel="noopener" target="_blank">AI Worker</a></td>
+<td>人形机器人, 物流／仓储, 研究</td>
+<td>2026-04-22</td>
+<td>KR</td>
+<td>使用 ROS 2 实现双臂操作与全向导航的控制架构及模仿学习。</td>
+</tr>
+<tr data-countries="KR" data-date-added="2026-04-22" data-domains="Components Humanoid Research">
+<td><a href="https://robotis.com/en/" rel="noopener" target="_blank">ROBOTIS</a></td>
+<td><a href="https://ai.robotis.com/hands/introduction_hands.html" rel="noopener" target="_blank">Robotis Hand</a></td>
+<td>组件, 人形机器人, 研究</td>
+<td>2026-04-22</td>
+<td>KR</td>
+<td>使用 ROS 2 实现实时 20 自由度控制及触觉传感器数据广播，用于高灵巧度操作。</td>
+</tr>
+<tr data-countries="KR" data-date-added="2026-04-22" data-domains="Logistics/Warehouse Manufacturing Research">
+<td><a href="https://robotis.com/en/" rel="noopener" target="_blank">ROBOTIS</a></td>
+<td><a href="https://ai.robotis.com/omy/introduction_omy.html" rel="noopener" target="_blank">OMY</a></td>
+<td>物流／仓储, 制造, 研究</td>
+<td>2026-04-22</td>
+<td>KR</td>
+<td>使用 ROS 2 实现由物理 AI 驱动的六自由度主从操作及实时控制架构。</td>
+</tr>
+<tr data-countries="KR" data-date-added="2026-04-22" data-domains="Education Research">
+<td><a href="https://robotis.com/en/" rel="noopener" target="_blank">ROBOTIS</a></td>
+<td><a href="https://ai.robotis.com/omx/introduction_omx.html" rel="noopener" target="_blank">OMX</a></td>
+<td>教育, 研究</td>
+<td>2026-04-22</td>
+<td>KR</td>
+<td>使用 ROS 2 实现由物理 AI 驱动的五自由度操作，以及以用户为中心的主从控制架构。</td>
+</tr>
+<tr data-countries="KR" data-date-added="2026-04-22" data-domains="Education Research">
+<td><a href="https://robotis.com/en/" rel="noopener" target="_blank">ROBOTIS</a></td>
+<td><a href="https://emanual.robotis.com/docs/en/platform/turtlebot3/overview/" rel="noopener" target="_blank">TurtleBot3</a></td>
+<td>教育, 研究</td>
+<td>2026-04-22</td>
+<td>KR</td>
+<td>使用 ROS 2 实现基于 SLAM 的移动机器人技术及高度可定制的导航架构。</td>
+</tr>
+<tr data-countries="KR" data-date-added="2026-04-22" data-domains="Education Research">
+<td><a href="https://robotis.com/en/" rel="noopener" target="_blank">ROBOTIS</a></td>
+<td><a href="https://emanual.robotis.com/docs/en/platform/openmanipulator_x/overview/" rel="noopener" target="_blank">OpenMANIPULATOR-X</a></td>
+<td>教育, 研究</td>
+<td>2026-04-22</td>
+<td>KR</td>
+<td>使用 ROS 2 实现由 DYNAMIXEL 驱动的开源机器人操作功能及嵌入式实时控制架构。</td>
+</tr>
+<tr data-countries="JP" data-date-added="2026-04-02" data-domains="Education Research">
+<td><a href="https://rt-net.jp" rel="noopener" target="_blank">RT Corporation</a></td>
+<td><a href="https://github.com/rt-net/crane_x7_ros" rel="noopener" target="_blank">CRANE-X7</a></td>
+<td>教育, 研究</td>
+<td>2026-04-02</td>
+<td>JP</td>
+<td>用于研究动力学和协作机器人的七轴机械臂。</td>
+</tr>
+<tr data-countries="DE" data-date-added="2026-05-13" data-domains="Agriculture Aerial/Drone Construction Consumer Robot Healthcare/Medical Humanoid Logistics/Warehouse Manufacturing Marine Research Space Service Robot">
+<td><a href="https://smarobix.com" rel="noopener" target="_blank">SMAROBIX GmbH</a></td>
+<td>Insights Engine and Development Environment</td>
+<td>农业, 航空／无人机, 建筑, 消费级机器人, 医疗健康, 人形机器人, 物流／仓储, 制造, 海洋, 研究, 航天, 服务机器人</td>
+<td>2026-05-13</td>
+<td>DE</td>
+<td>SMAROBIX 开发由 AI 增强的软件，在整个工程过程中为工程师提供可解释的系统分析结果，以及有引导的机器人在环工作流程，用于诊断瓶颈、验证安全性和实时行为，并依据可测量的证据持续改进性能。</td>
+</tr>
+<tr data-countries="JP" data-date-added="2026-03-25" data-domains="Consumer Robot">
+<td><a href="https://www.sony.com" rel="noopener" target="_blank">Sony Group Corporation</a></td>
+<td><a href="https://aibo.sony.jp" rel="noopener" target="_blank">aibo</a></td>
+<td>消费级机器人</td>
+<td>2026-03-25</td>
+<td>JP</td>
+<td>能够形成独特个性的自主机器伴侣犬。</td>
+</tr>
+<tr data-countries="JP" data-date-added="2026-03-25" data-domains="Consumer Robot">
+<td><a href="https://www.sony.com" rel="noopener" target="_blank">Sony Group Corporation</a></td>
+<td><a href="https://www.sony.com/en/brand/futureproof/project/poiq/" rel="noopener" target="_blank">poiq</a></td>
+<td>消费级机器人</td>
+<td>2026-03-25</td>
+<td>JP</td>
+<td>具备对话能力的小型 AI 娱乐机器人。</td>
+</tr>
+<tr data-countries="JP" data-date-added="2026-03-25" data-domains="Aerial/Drone">
+<td><a href="https://www.sony.com" rel="noopener" target="_blank">Sony Group Corporation</a></td>
+<td><a href="https://www.sony.com/en/articles/product-specifications-airpeak-s1" rel="noopener" target="_blank">Airpeak S1</a></td>
+<td>航空／无人机</td>
+<td>2026-03-25</td>
+<td>JP</td>
+<td>可搭载全画幅无反相机的专业无人机。</td>
+</tr>
+<tr data-countries="JP" data-date-added="2026-03-25" data-domains="Logistics/Warehouse Manufacturing Service Robot">
+<td><a href="https://www.sony-semicon.com" rel="noopener" target="_blank">Sony Semiconductor Solutions</a></td>
+<td><a href="https://www.aitrios.sony-semicon.com/robotics" rel="noopener" target="_blank">AITRIOS Robotics Package</a></td>
+<td>物流／仓储, 制造, 服务机器人</td>
+<td>2026-03-25</td>
+<td>JP</td>
+<td>面向物流、建筑和零售等领域的自主移动机器人开发平台。</td>
+</tr>
+<tr data-countries="DE" data-date-added="2026-04-14" data-domains="Research">
+<td>Sourav Hawaldar</td>
+<td><a href="https://github.com/Sourav0607/ROS2-STUDIO" rel="noopener" target="_blank">ROS2 Studio</a></td>
+<td>研究</td>
+<td>2026-04-14</td>
+<td>DE</td>
+<td>基于 PyQt5 的 ROS 2 命令行监控工具，支持节点和话题监控、bag 录制与回放，以及将 .db3 格式的 bag 转换为 CSV，用于分析和系统诊断。</td>
+</tr>
+<tr data-countries="US FR" data-date-added="2026-04-18" data-domains="Components">
+<td><a href="https://stereolabs.com" rel="noopener" target="_blank">StereoLabs</a></td>
+<td><a href="https://www.stereolabs.com/docs/ros2" rel="noopener" target="_blank">ZED ROS 2 Wrapper</a></td>
+<td>组件</td>
+<td>2026-04-18</td>
+<td>US, FR</td>
+<td>对 ZED SDK 进行封装，将 ZED 双目和单目相机的全部功能引入 ROS 2 生态系统。</td>
+</tr>
+<tr data-countries="HU" data-date-added="2026-05-20" data-domains="Aerial/Drone Automotive Energy Research">
+<td><a href="https://jkk-research.github.io/latest/" rel="noopener" target="_blank">Széchenyi University's Vehicle Research Center</a></td>
+<td>Automous Roboshuttle</td>
+<td>航空／无人机, 汽车, 能源, 研究</td>
+<td>2026-05-20</td>
+<td>HU</td>
+<td>研发基于 Autoware 的自动驾驶接驳车。</td>
+</tr>
+<tr data-countries="JP" data-date-added="2026-07-16" data-domains="Logistics/Warehouse Manufacturing Research">
+<td><a href="https://triorb.co.jp/en/" rel="noopener" target="_blank">TriOrb Inc.</a></td>
+<td><a href="https://github.com/TriOrb-Inc" rel="noopener" target="_blank">TriOrb BASE</a></td>
+<td>物流／仓储, 制造, 研究</td>
+<td>2026-07-16</td>
+<td>JP</td>
+<td>由球体驱动的全向移动平台。它使用三个球体和三个电机，实现任意方向的流畅运动，可应对传统机器人难以解决的挑战，包括跨越台阶、在不平整地面行驶、毫米级精确定位和重载运输。</td>
+</tr>
+</tbody></table>

@@ -1,92 +1,75 @@
----
-translation_status: machine_translated
-source: Tutorials/Beginner-CLI-Tools/Recording-And-Playing-Back-Data/Recording-And-Playing-Back-Data.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="recording-and-playing-back-data"></span> <span id="ros2bag"></span>
-
 # 录制与回放数据
 
-**目标：** 记录一个话题上公布的数据,以便您可以随时重放和检查.
+**目标：** 录制话题上发布的数据，以便随时回放和检查。
 
-**教程级别：** 入门
+**教程级别：** 初级
 
-**用时：** 10分钟
+**预计用时：** 10 分钟
 
 <span id="background"></span>
-
 ## 背景
 
-`ros2 bag` 是一个命令行工具,用于记录在您系统中发布的主题上的数据。它可以累积传递到任意几个主题上的数据,并将其保存在一个数据库中。然后可以重放数据来复制测试和实验的结果。记录主题也是分享您的工作并允许其他人重新创建它的一个大方法。
+`ros2 bag` 是一个命令行工具，用于录制系统中话题上发布的数据。它可以收集任意数量话题上传递的数据，并保存到数据库中。之后可以回放这些数据，复现测试和实验结果。录制话题也是分享工作成果、让他人复现实验的好方法。
 
 <span id="prerequisites"></span>
-
 ## 前提条件
 
-你应该有 `ros2 bag` 作为常规ROS 2设置的一部分安装.
+正常安装 ROS 2 时，应已安装 `ros2 bag`。如果尚未安装 ROS 2，请参见[安装说明](../../../Installation.md)。
 
-如果需要安装ROS 2,请查看 [安装指令](../../../Installation.md).
+本教程涉及之前教程中介绍的[节点](../Understanding-ROS2-Nodes/Understanding-ROS2-Nodes.md)和[话题](../Understanding-ROS2-Topics/Understanding-ROS2-Topics.md)等概念，也会使用 [turtlesim 软件包](../Introducing-Turtlesim/Introducing-Turtlesim.md)。
 
-这个教程讲述了以前教程中包含的概念, 比如: [节点](../Understanding-ROS2-Nodes/Understanding-ROS2-Nodes.md) 财务报告和财务报告 [话题](../Understanding-ROS2-Topics/Understanding-ROS2-Topics.md)。它还使用 [龟兹包](../Introducing-Turtlesim/Introducing-Turtlesim.md).
-
-与往常一样, [您打开的每个新终端](../Configuring-ROS2-Environment.md).
+和之前一样，不要忘记在[每个新打开的终端](../Configuring-ROS2-Environment.md)中加载（source）ROS 2 环境。
 
 <span id="tasks"></span>
-
-## 操作步骤
+## 任务
 
 <span id="setup"></span>
+### 1 准备工作
 
-### 1 设置
+接下来将录制 `turtlesim` 系统中的键盘输入，保存后再回放。因此，先启动 `/turtlesim` 和 `/teleop_turtle` 节点。
 
-您将会将您的键盘输入录入 `turtlesim` 用于保存和稍后重播的系统,所以从启动 `/turtlesim` 财务报告和财务报告 `/teleop_turtle` 节点。
+打开新终端并运行：
 
-打开新的终端并运行 :
-
-``` console
+```console
 $ ros2 run turtlesim turtlesim_node
 ```
 
-打开另一个终端并运行 :
+再打开一个终端并运行：
 
-``` console
+```console
 $ ros2 run turtlesim turtle_teleop_key
 ```
 
-让我们再做一个新目录来保存保存的录音,
+为保持文件有序，再创建一个目录来保存录制的数据。
 
-##### Linux
+**Linux：**
 
-``` console
+```console
 $ mkdir bag_files
 $ cd bag_files
 ```
 
-##### macOS
+**macOS：**
 
-``` console
+```console
 $ mkdir bag_files
 $ cd bag_files
 ```
 
-##### Windows
+**Windows：**
 
-``` console
+```console
 $ md bag_files
 $ cd bag_files
 ```
 
 <span id="choose-a-topic"></span>
+### 2 选择话题
 
-### 2 选择主题
+`ros2 bag` 只能录制话题上发布的消息数据。打开新终端并运行以下命令，查看系统中的话题列表：
 
-`ros2 bag` 只能记录主题中已发布消息的数据。要查看您的系统主题列表,请打开一个新的终端并运行命令 :
-
-``` console
+```console
 $ ros2 topic list
 /parameter_events
 /rosout
@@ -95,17 +78,17 @@ $ ros2 topic list
 /turtle1/pose
 ```
 
-在专题辅导中,你学到了 `/turtle_teleop` 节点发布命令 `/turtle1/cmd_vel` 使龟在龟兹移动的话题。
+在话题教程中，你已经了解遥控节点会向 `/turtle1/cmd_vel` 话题发布命令，使 turtlesim 中的海龟运动。
 
-来查看数据 `/turtle1/cmd_vel` 正在发布, 运行命令 :
+运行以下命令，查看 `/turtle1/cmd_vel` 上发布的数据：
 
-``` console
+```console
 $ ros2 topic echo /turtle1/cmd_vel
 ```
 
-起初,由于Teleop没有发布数据,所以不会出现任何东西。返回运行Teleop的终端,然后选择它。使用箭头键来移动龟类,你会看到终端运行中的数据正在发布 `ros2 topic echo`.
+一开始没有任何输出，因为遥控节点尚未发布数据。回到运行遥控程序的终端，并选中该窗口，使其处于活动状态。使用方向键控制海龟运动，就会在运行 `ros2 topic echo` 的终端中看到发布的数据：
 
-``` console
+```console
 linear:
   x: 2.0
   y: 0.0
@@ -118,24 +101,22 @@ angular:
 ```
 
 <span id="ros2-bag-record"></span>
-
-### 3个罗斯2袋记录
+### 3 ros2 bag record
 
 <span id="record-a-single-topic"></span>
+#### 3.1 录制单个话题
 
-#### 3.1 记录一个单一专题
+录制某个话题上发布的数据，使用以下命令语法：
 
-要记录发布到一个主题的数据,使用命令语法:
-
-``` console
+```console
 $ ros2 bag record <topic_name>
 ```
 
-在运行您所选主题的命令之前, 请打开一个新的终端并移动到 `bag_files` 您早些时候创建的目录, 因为 Rosbag 文件会保存在您运行时的目录中 。
+在对选定话题运行该命令前，先打开新终端，进入之前创建的 `bag_files` 目录，因为 rosbag 文件会保存在运行命令时所在的目录中。
 
-运行命令 :
+运行：
 
-``` console
+```console
 $ ros2 bag record /turtle1/cmd_vel
 [INFO] [rosbag2_storage]: Opened database 'rosbag2_2019_10_11-05_18_45'.
 [INFO] [rosbag2_transport]: Listening for topics...
@@ -143,23 +124,20 @@ $ ros2 bag record /turtle1/cmd_vel
 [INFO] [rosbag2_transport]: All requested topics are subscribed. Stopping discovery...
 ```
 
-现在 `ros2 bag` 正在录制该数据库公布的数据。 `/turtle1/cmd_vel` 主题 。 返回到 Teleop 终端, 再移动龟类 。 这些移动无关紧要, 但尝试做一个可识别的图案, 以查看您何时重播数据 。
+现在，`ros2 bag` 正在录制 `/turtle1/cmd_vel` 话题上发布的数据。回到遥控终端，再次控制海龟运动。具体如何移动并不重要，但可以尝试画出容易辨认的轨迹，方便之后回放时观察。
 
-![](images/record.png)
+![录制海龟运动轨迹](images/record.png)
 
-新闻 `Ctrl+C` 停止录音。
+按 `Ctrl+C` 停止录制。
 
-数据将累积在一个新的包目录中,其名称为: `rosbag2_year_month_day-hour_minute_second`。此目录将包含 `metadata.yaml` 与记录格式的袋文件一起。
+数据会保存在新建的 bag 目录中，目录名称采用 `rosbag2_year_month_day-hour_minute_second` 的形式。目录中包含一个 `metadata.yaml`，以及相应录制格式的 bag 文件。
 
 <span id="record-multiple-topics"></span>
+#### 3.2 录制多个话题
 
-#### 3.2 记录多个专题
+也可以同时录制多个话题，并修改 `ros2 bag` 保存的文件名称。运行：
 
-您也可以记录多个主题, 以及更改文件名称 `ros2 bag` 保存为。
-
-运行以下命令 :
-
-``` console
+```console
 $ ros2 bag record -o subset /turtle1/cmd_vel /turtle1/pose
 [INFO] [rosbag2_storage]: Opened database 'subset'.
 [INFO] [rosbag2_transport]: Listening for topics...
@@ -168,29 +146,27 @@ $ ros2 bag record -o subset /turtle1/cmd_vel /turtle1/pose
 [INFO] [rosbag2_transport]: All requested topics are subscribed. Stopping discovery...
 ```
 
-那个... `-o` 选项允许您为您的包文件选择一个独有的名称。在此情况下,下面的字符串 `subset`,是文件名。
+`-o` 选项允许指定 bag 文件的名称，紧随其后的字符串就是文件名，这里是 `subset`。
 
-要一次记录一个以上的话题,只需列出每个被空格分隔的话题。在这种情况下,上面的命令输出确认这两个话题都在记录中。
+要同时录制多个话题，只需用空格分隔并依次列出各话题。上面的命令输出确认了两个话题都已开始录制。
 
-你可以移动海龟 周围按 `Ctrl+C` 当您完成时。
+控制海龟运动，完成后按 `Ctrl+C`。
 
-> **说明**
->
-> 还有一个选项你可以添加到命令中, `-a`,它记录了您系统中的所有话题。
+!!! note "说明"
+    还可以为命令添加 `-a` 选项，录制系统中的所有话题。
 
 <span id="ros2-bag-info"></span>
+### 4 ros2 bag info
 
-### 4个ROS2袋信息
+运行以下命令，可以查看录制数据的详细信息：
 
-您可以通过运行查看您的录音细节 :
-
-``` console
+```console
 $ ros2 bag info <bag_file_name>
 ```
 
-运行此命令 `subset` 包文件将返回文件中的信息列表 :
+对 `subset` bag 文件运行该命令，会返回以下文件信息：
 
-``` console
+```console
 $ ros2 bag info subset
 Files:             subset.db3
 Bag size:          228.5 KiB
@@ -204,48 +180,44 @@ Topic information: Topic: /turtle1/cmd_vel | Type: geometry_msgs/msg/Twist | Cou
 ```
 
 <span id="ros2-bag-play"></span>
+### 5 ros2 bag play
 
-### 5个罗斯2袋游戏
+回放 bag 文件之前，在运行遥控程序的终端中按 `Ctrl+C`，然后确保 turtlesim 窗口可见，以便观察回放效果。
 
-在重放包文件之前, 请输入 `Ctrl+C` 在 teleop 运行的终端中。然后确保您的 topsim 窗口可见, 以便您看到正在操作的 bag 文件 。
+运行：
 
-输入命令 :
-
-``` console
+```console
 $ ros2 bag play subset
 [INFO] [rosbag2_storage]: Opened database 'subset'.
 ```
 
-您的海龟会遵循您在录制时输入的同样路径( 虽然并非100% ; 龟头对系统时间的微小变化敏感 ) 。
+海龟会沿着录制时的路径运动，不过不会百分之百一致，因为 turtlesim 对系统时序的微小变化比较敏感。
 
-![](images/playback.png)
+![回放海龟运动轨迹](images/playback.png)
 
-因为 `subset` 记录文件 `/turtle1/pose` 专题,主题 `ros2 bag play` 命令不会退出, 只要你有龟兹姆运行, 即使你没有移动。
+由于 `subset` 文件还录制了 `/turtle1/pose` 话题，`ros2 bag play` 会持续回放录制期间 turtlesim 运行的整段时间，即使其中某些时段海龟没有移动。
 
-这是因为,只要 `/turtlesim` 节点活动,它发布关于该节点的数据 `/turtle1/pose` 时段主题。您可能在 `ros2 bag info` 以上实例结果 `/turtle1/cmd_vel` 专题 `Count` 仅九次; 这就是我们记录时按箭头键的次数。
+这是因为，只要 `/turtlesim` 节点处于活动状态，就会定期向 `/turtle1/pose` 话题发布数据。前面的 `ros2 bag info` 示例中，`/turtle1/cmd_vel` 的 `Count` 只有 9，这就是录制时按方向键的次数。
 
-请注意: `/turtle1/pose` 拥有 `Count` 价值超过3000;在我们录制时,已公布了3000次有关该主题的数据。
+相比之下，`/turtle1/pose` 的 `Count` 超过 3000，说明录制期间该话题发布了 3000 多条数据。
 
-要了解位置数据的发布频率, 您可以运行命令 :
+要了解位置数据的发布频率，可以运行：
 
-``` console
+```console
 $ ros2 topic hz /turtle1/pose
 ```
 
 <span id="summary"></span>
-
 ## 小结
 
-您可以使用 ROS 2 系统记录所传送的主题数据 。 `ros2 bag` 命令。无论你与他人分享你的工作,还是回顾自己的实验,它都是了解的伟大工具。
+使用 `ros2 bag` 命令，可以录制 ROS 2 系统中通过话题传递的数据。无论是与他人分享成果，还是检查自己的实验过程，它都是一个实用工具。
 
 <span id="next-steps"></span>
-
 ## 后续步骤
 
-您已完成了“ 初学者: CLI 工具” 教程。 下一步是解决“ 初学者: 客户端库” 教程, 首先是 [创建工作空间](../../Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.md).
+你已完成“初级：命令行工具”系列教程！接下来可以学习“初级：客户端库”系列，从[创建工作空间](../../Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.md)开始。
 
 <span id="related-content"></span>
-
 ## 相关内容
 
-更彻底的解释 `ros2 bag` 可在 README 中找到 [这儿](https://github.com/ros2/rosbag2)。关于 QoS 兼容性和 `ros2 bag`,见 [rosbag2：覆盖 QoS 策略](../../../How-To-Guides/Overriding-QoS-Policies-For-Recording-And-Playback.md).
+关于 `ros2 bag` 的更详细说明，见 [rosbag2 的 README](https://github.com/ros2/rosbag2)。有关 QoS 兼容性与 `ros2 bag` 的更多信息，见[覆盖录制和回放的 QoS 策略](../../../How-To-Guides/Overriding-QoS-Policies-For-Recording-And-Playback.md)。

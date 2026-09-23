@@ -3,10 +3,6 @@ translation_status: machine_translated
 source: Tutorials/Demos/Rosbag-with-ROS1-Bridge.rst
 ---
 
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="recording-and-playing-back-data-with-rosbag-using-the-ros-1-bridge"></span>
 
 # 记录和播放回放数据 `rosbag` 使用 ROS 1 桥

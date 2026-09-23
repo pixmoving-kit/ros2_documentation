@@ -1,47 +1,38 @@
----
-translation_status: machine_translated
-source: Tutorials/Intermediate/Testing/Python.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="writing-basic-tests-with-python"></span>
 
-# 使用 Python 编写基础测试
+# 使用 Python 编写基本测试
 
-开始点:我们假设你有一个 [基本动因\_ python 套件](../../Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.md#createpkg) 已经设置了, 您想要加入一些测试 。
+本教程假设你已经创建了一个[基本的 ament_python 包](../../Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.md#createpkg)，现在希望为它添加测试。
 
-如果您使用ament_cmake_python,请参考 [备注_cmake_python 文档](../../../How-To-Guides/Ament-CMake-Python-Documentation.md) 测试内容和引用 `colcon` 保持不变。
+如果使用 ament_cmake_python，请参阅 [ament_cmake_python 文档](../../../How-To-Guides/Ament-CMake-Python-Documentation.md)，了解如何让测试被发现。测试内容及通过 `colcon` 调用测试的方法相同。
 
 <span id="package-setup"></span>
 
-## 软件包设置
+## 配置软件包
 
 <span id="setup-py"></span>
 
 ### setup.py
 
- `setup.py` 必须有测试依赖 `pytest` 在呼吁中 `setup(...)`:
+在 `setup.py` 的 `setup(...)` 调用中，必须将 `pytest` 声明为测试依赖：
 
-``` python
+```python
 tests_require=['pytest'],
 ```
 
 <span id="test-files-and-folders"></span>
 
-### 测试文件和文件夹
+### 测试文件与目录
 
-您的测试代码需要输入一个名为文件夹的文件夹 `tests` 在您的包的根部。
+测试代码应放在软件包根目录下名为 `tests` 的文件夹中。
 
-包含要运行的测试的任何文件必须具有模式 `test_FOO.py` 地点 `FOO` 可以用任何东西来代替。
+需要运行的测试所在文件必须采用 `test_FOO.py` 的命名方式，其中 `FOO` 可以替换为任意名称。
 
 <span id="example-package-layout"></span>
 
-#### 示例包布局 :
+#### 软件包目录示例
 
-``` default
+```
 awesome_ros_package/
   awesome_ros_package/
       __init__.py
@@ -59,9 +50,9 @@ awesome_ros_package/
 
 ## 测试内容
 
-您现在可以写出您内心的测试内容。 [用于测试的充足资源](https://docs.pytest.org),但简言之,你可以与 `test_` 前缀并包含任何您想要的断言语句 。
+现在可以编写所需的测试。[pytest 文档](https://docs.pytest.org)提供了丰富的资料。简单来说，可以编写名称以 `test_` 开头的函数，并在其中加入所需的断言。
 
-``` python
+```python
 def test_math():
     assert 2 + 2 == 5   # This should fail for most mathematical systems
 ```
@@ -70,28 +61,28 @@ def test_math():
 
 ## 运行测试
 
-见 [关于如何从命令行运行测试的教程](CLI.md) 关于测试运行和检查测试结果的更多信息。
+有关运行测试和查看结果的更多信息，请参阅[从命令行运行测试的教程](CLI.md)。
 
 <span id="special-commands"></span>
 
-## 特别命令
+## 特殊命令
 
-超越 [标准 colcon 测试命令](CLI.md) 参数,也可以指定参数。 `pytest` 框架,从命令行 `--pytest-args` 标记。例如,您可以指定要运行的函数的名称
+除了[标准的 colcon 测试命令](CLI.md)，还可以使用 `--pytest-args` 从命令行向 `pytest` 框架传递参数。例如，可以指定要运行的测试函数名称。
 
-##### Linux/macOS
+Linux/macOS：
 
-``` console
+```console
 $ colcon test --packages-select <name-of-pkg> --pytest-args -k name_of_the_test_function
 ```
 
-##### Windows
+Windows：
 
-``` console
+```console
 $ colcon test --merge-install --packages-select <name-of-pkg> --pytest-args -k name_of_the_test_function
 ```
 
-要在进行测试时看到 pytest 输出, 请使用这些标记 :
+要在测试运行时查看 pytest 输出，请使用以下参数：
 
-``` console
+```console
 $ colcon test --event-handlers console_cohesion+
 ```

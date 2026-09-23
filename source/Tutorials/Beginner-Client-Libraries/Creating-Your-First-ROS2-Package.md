@@ -1,67 +1,47 @@
----
-translation_status: machine_translated
-source: Tutorials/Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="creating-a-package"></span> <span id="createpkg"></span>
-
 # 创建软件包
 
-**目标：** 使用 CMake 或 Python 创建新软件包,并运行其可执行文件 。
+**目标：** 使用 CMake 或 Python 创建新软件包，并运行其中的可执行程序。
 
-**教程级别：** 入门
+**教程级别：** 初学者
 
-**用时：** 15分钟
+**预计用时：** 15 分钟
 
 <span id="background"></span>
-
 ## 背景
 
 <span id="what-is-a-ros-2-package"></span>
+### 1 什么是 ROS 2 软件包？
 
-### 1是什么ROS 2 包车?
+软件包是组织 ROS 2 代码的基本单位。如果希望安装自己的代码，或与他人分享，就需要将代码组织成软件包。这样，你就能发布 ROS 2 开发成果，让其他人方便地构建和使用。
 
-软件包是您 ROS 2 代码的组织单位。 如果您想要安装您的代码或与他人共享, 您需要用软件包来组织它。 有了软件包, 您可以释放自己的 ROS 2 工作, 并允许其他人轻松构建和使用它 。
-
-ROS 2 中的软件包创建将 Ament 作为它的构建系统, 并将 colcon 作为它的构建工具。 您可以使用 CMake 或 Python 创建一个软件包, 尽管其他的构建类型确实存在 。
+ROS 2 使用 ament 作为构建系统，使用 colcon 作为构建工具。官方支持通过 CMake 或 Python 创建软件包，此外也存在其他构建类型。
 
 <span id="what-makes-up-a-ros-2-package"></span>
+### 2 ROS 2 软件包由什么组成？
 
-### 2是什么构成 ROS 2包?
+ROS 2 的 Python 和 CMake 软件包各有其最低必需内容。
 
-ROS 2 Python 和 CMake 软件包各有各自的最低要求内容:
+**CMake 软件包**
 
-##### CMake
+- `CMakeLists.txt`：描述如何构建包内代码。
+- `include/<package_name>`：存放软件包的公共头文件。
+- `package.xml`：包含软件包的元信息。
+- `src`：存放软件包的源代码。
 
-- `CMakeLists.txt` 描述如何在软件包内构建代码的文件
+**Python 软件包**
 
-- `include/<package_name>` 包含软件包公共信头的目录
+- `package.xml`：包含软件包的元信息。
+- `resource/<package_name>`：软件包的标记文件。
+- `setup.cfg`：软件包包含可执行程序时需要此文件，让 `ros2 run` 能找到它们。
+- `setup.py`：说明如何安装软件包。
+- `<package_name>`：与软件包同名的目录，包含 `__init__.py`，ROS 2 工具用它查找软件包。
 
-- `package.xml` 包含关于软件包的元信息的文件
+最简单的软件包结构如下。
 
-- `src` 包含软件包源代码的目录
+**CMake**
 
-##### Python
-
-- `package.xml` 包含关于软件包的元信息的文件
-
-- `resource/<package_name>` 包的标记文件
-
-- `setup.cfg` 当软件包有可执行文件时需要执行,所以 `ros2 run` 可以找到他们
-
-- `setup.py` 包含如何安装软件包的指令
-
-- `<package_name>` - 与您的软件包同名的目录,由ROS 2 工具用于查找您的软件包,包含 `__init__.py`
-
-最简单的可能包可能有一个文件结构,其外观类似:
-
-##### CMake
-
-``` console
+```console
 my_package/
      CMakeLists.txt
      include/my_package/
@@ -69,9 +49,9 @@ my_package/
      src/
 ```
 
-##### Python
+**Python**
 
-``` console
+```console
 my_package/
       package.xml
       resource/my_package
@@ -81,16 +61,15 @@ my_package/
 ```
 
 <span id="packages-in-a-workspace"></span>
+### 3 工作空间中的软件包
 
-### 工作空间中的3个软件包
+一个工作空间可以包含任意多个软件包，每个包位于独立文件夹中。同一工作空间也可以同时包含不同构建类型的软件包，例如 CMake 和 Python。软件包不能相互嵌套。
 
-单个工作空间可以包含您想要的众多软件包, 每一个软件包都包含在自己的文件夹中。 您也可以在一个工作空间( CMake, Python等) 中拥有不同构建类型的软件包。 您不能拥有嵌入软件包 。
+推荐在工作空间内创建 `src` 文件夹，并将软件包放在其中，以保持工作空间顶层整洁。
 
-最佳做法是: `src` 在工作空间中创建文件夹,并在其中创建软件包。这保持了工作空间的顶层“清理”。
+简单的工作空间可能具有以下结构：
 
-一个无关紧要的工作空间可能看起来像:
-
-``` console
+```console
 workspace_folder/
     src/
       cpp_package_1/
@@ -114,80 +93,75 @@ workspace_folder/
 ```
 
 <span id="prerequisites"></span>
-
 ## 前提条件
 
-你应该有一个ROS 2工作空间 在遵循指令后 [上一个教程](Creating-A-Workspace/Creating-A-Workspace.md)。您将在此工作空间创建您的软件包。
+按照[上一篇教程](Creating-A-Workspace/Creating-A-Workspace.md)操作后，你应该已经有了一个 ROS 2 工作空间。本教程将在其中创建软件包。
 
 <span id="tasks"></span>
-
 ## 操作步骤
 
 <span id="create-a-package"></span>
-
 ### 1 创建软件包
 
-首先,我们... [源代码 ROS 2 安装](../Beginner-CLI-Tools/Configuring-ROS2-Environment.md).
+首先[加载 ROS 2 安装环境](../Beginner-CLI-Tools/Configuring-ROS2-Environment.md)。
 
-让我们利用您在您创建的工作空间 [上一个教程](Creating-A-Workspace/Creating-A-Workspace.md#new-directory), `ros2_ws`为了你的新包裹
+在[上一篇教程](Creating-A-Workspace/Creating-A-Workspace.md#new-directory)创建的 `ros2_ws` 工作空间中创建新软件包。运行创建命令前，确保进入 `src` 目录。
 
-确定你身处 `src` 文件夹在运行软件包创建命令之前。
+**Linux**
 
-##### Linux
-
-``` console
+```console
 $ cd ~/ros2_ws/src
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ cd ~/ros2_ws/src
 ```
 
-##### Windows
+**Windows**
 
-``` console
+```console
 $ cd \ros2_ws\src
 ```
 
-在ROS 2中创建新软件包的命令语法是:
+ROS 2 创建新软件包的命令语法如下。
 
-##### CMake
+**CMake**
 
-``` console
+```console
 $ ros2 pkg create --build-type ament_cmake --license Apache-2.0 <package_name>
 ```
 
-##### Python
+**Python**
 
-``` console
+```console
 $ ros2 pkg create --build-type ament_python --license Apache-2.0 <package_name>
 ```
 
-对于此教程, 您将使用可选参数 `--node-name` 它在软件包中创建了一个简单的 Hello World 类型可执行文件。
+本教程使用可选参数 `--node-name`，在软件包中创建一个简单的 Hello World 可执行程序。
 
-在终端中输入以下命令:
+在终端输入对应命令。
 
-##### CMake
+**CMake**
 
-``` console
+```console
 $ ros2 pkg create --build-type ament_cmake --license Apache-2.0 --node-name my_node my_package
 ```
 
-##### Python
+**Python**
 
-``` console
+```console
 $ ros2 pkg create --build-type ament_python --license Apache-2.0 --node-name my_node my_package
 ```
 
-您现在将会在工作空间内有一个新文件夹 `src` 调用目录 `my_package`.
+此时，工作空间的 `src` 下会出现名为 `my_package` 的新文件夹。
 
-运行命令后, 您的终端将返回消息 :
+命令执行后，终端会输出以下消息。
 
-##### CMake
+**CMake**
 
-``` console
+```console
 going to create a new package
 package name: my_package
 destination directory: /home/user/ros2_ws/src
@@ -208,9 +182,9 @@ creating ./my_package/CMakeLists.txt
 creating ./my_package/src/my_node.cpp
 ```
 
-##### Python
+**Python**
 
-``` console
+```console
 going to create a new package
 package name: my_package
 destination directory: /home/user/ros2_ws/src
@@ -238,149 +212,144 @@ creating ./my_package/test/test_pep257.py
 creating ./my_package/my_package/my_node.py
 ```
 
-您可以看到新软件包的自动生成文件 。
+这些消息列出了为新软件包自动生成的文件。
 
 <span id="build-a-package"></span>
-
 ### 2 构建软件包
 
-将软件包放入工作空间尤其有价值,因为您可以同时通过运行构建许多软件包 `colcon build` 在工作空间根中。否则,您必须单独构建每个软件包。
+将软件包放在工作空间中有一个明显好处：在工作空间根目录运行一次 `colcon build`，就可以同时构建多个软件包，无需逐个构建。
 
-返回您工作空间的根 :
+返回工作空间根目录。
 
-##### Linux
+**Linux**
 
-``` console
+```console
 $ cd ~/ros2_ws
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ cd ~/ros2_ws
 ```
 
-##### Windows
+**Windows**
 
-``` console
+```console
 $ cd \ros2_ws
 ```
 
-现在,你可以构建您的软件包:
+现在构建软件包。
 
-##### Linux
+**Linux**
 
-``` console
+```console
 $ colcon build
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ colcon build
 ```
 
-##### Windows
+**Windows**
 
-``` console
+```console
 $ colcon build --merge-install
 ```
 
-Windows 不允许长路径, 所以 `merge-install` 将所有路径结合到 `install` 目录。
+Windows 存在路径长度限制，因此 `merge-install` 将各软件包合并安装到 `install` 目录。
 
-从上一个教程中回忆起,您还有 `ros_tutorials` 在您的软件包中 `ros2_ws`。你可能已经注意到运行 `colcon build` 还建造了 `turtlesim` 软件包。如果工作空间中只有几个软件包,但有很多软件包,那就没事了。 `colcon build` 需要很长的时间
+上一教程还在 `ros2_ws` 中放入了 `ros_tutorials` 的软件包，所以运行 `colcon build` 时也会构建 `turtlesim`。工作空间中只有少量软件包时，这没什么问题；包较多时，完整构建就可能耗费很长时间。
 
-只有建造 `my_package` 下次,您可以运行 :
+下次只构建 `my_package` 时，可以运行：
 
-``` console
+```console
 $ colcon build --packages-select my_package
 ```
 
 <span id="source-the-setup-file"></span>
+### 3 加载环境设置文件
 
-### 3 来源设置文件
+要使用新软件包及其可执行程序，先打开新终端，加载主 ROS 2 安装环境。
 
-要使用您的新软件包和可执行文件, 首先打开一个新的终端并源代码为您的主要ROS 2 安装 。
+然后在 `ros2_ws` 目录中运行对应命令，加载工作空间环境。
 
-然后,从里面 `ros2_ws` 目录,运行以下命令以源代码工作空间:
+**Linux**
 
-##### Linux
-
-``` console
+```console
 $ source install/local_setup.bash
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ . install/local_setup.bash
 ```
 
-##### Windows
+**Windows**
 
-``` console
+```console
 $ call install/local_setup.bat
 ```
 
-您的工作空间已被添加到您的路径中, 您将可以使用您的新软件包的可执行文件 。
+工作空间加入搜索路径后，就可以使用新软件包的可执行程序了。
 
 <span id="use-the-package"></span>
-
 ### 4 使用软件包
 
-要运行您创建的可执行文件 。 `--node-name` 创建软件包时的参数,输入命令:
+运行创建软件包时通过 `--node-name` 生成的可执行程序：
 
-``` console
+```console
 $ ros2 run my_package my_node
 ```
 
-这将返回一个消息到您的终端:
+终端会显示以下消息。
 
-##### CMake
+**CMake**
 
-``` console
+```console
 hello world my_package package
 ```
 
-##### Python
+**Python**
 
-``` console
+```console
 Hi from my_package.
 ```
 
 <span id="examine-package-contents"></span>
+### 5 查看软件包内容
 
-### 5 审查一揽子内容
+在 `ros2_ws/src/my_package` 中，可以看到 `ros2 pkg create` 自动生成的文件和目录。
 
-内部 `ros2_ws/src/my_package`,您将看到文件和文件夹 `ros2 pkg create` 自动生成 :
+**CMake**
 
-##### CMake
-
-``` console
+```console
 CMakeLists.txt  include  package.xml  src
 ```
 
-`my_node.cpp` 内在的 `src` 目录。这是您所有自定义的 C++ 节点将来都会去的地方。
+`my_node.cpp` 位于 `src` 目录，今后编写的 C++ 节点也放在这里。
 
-##### Python
+**Python**
 
-``` console
+```console
 my_package  package.xml  resource  setup.cfg  setup.py  test
 ```
 
-`my_node.py` 内在的 `my_package` 目录。 您所有自定义的 Python 节点将来都会在这里运行 。
+`my_node.py` 位于 `my_package` 目录，今后编写的 Python 节点也放在这里。
 
 <span id="customize-package-xml"></span>
+### 6 自定义 package.xml
 
-### 6 自定义软件包.xml
+创建软件包后的输出中，`description` 和 `license` 字段可能包含 `TODO` 提示。软件包说明和许可证声明不会自动补充完整，而发布软件包时必须提供它们。`maintainer` 字段也可能需要填写。
 
-您可能在创建软件包后的返回信件中注意到字段 `description` 财务报告和财务报告 `license` 包含 `TODO` 备注。这是因为软件包描述和许可证声明不是自动设置的,而是如果想要发布软件包,则需要这样做。 `maintainer` 字段也可能需要填入。
+用文本编辑器打开 `ros2_ws/src/my_package/package.xml`。
 
-从 `ros2_ws/src/my_package`打开 `package.xml` 使用您首选的文本编辑器 :
+**CMake**
 
-##### CMake
-
-``` xml
+```xml
 <?xml version="1.0"?>
 <?xml-model
    href="http://download.ros.org/schema/package_format3.xsd"
@@ -403,9 +372,9 @@ my_package  package.xml  resource  setup.cfg  setup.py  test
 </package>
 ```
 
-##### Python
+**Python**
 
-``` xml
+```xml
 <?xml version="1.0"?>
 <?xml-model
    href="http://download.ros.org/schema/package_format3.xsd"
@@ -428,33 +397,33 @@ my_package  package.xml  resource  setup.cfg  setup.py  test
 </package>
 ```
 
-输入您的姓名和电子邮件到 `maintainer` 线条,如果它没有自动为您服务。然后编辑 `description` 线条以概括软件包 :
+如果 `maintainer` 尚未自动填写，请输入你的姓名和电子邮箱。然后修改 `description`，简要说明软件包用途：
 
-``` xml
+```xml
 <description>Beginner client libraries tutorials practice package</description>
 ```
 
-然后,更新 `license` 线条。您可以读取更多关于开源许可证的内容 [这儿](https://opensource.org/licenses/alphabetical)。由于这个包只用于实践,因此使用任何许可证都是安全的。我们将使用 `Apache License 2.0`:
+接着更新 `license`。有关开源许可证的说明，请参阅[开源许可证列表](https://opensource.org/licenses/alphabetical)。这里的软件包仅用于练习，可以选择任意许可证。本教程使用 `Apache License 2.0`：
 
-``` xml
+```xml
 <license>Apache License 2.0</license>
 ```
 
-编辑完成后, 不要忘记保存。
+编辑完成后记得保存。
 
-在牌照牌照下面,你会看到一些牌照名的结尾 `_depend`。这是你的 `package.xml` 将会列出它对其他软件包的依赖性, 以便Colcon 搜索 。 `my_package` 简单且没有任何依赖关系, 但您会看到此空间被使用在即将到来的教程中 。
+许可证标签下方有一些以 `_depend` 结尾的标签。`package.xml` 在这里声明对其他软件包的依赖，供 colcon 查找。`my_package` 很简单，没有其他软件包依赖；后续教程会使用这部分配置。
 
-##### CMake
+**CMake**
 
-你们现在都完了!
+目前的配置已经完成。
 
-##### Python
+**Python**
 
-那个... `setup.py` 文件包含的描述、维护者和许可字段与 `package.xml`,所以您也需要设置这些。它们需要在两个文件中精确匹配。版本和名称(`package_name`)还需要精确匹配,并且应当自动地将两者都包含在两个文件中.
+`setup.py` 中也包含与 `package.xml` 对应的说明、维护者和许可证字段，需要一起设置，确保两个文件中的值完全一致。版本和名称（`package_name`）也必须完全一致，这两项应该已自动填写。
 
-打开 `setup.py` 与您首选的文本编辑器。
+用文本编辑器打开 `setup.py`：
 
-``` python
+```python
 from setuptools import setup
 
 package_name = 'my_py_pkg'
@@ -483,20 +452,16 @@ setup(
 )
 ```
 
-编辑 `maintainer`, `maintainer_email`,以及 `description` 要匹配的线条 `package.xml`.
-
-别忘了保存文件。
+修改 `maintainer`、`maintainer_email` 和 `description`，使其与 `package.xml` 一致，然后保存文件。
 
 <span id="summary"></span>
-
 ## 小结
 
-您创建了一个包来组织您的代码, 并方便他人使用。
+你已经创建了一个软件包，用于组织代码，并方便其他人使用。
 
-您的软件包被自动装入了必要的文件, 然后您使用colcon来构建它, 这样您就可以在本地环境中使用它的可执行文件 。
+创建命令自动生成了必需文件，随后通过 colcon 构建软件包，使其中的可执行程序能够在本地环境运行。
 
 <span id="next-steps"></span>
-
 ## 后续步骤
 
-接下来,让我们在软件包中添加一些有意义的内容。您将从一个简单的出版商/订阅商系统开始,您可以选择在其中任何一个中写入 [C++](Writing-A-Simple-Cpp-Publisher-And-Subscriber.md) 或 时 间 [Python](Writing-A-Simple-Py-Publisher-And-Subscriber.md).
+接下来为软件包添加实际功能，从一个简单的发布者/订阅者系统开始。你可以选择使用 [C++](Writing-A-Simple-Cpp-Publisher-And-Subscriber.md) 或 [Python](Writing-A-Simple-Py-Publisher-And-Subscriber.md) 编写。

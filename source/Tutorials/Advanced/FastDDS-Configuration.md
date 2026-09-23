@@ -3,10 +3,6 @@ translation_status: machine_translated
 source: Tutorials/Advanced/FastDDS-Configuration.rst
 ---
 
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="unlocking-the-potential-of-fast-dds-middleware-community-contributed"></span>
 
 # 发挥 Fast DDS 中间件的能力（社区贡献）

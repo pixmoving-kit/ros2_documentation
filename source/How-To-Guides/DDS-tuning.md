@@ -1,119 +1,109 @@
----
-translation_status: machine_translated
-source: How-To-Guides/DDS-tuning.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
+<span id="id1"></span>
 
 <span id="dds-tuning-information"></span>
+# DDS 调优说明
 
-# DDS 调优
+本页提供一些参数调优建议，用于解决在 Linux 上实际使用不同 DDS 实现时遇到的问题。在其他平台或未在此记录的厂商实现中，也可能遇到类似问题。
 
-本页面就参数调试提供了一些指导,这些参数在现实世界情况下使用 Linux 上的各种 DDS 执行程序处理所面临的问题。 Linux 上或使用一个供应商时,我们发现的问题可能会出现于此处没有记录的其他平台和供应商。
+以下建议是调优的起点：这些设置在特定系统和环境中有效，但具体取值受多种因素影响。调试时，可能需要根据消息大小、网络拓扑等因素调高或调低参数。
 
-下面的建议是调试的起点;它们为特定的系统和环境工作,但调试可能因若干因素而异。您可能需要在调试相对于消息大小,网络地形等因素时增加或降低数值.
+应注意，调整参数可能消耗更多资源，并影响预期改进范围之外的系统功能。应根据具体情况权衡可靠性提升与其他不利影响。
 
-必须认识到,调整参数可能牺牲资源,并可能影响所期望的改进范围以外的部分系统。 提高可靠性的好处应当与每个案例的任何不利因素权衡。
+<span id="cross-vendor-tuning"></span>
+## 适用于不同厂商的调优
 
-<span id="cross-vendor-tuning"></span> <span id="id1"></span>
+**问题：** 在有丢包的连接（通常是 Wi-Fi）上传输数据时，部分 IP 分片丢失可能导致接收端内核缓冲区被填满。
 
-## 交叉报仇调制
+当一个 UDP 数据包缺失至少一个 IP 分片时，已收到的其余分片会占用内核缓冲区。默认情况下，Linux 内核尝试重组分片的超时时间为 30 秒。此时缓冲区可能已经满了（默认大小为 256 KB），无法再接收新分片，因此连接会表现为长时间“卡住”。
 
-**问题:** 在丢失(通常是WiFi)连接上发送数据,当一些IP片段被丢弃时就会出现问题,可能导致接收方的内核缓冲器满载.
+这一问题影响所有 DDS 厂商的实现，因此解决方法涉及内核参数调整。
 
-当一个 UDP 包丢失至少一个IP 片段时, 其余接收的片段会填充内核缓冲器。 默认情况下, Linux 内核会在试图重压缩包片段的30s 后超时。 由于此时内核缓冲器是满的( 默认大小为 256KB) , 无法输入新的片段, 因此连接会长时期看似“ 挂” 。
+**解决方法：使用尽力而为（best-effort）QoS，而不是可靠（reliable）QoS。**
 
-这个问题在所有DDS供应商中都是通用的,因此解决方案涉及调整内核参数.
+尽力而为设置可减少网络流量，因为 DDS 无须承担可靠通信的开销：可靠模式下，发布者需要确认订阅者已收到消息，并重发未正确接收的样本。
 
-**解决方案 :** 使用最佳的QoS设置而不是可靠 。
+但如果 IP 分片内核缓冲区被填满，仍会出现相同症状，即阻塞 30 秒。这种方法无需调整参数，就能在一定程度上改善问题。
 
-最佳设置会减少网络流量,因为DDS执行不需要支付可靠通信的间接费用,因为出版商需要向订阅者发送消息的确认,必须重新发送未正确接收的样本.
+**解决方法：减小 `ipfrag_time`。**
 
-如果IP碎片的内核缓冲器满了,那么症状还是一样(阻塞30s ) 。 这个解决方案应该能在一定程度上改善问题,而不必调整参数。
+`net.ipv4.ipfrag_time`（对应 `/proc/sys/net/ipv4/ipfrag_time`，默认 30 秒）规定 IP 分片在内存中的保留时间。
 
-**解决方案 :** 降低其价值 `ipfrag_time` 参数。
+例如，将其降为 3 秒：
 
-`net.ipv4.ipfrag_time / /proc/sys/net/ipv4/ipfrag_time` (默认 30s) : 将IP片段保存在内存中的时间为秒.
-
-例如,通过运行将数值降低到 3s :
-
-``` console
+```console
 $ sudo sysctl net.ipv4.ipfrag_time=3
 ```
 
-减少这个参数的值也减少了没有收到碎片的时间之窗。 这个参数对于所有进入的碎片都是全球性的,因此每个环境都需要考虑降低其值的可行性。
+降低此值也会缩短无法接收新分片的时间窗口。该参数全局影响所有接收的分片，因此需要针对具体环境评估是否适合降低。
 
-**解决方案 :** 增加该表的价值 `ipfrag_high_thresh` 参数。
+**解决方法：增大 `ipfrag_high_thresh`。**
 
-`net.ipv4.ipfrag_high_thresh / /proc/sys/net/ipv4/ipfrag_high_thresh` (默认: 262144字节):用于重新组装IP片段的最大内存.
+`net.ipv4.ipfrag_high_thresh`（对应 `/proc/sys/net/ipv4/ipfrag_high_thresh`，默认 262144 字节）规定重组 IP 分片可使用的最大内存。
 
-例如,通过运行将值提高到128MB:
+例如，增大到 128 MB：
 
-``` console
+```console
 $ sudo sysctl net.ipv4.ipfrag_high_thresh=134217728     # (128 MB)
 ```
 
-大幅提高这个参数的值是为了确保缓冲器永远不会完全满载。 但是,要保存在时间窗口里收到的所有数据,其值很可能是很高的。 `ipfrag_time`,假设每个UDP包缺少一个片段.
+大幅提高该值，是为了尽量避免缓冲区被完全填满。不过，假如每个 UDP 数据包都缺少一个分片，要保存 `ipfrag_time` 时间窗口内收到的全部数据，该值可能需要设得非常高。
 
-**问题:** 发送自定义消息时带有大量非原生类型的可变大小阵列, 会导致高序化/ 淡化率和CPU 负载。 这可能导致出版商的延迟, 因为花费过多的时间 `publish()` 和工具,例如: `ros2 topic hz` 举例来说,请注意: `builtin_interfaces/Time` 由于串行管理费增加,当天真地将自定义信件类型从ROS 1 转换为ROS 2 时,可以观察到严重性能退化。
+**问题：** 发送包含大型、变长、非基本类型数组的自定义消息，会产生很高的序列化和反序列化开销及 CPU 负载。这可能使发布者在 `publish()` 中耗时过长而停滞，也会使 `ros2 topic hz` 等工具报告的接收频率低于实际值。注意，`builtin_interfaces/Time` 也属于非基本类型，同样会增加序列化开销。因此，将 ROS 1 自定义消息类型直接迁移到 ROS 2 时，可能出现严重的性能下降。
 
-**工作间:** 使用多个原始数组,而不是一个自定义类型的单数组,或者按下列方式将数组组合成字节数组: `PointCloud2` 。例如,而不是定义一个 `FooArray` 消息为:
+**变通方法：** 用多个基本类型数组替代单个自定义类型数组，或像 `PointCloud2` 消息那样打包到字节数组中。例如，不要将 `FooArray` 定义为：
 
-``` bash
+```bash
 Foo[] my_large_array
 ```
 
-与 `Foo` 定义如下:
+其中 `Foo` 定义为：
 
-``` bash
+```bash
 uint64 foo_1
 uint32 foo_2
 ```
 
-相反,定义 `FooArray` 成为:
+而是将 `FooArray` 定义为：
 
-``` bash
+```bash
 uint64[] foo_1_array
 uint32[] foo_2_array
 ```
 
 <span id="fast-rtps-tuning"></span>
+## Fast RTPS 调优
 
-## 快速RTPS 调制
+**问题：** 通过 Wi-Fi 传输大块数据或高频发布数据时，Fast RTPS 可能产生过多网络流量。
 
-**问题:** 快速RTPS在WiFi上运行时将大量数据或快速发布的数据淹没在网络中.
+参见[适用于不同厂商的调优](#cross-vendor-tuning)中的解决方法。
 
-见下面的解决方案 [交叉报仇调制](#cross-vendor-tuning).
+<span id="cyclone-dds-tuning"></span>
+<span id="cyclonedds-tuning"></span>
+## Cyclone DDS 调优
 
-<span id="cyclone-dds-tuning"></span> <span id="cyclonedds-tuning"></span>
+**问题：** 即使采用可靠设置和有线网络，Cyclone DDS 仍无法可靠地传递大消息。
 
-## 旋风 DDS 调制
+该问题[计划得到解决](https://github.com/eclipse-cyclonedds/cyclonedds/issues/484)。在此之前，可以采用以下解决方法，其调试使用了[这个测试程序](https://github.com/jacobperron/pc_pipe)。
 
-**问题:** 尽管使用了可靠的设置和通过有线网络传输,气旋DDS并没有可靠地发送大型信息.
+**解决方法：** 增大 Linux 内核接收缓冲区上限，以及 Cyclone 使用的套接字接收缓冲区下限。
 
-这个问题应该是: [不久后发函](https://github.com/eclipse-cyclonedds/cyclonedds/issues/484)。在那之前,我们已经想出了以下解决方案(调试使用 [此测试程序](https://github.com/jacobperron/pc_pipe)):
+*以下调整用于处理 9 MB 消息：*
 
-**解决方案 :** 增加最大Linux内核接收缓冲大小,最小套接字接收气旋使用的缓冲大小.
+设置最大接收缓冲区大小 `rmem_max`：
 
-*9MB 消息的解析调整 :*
+```console
+$ sudo sysctl -w net.core.rmem_max=2147483647
+```
 
-设置最大接收缓冲大小, `rmem_max`,通过运行:
+或者编辑 `/etc/sysctl.d/10-cyclone-max.conf`，写入以下内容以永久设置：
 
-> ``` console
-> $ sudo sysctl -w net.core.rmem_max=2147483647
-> ```
+```bash
+net.core.rmem_max=2147483647
+```
 
-或者通过编辑永久设定它 `/etc/sysctl.d/10-cyclone-max.conf` 要包含的文件 :
+接着，创建 Cyclone 启动时使用的配置文件，设置它请求的套接字接收缓冲区下限：
 
-> ``` bash
-> net.core.rmem_max=2147483647
-> ```
-
-其次,要设置最小套接字接收气旋所要求的缓冲大小,请写出一个配置文件供气旋在启动时使用,比如:
-
-``` xml
+```xml
 <?xml version="1.0" encoding="UTF-8" ?>
 <CycloneDDS xmlns="https://cdds.io/config" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://cdds.io/config
 https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/master/etc/cyclonedds.xsd">
@@ -125,34 +115,33 @@ https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/master/etc/cyclo
 </CycloneDDS>
 ```
 
-然后,每当您要运行一个节点时,设置以下环境变量:
+之后每次运行节点前，设置以下环境变量：
 
-``` bash
+```bash
 CYCLONEDDS_URI=file:///absolute/path/to/config_file.xml
 ```
 
 <span id="rti-connext-tuning"></span>
+## RTI Connext 调优
 
-## RTI 连接调制
+**问题：** 即使采用可靠设置和有线网络，Connext 仍无法可靠地传递大消息。
 
-**问题:** Connext虽然使用可靠的设置和通过有线网络传输,但无法可靠地发送大消息.
+**解决方法：** 使用此 [Connext QoS 配置](https://github.com/jacobperron/pc_pipe/blob/master/etc/ROS2TEST_QOS_PROFILES.xml)，并提高 `rmem_max`。
 
-**解决方案 :** 这个 [连接QoS 配置文件](https://github.com/jacobperron/pc_pipe/blob/master/etc/ROS2TEST_QOS_PROFILES.xml),同时增加 `rmem_max` 参数。
+设置最大接收缓冲区大小：
 
-设置最大接收缓冲大小, `rmem_max`,通过运行:
+```console
+$ sudo sysctl -w net.core.rmem_max=4194304
+```
 
-> ``` console
-> $ sudo sysctl -w net.core.rmem_max=4194304
-> ```
+将 Linux 内核的 `net.core.rmem_max` 调到 4 MB 后，该 QoS 配置可以实现真正可靠的传输。
 
-通过调音 `net.core.rmem_max` 到 Linux 内核中的 4MB, QoS profile 可以产生真正可靠的行为.
+测试证明，这一配置在单机上通过 SHMEM|UDPv4 或仅 UDPv4 都能可靠传递消息。两台通过 1 Gbps 以太网连接的机器也进行了测试：`rmem_max` 分别设为 4 MB 和 20 MB 时均无丢包，平均消息传递时间分别为 700 毫秒和 371 毫秒。
 
-这种配置已被证明通过SHMEMQUDPv4可靠地传送消息,并且单机上只有UDPv4。还测试了多机配置 。 `rmem_max` 在4MB和20MB(两台与1Gbpseternet连接的机器),没有投放消息,平均消息发送时间分别为700ms和371ms.
+未调整内核 `rmem_max` 时，相同 Connext QoS 配置传递数据最长需要 12 秒，但至少总能完成传输。
 
-不配置内核 `rmem_max`,同样的 Connext QoS 剖面图需要12秒才能交付数据。然而,它总是至少能够完成交付。
+**解决方法：** 使用上述 [Connext QoS 配置](https://github.com/jacobperron/pc_pipe/blob/master/etc/ROS2TEST_QOS_PROFILES.xml)，但**不调整** `rmem_max`。
 
-**解决方案 :** 使用该 [连接QoS 配置文件](https://github.com/jacobperron/pc_pipe/blob/master/etc/ROS2TEST_QOS_PROFILES.xml) *不含* 调整 `rmem_max`.
+ROS2TEST_QOS_PROFILES.xml 根据 RTI 的[流量控制器配置文档](https://community.rti.com/forum-topic/transfering-large-data-over-dds)设置，包含慢速、中速和快速流量控制器。
 
-ROS2TESTQOS_PROFILES.xml 文件是使用 RTI 的文档配置的。 [配置流量控制器](https://community.rti.com/forum-topic/transfering-large-data-over-dds). 它有慢,中和快速的流量控制器(见Connext QoS profile链接).
-
-中流控制器为我们的情况带来了最佳结果。 然而, 控制器仍然需要为它们正在操作的特定机器/ 网络/ 环境调制。 Connext 流控制器可用于调制带宽及其发送数据的积极性, 尽管一个特定设置的带宽一旦通过, 性能将开始下降 。
+在我们的测试中，中速控制器效果最好。不过，仍需根据具体机器、网络和运行环境调优。Connext 流量控制器可用于调整带宽和发送数据的积极程度，但超过当前环境的带宽能力后，性能就会开始下降。

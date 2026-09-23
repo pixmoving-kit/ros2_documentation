@@ -1,33 +1,22 @@
----
-translation_status: machine_translated
-source: How-To-Guides/Overriding-QoS-Policies-For-Recording-And-Playback.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
-<span id="rosbag2-overriding-qos-policies"></span> <span id="ros2bag-qos-override"></span>
-
+<span id="rosbag2-overriding-qos-policies"></span>
+<span id="ros2bag-qos-override"></span>
 # rosbag2：覆盖 QoS 策略
 
-**目标：** 覆盖 Ros2Bag QoS 配置配置设置用于录制和播放 。
+**目标：** 覆盖 Ros2Bag 在录制和回放时使用的 QoS 配置。
 
 <span id="background"></span>
-
 ## 背景
 
-在ROS 2中引入DDS后,在录制和播放回放数据时,需要考虑出版商/订阅者节点的服务质量兼容性(QoS). 有关QoS工作方式的更多细节可以找到 [这儿](../Concepts/Intermediate/About-Quality-of-Service-Settings.md)为本指南的目的,只需知道只有可靠性和耐久性政策才能影响出版商/订阅商是否兼容,并能从对方接收数据即可。
+ROS 2 引入 DDS 后，录制和回放数据时需要考虑发布者与订阅者节点的服务质量（QoS）兼容性。QoS 的详细工作原理见[服务质量设置](../Concepts/Intermediate/About-Quality-of-Service-Settings.md)。对于本指南，只需了解：可靠性和持久性策略会影响发布者与订阅者是否兼容，以及能否接收彼此的数据。
 
-Ros2Bag 在从一个话题录制/播放数据时修改其请求/出价的 QoS 配置文件, 以防止丢弃的消息。 在重播期间, Ros2bag 也试图保留该话题最初提供的政策 。 某些情况可能需要指定明确的 QoS 配置文件设置, 这样 Ros2Bag 就可以记录/ 回放主题 。 这些 QoS 配置文件的覆盖文件可以使用 CLI 指定 。 `--qos-profile-overrides-path` 旗帜。
+Ros2Bag 在录制或回放话题数据时，会调整请求或提供的 QoS 配置，以避免消息丢失。回放时，Ros2Bag 也会尝试保留话题原先提供的策略。某些情况下，需要显式指定 QoS 配置才能让 Ros2Bag 录制或回放话题。可以通过命令行参数 `--qos-profile-overrides-path` 指定这些覆盖设置。
 
 <span id="using-qos-overrides"></span>
+## 使用 QoS 覆盖设置
 
-## 使用 QoS 覆盖
+覆盖配置的 YAML 结构是一个以话题名称为键的字典，每个话题下通过键值对设置各项 QoS 策略：
 
-YAML 描述文件的图案是一份主题名称的词典,每个QoS策略都有密钥/值对:
-
-``` yaml
+```yaml
 topic_name: str
   qos_policy_name: str
   ...
@@ -36,9 +25,9 @@ topic_name: str
     nsec: int
 ```
 
-如果不指定一个策略值, 则该值会回落到 Ros2Bag 使用的默认值。 如果您指定基于持续时间的策略, 如 `deadline` 或 时 间 `lifespan`,您需要同时指定秒数和纳秒数。政策值由策略的短键决定,这些键可以用 `ros2topic` 动词如: `ros2 topic pub --help`。所有数值在下文中复制,以供参考。
+未指定的策略会使用 Ros2Bag 的默认值。对于 `deadline` 或 `lifespan` 等基于时长的策略，需要同时指定秒和纳秒。策略值使用各策略的简写键，可通过 `ros2 topic pub --help` 等 `ros2topic` 子命令查看。所有值列于下方，供参考：
 
-``` yaml
+```yaml
 history: [keep_all, keep_last]
 depth: int
 reliability: [system_default, reliable, best_effort, unknown]
@@ -57,47 +46,46 @@ avoid_ros_namespace_conventions: [true, false]
 ```
 
 <span id="example"></span>
-
 ## 示例
 
-考虑一个话题 `/talker` 提供 `transient_local` Durable 政策. ROS 2 出版商默认请求 `volatile` 达利布利.
+假设话题 `/talker` 提供 `transient_local` 持久性策略。ROS 2 发布者默认使用 `volatile` 持久性策略。
 
-``` console
+```console
 $ ros2 topic pub -r 0.1 --qos-durability transient_local /talker std_msgs/String "data: Hello World"
 ```
 
-为了让Ros2Bag记录数据,我们想推翻这一具体专题的录音政策,例如:
+要让 Ros2Bag 录制这些数据，可以为该话题覆盖录制时的策略：
 
-``` yaml
+```yaml
 # durability_override.yaml
 /talker:
   durability: transient_local
   history: keep_all
 ```
 
-从CLI调用它:
+然后从命令行调用：
 
-``` console
+```console
 $ ros2 bag record -a -o my_bag --qos-profile-overrides-path durability_override.yaml
 ```
 
-如果我们想要播放包文件,但有不同的可靠性政策,我们可以指定一个这样的文件;
+如果希望回放 bag 文件时采用不同的可靠性策略，可以这样指定：
 
-``` yaml
+```yaml
 # reliability_override.yaml
 /talker:
   reliability: best_effort
   history: keep_all
 ```
 
-从CLI调用它:
+从命令行调用：
 
-``` console
+```console
 $ ros2 bag play --qos-profile-overrides-path reliability_override.yaml my_bag
 ```
 
-我们可以看到结果 `ros2 topic`
+可以使用 `ros2 topic` 查看结果：
 
-``` console
+```console
 $ ros2 topic echo --qos-reliability best_effort /talker std_msgs/String
 ```

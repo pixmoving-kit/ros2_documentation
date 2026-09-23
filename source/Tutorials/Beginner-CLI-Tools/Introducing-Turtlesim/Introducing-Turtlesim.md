@@ -1,70 +1,52 @@
----
-translation_status: machine_translated
-source: Tutorials/Beginner-CLI-Tools/Introducing-Turtlesim/Introducing-Turtlesim.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="using-turtlesim-ros2-and-rqt"></span> <span id="turtlesim"></span>
+# 使用 turtlesim、ros2 和 rqt
 
-# 使用( E) `turtlesim`, `ros2`,以及 `rqt`
+**目标：** 安装并使用 turtlesim 软件包和 rqt 工具，为后续教程做好准备。
 
-**目标：** 安装和使用龟兹包和 rqt 工具来准备即将到来的教程 。
+**教程级别：** 初学者
 
-**教程级别：** 入门
-
-**用时：** 15分钟
+**预计用时：** 15 分钟
 
 <span id="background"></span>
-
 ## 背景
 
-Turtlesim是用于学习ROS 2. 的轻量级模拟器,它说明了ROS 2在最基本的层面上所做的,可以让你了解你以后会如何对待真正的机器人或机器人模拟.
+Turtlesim 是用于学习 ROS 2 的轻量级仿真器。它展示了 ROS 2 最基本的工作方式，帮助你了解今后操作真实机器人或机器人仿真系统时会做些什么。
 
-ros2 工具是用户如何管理,内观,并与 ROS 系统交互。 它支持多个命令, 瞄准系统的不同方面及其操作。 人们可能用它来启动节点, 设置参数, 听话题, 以及更多。 ros2 工具是 ROS 2 核心安装的一部分 。
+`ros2` 工具用于管理、查看 ROS 系统的内部状态，以及与系统交互。它支持多种命令，分别针对系统及其运行的不同方面，例如启动节点、设置参数、监听话题等。`ros2` 工具包含在 ROS 2 核心安装中。
 
-rqt是ROS 2. 用rqt完成的每件事都可以在命令行上完成的图形用户界面(GUI)工具,但rqt提供了更方便用户的方式来操纵ROS 2元素.
+rqt 是 ROS 2 的图形用户界面（GUI）工具。rqt 中的所有操作都可以通过命令行完成，而 rqt 为操作 ROS 2 各种要素提供了更友好的界面。
 
-此教程触及核心 ROS 2 概念, 如节点、 话题和服务。 所有这些概念将在以后的教程中详细阐述; 现在, 您只需要设置工具, 并感受它们 。
+本教程会涉及节点、话题和服务等 ROS 2 核心概念。后续教程会详细讲解这些概念；现在只需配置好工具，并熟悉它们的基本使用方式。
 
 <span id="prerequisites"></span>
-
 ## 前提条件
 
-上一个辅导, [配置环境](../Configuring-ROS2-Environment.md),会告诉你如何设置你的环境。
+上一篇教程[配置环境](../Configuring-ROS2-Environment.md)介绍了如何设置环境。
 
 <span id="tasks"></span>
-
 ## 操作步骤
 
 <span id="install-turtlesim"></span>
+### 1 安装 turtlesim
 
-### 1 安装龟兹
+与往常一样，先打开新终端，按照[上一篇教程](../Configuring-ROS2-Environment.md)加载环境设置文件。
 
-像往常一样,开始在一个新的终端中获取您的设置文件,如 [上一个教程](../Configuring-ROS2-Environment.md).
+为所用 ROS 2 发行版安装 turtlesim 软件包：
 
-为您的 ROS 2 Distro 安装龟兹包 :
+**Linux**
 
-##### Linux
-
-``` console
+```console
 $ sudo apt update
 $ sudo apt install ros-rolling-turtlesim
 ```
 
-##### macOS
+**macOS 和 Windows**
 
-只要您安装了 ROS 2 的归档中包含 `ros_tutorials` 寄存器, 您应该已经安装了 topsim 。
+只要安装 ROS 2 时使用的归档包包含 `ros_tutorials` 仓库，就应该已经安装了 turtlesim。
 
-##### Windows
+运行以下命令检查软件包是否安装成功。它应返回 turtlesim 中的可执行文件列表：
 
-只要您安装了 ROS 2 的归档中包含 `ros_tutorials` 寄存器, 您应该已经安装了 topsim 。
-
-要检查是否安装了软件包, 请运行以下命令, 命令应该返回龟兹的可执行文件列表 :
-
-``` console
+```console
 $ ros2 pkg executables turtlesim
 turtlesim draw_square
 turtlesim mimic
@@ -73,173 +55,159 @@ turtlesim turtlesim_node
 ```
 
 <span id="start-turtlesim"></span>
+### 2 启动 turtlesim
 
-### 2 开始龟语
+在终端中输入以下命令，启动 turtlesim：
 
-要启动龟兹姆,请在终端中输入以下命令:
-
-``` console
+```console
 $ ros2 run turtlesim turtlesim_node
 [INFO] [turtlesim]: Starting turtlesim with node name /turtlesim
 [INFO] [turtlesim]: Spawning turtle [turtle1] at x=[5.544445], y=[5.544445], theta=[0.000000]
 ```
 
-在命令下,您将看到节点发送的信息。在那里您可以看到默认的龟名及其产物坐标。
+命令下方会显示节点输出的信息，其中包括默认海龟的名称和生成位置坐标。
 
-模拟器窗口应该出现,中间有随机龟.
+随后应出现仿真器窗口，中央显示一只外观随机的海龟。
 
-![](images/turtlesim.png) <span id="use-turtlesim"></span>
+![turtlesim 仿真器窗口](images/turtlesim.png)
 
-### 3 使用龟语
+<span id="use-turtlesim"></span>
+### 3 使用 turtlesim
 
-再次打开一个新的终端和源ROS 2.
+打开新终端，再次加载 ROS 2 环境。
 
-现在你将运行一个新的节点来控制第一个节点中的龟:
+运行一个新节点，用来控制第一个节点中的海龟：
 
-``` console
+```console
 $ ros2 run turtlesim turtle_teleop_key
 ```
 
-此时您应该打开三个窗口:一个终端运行 `turtlesim_node`,一个终端运行 `turtle_teleop_key` 和龟头窗。把这些窗子排列好,以便你可以看到龟头窗,但也让终端运行 `turtle_teleop_key` 活动可以控制龟兹中的龟.
+此时应有三个窗口：运行 `turtlesim_node` 的终端、运行 `turtle_teleop_key` 的终端，以及 turtlesim 窗口。调整窗口位置，确保可以看到 turtlesim 窗口，同时让运行 `turtle_teleop_key` 的终端保持焦点，以便控制海龟。
 
-使用键盘上的箭头键来控制海龟。它会绕着屏幕移动,使用它所附的“笔”绘制它迄今所走过的路径。
+使用键盘方向键控制海龟。海龟会在窗口中移动，并用附带的“画笔”画出经过的路径。
 
-> **说明**
->
-> 按箭头键只会让龟类移动一段短距离,然后停下来。 这是因为,实际上,如果操作员失去了与机器人的连接,你不希望机器人继续执行指令。
+!!! note "注意"
+    按一次方向键只会让海龟移动一小段距离，随后便会停止。在实际应用中，例如操作员与机器人失去连接时，我们通常不希望机器人继续执行此前的指令。
 
-您可以使用“节点”来查看节点及其相关主题、服务和行动。 `list` 各命令的子命令 :
+可以使用各命令的 `list` 子命令查看节点，以及相关的话题、服务和动作：
 
-``` console
+```console
 $ ros2 node list
 $ ros2 topic list
 $ ros2 service list
 $ ros2 action list
 ```
 
-您将在未来的教程中更多地了解这些概念。 由于此教程的目的只是为了获得对龟兹的概括性概述, 您会使用 rqt 调用一些龟兹服务, 并与它们互动 。 `turtlesim_node`.
+后续教程会进一步介绍这些概念。本教程只需大致了解 turtlesim，因此接下来使用 rqt 调用 turtlesim 的一些服务，与 `turtlesim_node` 交互。
 
 <span id="install-rqt"></span>
-
 ### 4 安装 rqt
 
-打开新终端以安装 `rqt` 及其插件 :
+打开新终端，安装 `rqt` 及其插件：
 
-##### 乌本图 Linux
+**Ubuntu Linux**
 
-``` console
+```console
 $ sudo apt update
 $ sudo apt install ros-rolling-rqt ros-rolling-rqt-common-plugins
 ```
 
-##### macOS
+**macOS 和 Windows**
 
-在 macOS 上安装 ROS 2 的标准归档包含 `rqt` 及其插件,所以您应该已经拥有 `rqt` 已安装。
+这两个平台的标准 ROS 2 安装归档包都包含 `rqt` 及其插件，因此应该已经安装好 `rqt`。
 
-##### Windows
+运行 rqt：
 
-在 Windows 上安装 ROS 2 的标准归档包含 `rqt` 及其插件,所以您应该已经拥有 `rqt` 已安装。
-
-运行 rqt :
-
-``` console
+```console
 $ rqt
 ```
 
 <span id="use-rqt"></span>
-
 ### 5 使用 rqt
 
-当第一次运行 rqt 时, 窗口会是空白的 。 不担心; 请选择 **插件** \> **服务** \> **服务呼叫器** 从菜单栏的顶部。
+首次运行 rqt 时，窗口是空白的。只需从顶部菜单栏选择 **Plugins > Services > Service Caller**。
 
-> **说明**
->
-> rqt 可能需要一些时间来定位所有插件。 如果您点击的话 **插件** 但看不见 **服务** 或任何其它选项,您应当关闭 rqt 并输入命令 `rqt --force-discover` 在你的终端。
+!!! note "注意"
+    rqt 可能需要一些时间查找所有插件。如果点击 **Plugins** 后看不到 **Services** 或其他选项，请关闭 rqt，然后在终端中运行 `rqt --force-discover`。
 
-![](images/rqt.png)
+![rqt 服务调用界面](images/rqt.png)
 
-使用刷新按钮到左侧 **服务** 下拉列表,以确保您龟兹节点的所有服务都可用 。
+点击 **Service** 下拉列表左侧的刷新按钮，确保 turtlesim 节点的所有服务都已列出。
 
-点击 **服务** 下拉列表以查看龟兹的服务,并选择 `/spawn` 服务。
+打开 **Service** 下拉列表查看服务，并选择 `/spawn`。
 
 <span id="try-the-spawn-service"></span>
+#### 5.1 尝试 spawn 服务
 
-#### 5.1 尝试产卵服务
+用 rqt 调用 `/spawn` 服务。从名称可以猜到，它会在 turtlesim 窗口中生成另一只海龟。
 
-让我们使用 rqt 呼叫 `/spawn` 服务。您可以从它的名称中猜测 `/spawn` 将在龟眼窗内再造一只龟。
+双击 **Expression** 列中空单引号之间的位置，为新海龟输入一个唯一名称，例如 `turtle2`。该表达式对应 **name** 的值，类型为 **string**。
 
-给新海龟一个独特的名字,像 `turtle2`中,通过双击在 **表达式** 。您可以看到,此表达式与 **名称** 类型 **字符串**.
+接下来输入有效的生成位置坐标，例如 `x = 1.0`、`y = 1.0`。
 
-接下来输入一些有效的坐标, 用于培育新龟, 如 `x = 1.0` 财务报告和财务报告 `y = 1.0`.
+![设置新海龟的名称与坐标](images/spawn.png)
 
-![](images/spawn.png)
+!!! note "注意"
+    如果尝试使用已有海龟的名称，例如默认的 `turtle1`，运行 `turtlesim_node` 的终端会显示错误信息：
 
-> **说明**
->
-> 如果你尝试产下一只与现存海龟同名的新海龟,就像默认 `turtle1`在终端运行时,您会收到错误消息 `turtlesim_node`:
->
-> ``` console
-> [ERROR] [turtlesim]: A turtle named [turtle1] already exists
-> ```
+```console
+[ERROR] [turtlesim]: A turtle named [turtle1] already exists
+```
 
-去产卵 `turtle2`,然后需要点击 **调用** 按钮位于 rqt 窗口右上侧。
+点击 rqt 窗口右上方的 **Call** 按钮调用服务，生成 `turtle2`。
 
-如果服务呼叫成功, 您应该看到一个新的海龟( 也是随机设计) 在坐标处产卵 。 @ info/ plain **x** 财务报告和财务报告 **y**.
+调用成功后，一只新的海龟会出现在输入的 **x**、**y** 坐标处，其外观同样是随机的。
 
-如果你用rqt刷新服务列表,你也会看到,现在有与新龟相关的服务, `/turtle2/...`,除此之外, `/turtle1/...`.
+刷新 rqt 服务列表后，除了 `/turtle1/...`，还会看到与新海龟相关的 `/turtle2/...` 服务。
 
 <span id="try-the-set-pen-service"></span>
+#### 5.2 尝试 set_pen 服务
 
-#### 5.2 尝试 set_pen服务
+现在通过 `/set_pen` 服务，为 `turtle1` 设置一支特别的画笔：
 
-现在让我们给 `turtle1` 使用 `/set_pen` 服务 :
+![画笔设置服务](images/set_pen.png)
 
-![](images/set_pen.png)
+**r**、**g** 和 **b** 的取值范围为 0 到 255，用于设置 `turtle1` 画笔的颜色；**width** 用于设置线条粗细。
 
-值为 **r**, **g** 财务报告和财务报告 **b**,在 0 到 255 之间,设置笔的颜色 `turtle1` 与绘图,以及 **宽度** 设置线条的厚度。
+将 **r** 改为 255，将 **width** 改为 5，即可让 `turtle1` 画出明显的红色线条。修改值后别忘了调用服务。
 
-拥有 `turtle1` 用明显的红线绘制,更改值为 **r** 的值,以及 **宽度** 至 5. 别忘了在更新值后拨打服务电话。
+回到运行 `turtle_teleop_key` 的终端，按方向键移动海龟，就能看到 `turtle1` 的画笔已经改变。
 
-如果你回到终点站 `turtle_teleop_key` 正在运行并按箭头键,你会看到 `turtle1`笔声已经变了。
+![修改后的红色画笔](images/new_pen.png)
 
-![](images/new_pen.png)
-
-你可能也注意到, `turtle2`。那是因为没有电信节点 `turtle2`.
+你可能也发现了，现在还无法移动 `turtle2`，因为尚未为它启动遥控节点。
 
 <span id="remapping"></span>
+### 6 重映射
 
-### 6 重新绘图
+要控制 `turtle2`，需要第二个遥控节点。不过，如果直接重复之前的命令，新节点控制的仍然是 `turtle1`。要改变这一行为，需要重映射 `cmd_vel` 话题和 `rotate_absolute` 动作。
 
-你需要第二个电信节点来控制 `turtle2`但是,如果你尝试运行相同的命令,你会注意到,这个命令也控制着 `turtle1`。改变这种行为的方法是重新绘制 `cmd_vel` A. 专题和专题 `rotate_absolute` 行动。
+打开新终端，加载 ROS 2 环境，然后运行：
 
-在一个新的终端,源ROS 2,并运行:
-
-``` console
+```console
 $ ros2 run turtlesim turtle_teleop_key --ros-args --remap turtle1/cmd_vel:=turtle2/cmd_vel --remap turtle1/rotate_absolute:=turtle2/rotate_absolute
 ```
 
-现在,你可以动了 `turtle2` 当此终端运行时, 以及 `turtle1` 当另一个终端运行时 `turtle_teleop_key` 正在激活中。
+现在，当这个终端获得焦点时，可以控制 `turtle2`；当另一个运行 `turtle_teleop_key` 的终端获得焦点时，则可以控制 `turtle1`。
 
-![](images/remap.png) <span id="close-turtlesim"></span>
+![分别控制两只海龟](images/remap.png)
 
-### 7 关闭龟语
+<span id="close-turtlesim"></span>
+### 7 关闭 turtlesim
 
-为了阻止模拟,你可以进入 `Ctrl + C` 输入 `turtlesim_node` 终端,以及 `q` 输入 `turtle_teleop_key` 终端。
+在运行 `turtlesim_node` 的终端按 `Ctrl + C`，在运行 `turtle_teleop_key` 的终端按 `q`，即可结束仿真。
 
 <span id="summary"></span>
-
 ## 小结
 
-使用龟兹和rqt是学习ROS 2的核心概念的伟大方法.
+使用 turtlesim 和 rqt 是学习 ROS 2 核心概念的好方法。
 
 <span id="next-steps"></span>
-
 ## 后续步骤
 
-既然你有了乌龟和Rqt 运行, 以及一个如何工作的想法, 让我们潜入第一个核心 ROS 2 的概念 与下一个教程, [理解节点](../Understanding-ROS2-Nodes/Understanding-ROS2-Nodes.md).
+现在 turtlesim 和 rqt 都已运行起来，你也了解了它们的基本用法。接下来通过[理解节点](../Understanding-ROS2-Nodes/Understanding-ROS2-Nodes.md)，深入学习第一个 ROS 2 核心概念。
 
 <span id="related-content"></span>
-
 ## 相关内容
 
-龟兹包可以在 [ros_tutorials](https://github.com/ros/ros_tutorials/tree/rolling/turtlesim) 复传.
+turtlesim 软件包位于 [ros_tutorials 仓库](https://github.com/ros/ros_tutorials/tree/rolling/turtlesim)。

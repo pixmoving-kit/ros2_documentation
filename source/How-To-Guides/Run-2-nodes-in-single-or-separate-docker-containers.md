@@ -1,78 +1,66 @@
----
-translation_status: machine_translated
-source: How-To-Guides/Run-2-nodes-in-single-or-separate-docker-containers.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="running-ros-2-nodes-in-docker-community-contributed"></span>
-
 # 在 Docker 中运行 ROS 2 节点（社区贡献）
 
 <span id="run-two-nodes-in-a-single-docker-container"></span>
+## 在同一个 Docker 容器中运行两个节点
 
-## 在单个嵌入器容器中运行两个节点
+拉取标签为 `rolling-desktop` 的 ROS Docker 镜像：
 
-绘制带有“滚动桌面”标签的 ROS 插头图像。
-
-``` console
+```console
 $ docker pull osrf/ros:rolling-desktop
 ```
 
-在交互式模式下在容器中运行图像 。
+以交互模式使用该镜像启动容器：
 
-``` console
+```console
 $ docker run -it osrf/ros:rolling-desktop
 ```
 
-你最好的朋友是那个 `ros2` 现在命令行帮助。
+接下来，`ros2` 命令行帮助会很有用：
 
-``` console
+```console
 $ ros2 --help
 ```
 
-例如列出所有已安装的软件包.
+例如，列出所有已安装的软件包：
 
-``` console
+```console
 $ ros2 pkg list
 (you will see a list of packages)
 ```
 
-例如,列出所有可执行文件:
+列出所有可执行程序：
 
-``` console
+```console
 $ ros2 pkg executables
 (you will see a list of <package> <executable>)
 ```
 
-运行一个 2 C++ 节点的最小示例(1 个主题订阅器) `listener`, 1个专题出版社 `talker`从包中 `demo_nodes_cpp` 在此容器中:
+在该容器中运行 `demo_nodes_cpp` 软件包提供的最小示例，其中有两个 C++ 节点：一个话题订阅者 `listener` 和一个话题发布者 `talker`：
 
-``` console
+```console
 $ ros2 run demo_nodes_cpp listener &
 $ ros2 run demo_nodes_cpp talker
 ```
 
 <span id="run-two-nodes-in-two-separate-docker-containers"></span>
+## 在两个独立的 Docker 容器中运行两个节点
 
-## 在两个独立的插头容器中运行两个节点
+打开一个终端，以交互模式使用该镜像启动容器，并通过 `ros2 run` 启动话题发布者（`demo_nodes_cpp` 软件包中的 `talker` 可执行程序）：
 
-打开终端。 以交互模式在容器中运行图像并启动主题发布器( 可执行) `talker` 从软件包中 `demo_nodes_cpp`与 `ros2 run`:
-
-``` console
+```console
 $ docker run -it --rm osrf/ros:rolling-desktop ros2 run demo_nodes_cpp talker
 ```
 
-打开第二个终端。 以交互模式在容器中运行图像并启动主题订阅器( 可执行) `listener` 从软件包中 `demo_nodes_cpp`与 `ros2 run`:
+打开第二个终端，以交互模式启动另一个容器，并通过 `ros2 run` 启动话题订阅者（`demo_nodes_cpp` 软件包中的 `listener` 可执行程序）：
 
-``` console
+```console
 $ docker run -it --rm osrf/ros:rolling-desktop ros2 run demo_nodes_cpp listener
 ```
 
-作为命令行引用的替代品,您可以创建 `docker-compose.yml` 文件(此处为第2版),包含以下(最小)内容:
+除了从命令行分别启动，也可以创建一个 `docker-compose.yml` 文件（这里使用版本 2），最小内容如下：
 
-``` yaml
+```yaml
 version: '2'
 
 services:
@@ -86,4 +74,4 @@ services:
       - talker
 ```
 
-要运行容器呼叫 `docker compose up` 您可以关闭容器。 `Ctrl+C`.
+在同一目录中执行 `docker compose up` 即可运行这些容器。按 `Ctrl+C` 可以关闭它们。

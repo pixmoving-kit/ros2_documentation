@@ -1,56 +1,44 @@
----
-translation_status: machine_translated
-source: How-To-Guides/Releasing/_Personal-Access-Token.rst
----
+!!! warning "注意"
 
-!!! info "翻译说明"
+    如果计算机上已经存在 `~/.config/bloom` 文件，你可能已经完成过这项配置，可以跳过本节。
 
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
+发布过程中会执行多次需要密码认证的 HTTPS Git 操作。
+为了避免反复输入密码，需要设置[个人访问令牌（PAT）](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)。
+如果 GitHub 账户已启用多重身份验证，则**必须**设置个人访问令牌。
 
-> **警告**
->
-> 如果文件 `~/.config/bloom` 存在于您的计算机上, 您很可能已经这样做了, 所以您应该跳过此区域 。
+创建令牌的步骤如下：
 
-在发布过程中,会执行多个需要密码认证的 HTTPS Git 操作。为了避免被反复要求密码, a [个人访问托肯( PAT)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) 如果您在您的 GitHub 账户上设置了多要素认证设置, 您将会被设置 。 **必须** 设置个人访问Token。
+1. 登录 GitHub，打开 [Personal access tokens](https://github.com/settings/tokens) 页面。
+2. 点击 **Generate new token**。
+3. 在下拉菜单中选择 **Generate new token (classic)**。
+4. 在 **Note** 中填写说明，例如 `Bloom token`。
+5. 将 **Expiration** 设置为 **No expiration**。
+6. 勾选 `public_repo` 和 `workflow`。
+7. 点击 **Generate token**。
 
-通过 :
+创建成功后，页面会返回 *Personal access tokens*。
+**复制以绿色高亮显示的字母数字令牌。**
 
-1.  登录到 GitHub 并前往 [个人访问令牌](https://github.com/settings/tokens).
+新建 `~/.config/bloom` 文件，按以下格式保存 GitHub 用户名和 PAT：
 
-2.  单击 **生成新符号** 按钮。
-
-3.  在下拉时,选择 **生成新符号( 经典)**
-
-4.  设定 **说明** {\fn黑体\fs20\shad2\2aH82\3aH20\4aH33\fscx95\3cH592001\be1}对类似的东西 `Bloom token`.
-
-5.  设定 **过期** 改为: **无过期**.
-
-6.  勾选 `public_repo` 财务报告和财务报告 `workflow` 复选框。
-
-7.  单击 **生成符号** 按钮。
-
-在你创造了这个标志之后,你会回到 *个人访问令牌* 页面。 **复制字母符号** 以绿色突出。
-
-将您的 GitHub 用户名和 PAT 保存到新文件 `~/.config/bloom`,格式如下:
-
-``` text
+```text
 {
    "github_user": "<your-github-username>",
    "oauth_token": "<token-you-created-for-bloom>"
 }
 ```
 
-在您的配置中配置 `~/.gitconfig` 您的 GitHub 账户和 PAT 用于所有释放寄存器 [ros2-gbp 缩写](https://github.com/ros2-gbp):
+在 `~/.gitconfig` 中进行以下配置，使 [ros2-gbp](https://github.com/ros2-gbp) 下的所有发布仓库都使用该 GitHub 账户及 PAT：
 
-``` ini
+```ini
 [credential "https://github.com/ros2-gbp"]
     username = x-access-token
     helper = "!f() { test \"$1\" = get && echo \"password=<token-you-created-for-bloom>\"; }; f"
 ```
 
-您可以额外使用不同的 GitHub 账户和 PATs 单个释放寄存器 :
+也可以为不同的发布仓库分别使用不同的 GitHub 账户和 PAT：
 
-``` ini
+```ini
 [credential "https://github.com/ros2-gbp/my_package-release.git"]
     username = x-access-token
     helper = "!f() { test \"$1\" = get && echo \"password=<other-token-you-created-for-bloom>\"; }; f"

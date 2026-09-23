@@ -1,25 +1,16 @@
----
-translation_status: machine_translated
-source: Tutorials/Intermediate/Writing-a-Composable-Node.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="writing-a-composable-node-c"></span>
 
 # 编写可组合节点（C++）
 
 <span id="starting-place"></span>
 
-## 开始位置
+## 起点
 
-让我们假设你有一个常客 `rclcpp::Node` 要运行的可执行文件与其他节点相同,以便实现更高效的通信。
+假设你已有一个普通的 `rclcpp::Node` 可执行程序，希望让它与其他节点在同一进程中运行，以提高通信效率。
 
-我们从拥有直接继承的阶级开始, `Node`,这也有一个主要方法定义。
+起始代码是一个直接继承 `Node` 的类，并定义了主函数：
 
-``` c++
+```c++
 namespace palomino
 {
     class VincentDriver : public rclcpp::Node
@@ -37,9 +28,9 @@ int main(int argc, char * argv[])
 }
 ```
 
-这将通常被编译为可执行文件 。
+通常通过 CMake 将其编译为可执行程序：
 
-``` cmake
+```cmake
 # ...
 add_executable(vincent_driver src/vincent_driver.cpp)
 # ...
@@ -50,27 +41,27 @@ install(TARGETS vincent_driver
 
 <span id="code-updates"></span>
 
-## 代码更新
+## 修改代码
 
 <span id="add-the-package-dependency"></span>
 
-### 添加软件包依赖性
+### 添加软件包依赖
 
- [package.xml](https://github.com/ros2/demos/tree/rolling/composition/package.xml) 应依赖 `rclcpp_components`,一个啦
+在 [package.xml](https://github.com/ros2/demos/tree/rolling/composition/package.xml) 中声明对 `rclcpp_components` 的依赖：
 
-``` xml
+```xml
 <depend>rclcpp_components</depend>
 ```
 
-或者,您可以独立添加一个 `build_depend/exec_depend`.
+也可以分别添加 `build_depend` 和 `exec_depend`。
 
 <span id="class-definition"></span>
 
-### 类别 定义
+### 类定义
 
-您可能必须做的对班级定义的唯一改变就是确保 [类的构造器](https://github.com/ros2/demos/tree/rolling/composition/src/talker_component.cpp) 使用一个 `NodeOptions` 参数。
+类定义中可能唯一需要的修改，是确保[构造函数](https://github.com/ros2/demos/tree/rolling/composition/src/talker_component.cpp)接收 `NodeOptions` 参数：
 
-``` c++
+```c++
 VincentDriver(const rclcpp::NodeOptions & options) : Node("vincent_driver", options)
 {
   // ...
@@ -79,40 +70,38 @@ VincentDriver(const rclcpp::NodeOptions & options) : Node("vincent_driver", opti
 
 <span id="no-more-main-method"></span>
 
-### 不再使用主要方法
+### 替换主函数
 
-将您的主要方法替换为 `pluginlib`- 典型的宏观引用。
+将主函数替换为 `pluginlib` 风格的宏调用：
 
-``` c++
+```c++
 #include <rclcpp_components/register_node_macro.hpp>
 RCLCPP_COMPONENTS_REGISTER_NODE(palomino::VincentDriver)
 ```
 
-> **注意**
->
-> 如果您所替换的主要方法包含一个 `MultiThreadedExecutor`中,请注意,并确保您的容器节点是多行读的。见下文。
+> 如果原主函数使用 `MultiThreadedExecutor`，请记下这一点，并确保容器节点也采用多线程，具体见下文。
 
 <span id="cmake-changes"></span>
 
-### CMake 更改
+### 修改 CMake
 
-第一,增加一个 `rclcpp_components` 在 CMakeLists.txt 中作为依赖:
+首先，在 `CMakeLists.txt` 中添加依赖：
 
-``` cmake
+```cmake
 find_package(rclcpp_components REQUIRED)
 ```
 
-第二,我们要取代我们 `add_executable` 带一个 `add_library` 带有新的目标名称。
+其次，将 `add_executable` 替换为 `add_library`，并使用新的目标名：
 
-``` cmake
+```cmake
 add_library(vincent_driver_component SHARED src/vincent_driver.cpp)
 ```
 
-第三,替换使用旧目标执行新目标的其他构建命令。不要忘记添加 `rclcpp_components` 输入 `ament_target_dependencies`. i.e. `ament_target_dependencies(vincent_driver ...)` 变成 `ament_target_dependencies(vincent_driver_component "rclcpp_components" ...)`
+第三，将引用旧目标的其他构建命令改为引用新目标。别忘记在 `ament_target_dependencies` 中添加 `rclcpp_components`，例如将 `ament_target_dependencies(vincent_driver ...)` 改为 `ament_target_dependencies(vincent_driver_component "rclcpp_components" ...)`。
 
-第四,添加新的命令来声明您的组件 。
+第四，添加声明组件的命令：
 
-``` cmake
+```cmake
 rclcpp_components_register_node(
     vincent_driver_component
     PLUGIN "palomino::VincentDriver"
@@ -120,9 +109,9 @@ rclcpp_components_register_node(
 )
 ```
 
-第五也是最后, 更改 CMake 中运行于旧目标上的任何安装命令, 以安装库版本。 例如, 不将任一目标安装到 `lib/${PROJECT_NAME}`。替换为库安装。
+最后，将旧目标的安装命令改为安装库。不要把这些目标安装到 `lib/${PROJECT_NAME}`，而应采用库的安装规则：
 
-``` cmake
+```cmake
 ament_export_targets(export_vincent_driver_component)
 install(TARGETS vincent_driver_component
         EXPORT export_vincent_driver_component
@@ -134,11 +123,11 @@ install(TARGETS vincent_driver_component
 
 <span id="running-your-node"></span>
 
-## 运行您的节点
+## 运行节点
 
-见 [组成辅导](Composition.md) 快速而肮脏的版本是,如果你的 Python 发射文件中有以下内容,
+关于节点组合的详细介绍，参阅[组合教程](Composition.md)。简要来说，如果 Python 启动文件中原本有：
 
-``` python
+```python
 from launch_ros.actions import Node
 
 # ..
@@ -150,9 +139,9 @@ ld.add_action(Node(
 ))
 ```
 
-你可以把它替换为
+可以替换为：
 
-``` python
+```python
 from launch_ros.actions import ComposableNodeContainer
 from launch_ros.descriptions import ComposableNode
 
@@ -174,6 +163,4 @@ ld.add_action(ComposableNodeContainer(
 ))
 ```
 
-> **注意**
->
-> 如果您需要多条线索, 而不是设置您的可执行文件到 `component_container`,设置它 `component_container_mt`
+> 如果需要多线程，将可执行程序从 `component_container` 改为 `component_container_mt`。

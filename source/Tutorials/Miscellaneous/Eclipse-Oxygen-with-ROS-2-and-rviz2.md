@@ -3,10 +3,6 @@ translation_status: machine_translated
 source: Tutorials/Miscellaneous/Eclipse-Oxygen-with-ROS-2-and-rviz2.rst
 ---
 
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="using-eclipse-oxygen-with-rviz2-community-contributed"></span>
 
 # 使用 Eclipse 氧气 `rviz2` \[社区贡献\]

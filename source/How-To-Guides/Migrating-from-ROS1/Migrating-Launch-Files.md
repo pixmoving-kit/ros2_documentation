@@ -1,61 +1,37 @@
----
-translation_status: machine_translated
-source: How-To-Guides/Migrating-from-ROS1/Migrating-Launch-Files.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="migrating-launch-files"></span> <span id="migratinglaunch"></span>
-
 # 迁移启动文件
 
-虽然ROS 1中的发射文件总是使用 [XML 数据](https://wiki.ros.org/roslaunch/XML) 文件, ROS 2 既支持 XML 文件,也支持 YAML 文件. ROS 2 也支持 Python 启动脚本,以便实现更大的灵活性(参见 [发射软件包](https://github.com/ros2/launch/tree/rolling/launch)然而,对于典型的使用案例,XML和YAML应该比Python优先.
+ROS 1 的启动文件始终采用 [XML](https://wiki.ros.org/roslaunch/XML) 格式，ROS 2 则同时支持 XML 和 YAML。ROS 2 还支持 Python 启动脚本，以提供更高的灵活性，参见 [launch 软件包](https://github.com/ros2/launch/tree/rolling/launch)。不过，对于典型使用场景，应优先选择 XML 或 YAML。
 
-本指南描述了如何编写ROS 2 XML 发射文件,以便于从ROS 1中迁移.
+本指南介绍如何编写 ROS 2 XML 启动文件，以便从 ROS 1 迁移。
 
 <span id="background"></span>
-
 ## 背景
 
-有关ROS 2发射系统的描述可见于 [发射系统教程](../../Tutorials/Intermediate/Launch/Launch-system.md).
+ROS 2 启动系统的说明见[启动系统教程](../../Tutorials/Intermediate/Launch/Launch-system.md)。
 
 <span id="migrating-tags"></span>
-
-## 移动标记
+## 迁移标签
 
 <span id="launch"></span>
+### launch
 
-### 发射
-
-- [原文为ROS 1。](https://wiki.ros.org/roslaunch/XML/launch).
-
-- `launch` 是任意 ROS 2 发射 XML 文件的根元素。
+[ROS 1 中也有此标签](https://wiki.ros.org/roslaunch/XML/launch)。`launch` 是所有 ROS 2 XML 启动文件的根元素。
 
 <span id="node"></span>
+### node
 
-### 节点
+[ROS 1 中也有此标签](https://wiki.ros.org/roslaunch/XML/node)，用于启动一个新节点。与 ROS 1 的区别：
 
-- [原文为ROS 1。](https://wiki.ros.org/roslaunch/XML/node).
-
-- 启动一个新的节点。
-
-- 与ROS 1的区别:
-
-  > - `type` 属性是现在 `exec`.
-  >
-  > - `ns` 属性是现在 `namespace`.
-  >
-  > - `required="true"` 现在 `on_exit="shutdown"`.
-  >
-  > - 以下属性不可用 : `machine`, `respawn_delay`, `clear_params`.
+- `type` 属性改为 `exec`。
+- `ns` 属性改为 `namespace`。
+- `required="true"` 改为 `on_exit="shutdown"`。
+- 不支持 `machine`、`respawn_delay` 和 `clear_params` 属性。
 
 <span id="example"></span>
-
 #### 示例
 
-``` xml
+```xml
 <launch>
    <node pkg="demo_nodes_cpp" exec="talker"/>
    <node pkg="demo_nodes_cpp" exec="listener"/>
@@ -63,22 +39,14 @@ source: How-To-Guides/Migrating-from-ROS1/Migrating-Launch-Files.rst
 ```
 
 <span id="param"></span>
+### param
 
-### 参数
-
-- [原文为ROS 1。](https://wiki.ros.org/roslaunch/XML/param).
-
-- 用于将参数传递到节点.
-
-- ROS 2. 没有任何全球参数概念,因此,它只能用在巢穴中 `node` 标签。一些属性在 ROS 2: 中不支持 。 `type`, `textfile`, `binfile`, `executable`.
-
-- 那个... `command` 属性是现在 `value="$(command '...' )"`.
+[ROS 1 中也有此标签](https://wiki.ros.org/roslaunch/XML/param)，用于向节点传递参数。ROS 2 没有全局参数概念，因此 `param` 只能嵌套在 `node` 标签内。ROS 2 不支持 `type`、`textfile`、`binfile` 和 `executable` 属性。原 `command` 属性改为 `value="$(command '...' )"`。
 
 <span id="id1"></span>
-
 #### 示例
 
-``` xml
+```xml
 <launch>
    <node pkg="demo_nodes_cpp" exec="parameter_event">
       <param name="foo" value="5"/>
@@ -87,12 +55,11 @@ source: How-To-Guides/Migrating-from-ROS1/Migrating-Launch-Files.rst
 ```
 
 <span id="type-inference-rules"></span>
+#### 类型推断规则
 
-#### 推论规则类型
+以下示例展示了参数的不同写法：
 
-以下是一些如何写入参数的例子:
-
-``` xml
+```xml
 <node pkg="my_package" exec="my_executable" name="my_node">
    <!--A string parameter with value "1"-->
    <param name="a_string" value="'1'"/>
@@ -118,12 +85,11 @@ source: How-To-Guides/Migrating-from-ROS1/Migrating-Launch-Files.rst
 ```
 
 <span id="parameter-grouping"></span>
+#### 参数分组
 
-#### 参数组
+ROS 2 允许嵌套 `param` 标签，例如：
 
-在ROS 2中, `param` 标记被允许嵌入。例如:
-
-``` xml
+```xml
 <node pkg="my_package" exec="my_executable" name="my_node" namespace="/an_absoulute_ns">
    <param name="group1">
       <param name="group2">
@@ -134,15 +100,11 @@ source: How-To-Guides/Migrating-from-ROS1/Migrating-Launch-Files.rst
 </node>
 ```
 
-这将产生两个参数:
+这会为节点 `/an_absolute_ns/my_node` 创建两个参数：`group1.group2.my_param`，值为 `1`；`group1.another_param`，值为 `2`。
 
-- A `group1.group2.my_param` 价值 `1`,由节点托管 `/an_absolute_ns/my_node`.
+也可以使用完整的参数名称：
 
-- A `group1.another_param` 价值 `2` 由节点托管 `/an_absolute_ns/my_node`.
-
-也有可能使用完整参数名称:
-
-``` xml
+```xml
 <node pkg="my_package" exec="my_executable" name="my_node" namespace="/an_absoulute_ns">
    <param name="group1.group2.my_param" value="1"/>
    <param name="group1.another_param" value="2"/>
@@ -150,40 +112,28 @@ source: How-To-Guides/Migrating-from-ROS1/Migrating-Launch-Files.rst
 ```
 
 <span id="rosparam"></span>
+### rosparam
 
-### 罗什帕拉姆
-
-- [原文为ROS 1。](https://wiki.ros.org/roslaunch/XML/rosparam).
-
-- 从 Yaml 文件装入参数 。
-
-- 现改为: `from` 属性在 `param` 标记。
+[ROS 1 中的 rosparam](https://wiki.ros.org/roslaunch/XML/rosparam) 用于从 YAML 文件加载参数。ROS 2 使用 `param` 标签的 `from` 属性替代它。
 
 <span id="id2"></span>
-
 #### 示例
 
-``` xml
+```xml
 <node pkg="my_package" exec="my_executable" name="my_node" namespace="/an_absoulute_ns">
    <param from="/path/to/file"/>
 </node>
 ```
 
 <span id="remap"></span>
+### remap
 
-### 重新绘制地图
-
-- [原文为ROS 1。](https://wiki.ros.org/roslaunch/XML/remap).
-
-- 曾经将重映规则传到节点.
-
-- 它只能在内部使用 `node` 标记。
+[ROS 1 中也有此标签](https://wiki.ros.org/roslaunch/XML/remap)，用于向节点传递重映射规则，只能在 `node` 标签内使用。
 
 <span id="id3"></span>
-
 #### 示例
 
-``` xml
+```xml
 <launch>
    <node pkg="demo_nodes_cpp" exec="talker">
       <remap from="chatter" to="my_topic"/>
@@ -195,58 +145,35 @@ source: How-To-Guides/Migrating-from-ROS1/Migrating-Launch-Files.rst
 ```
 
 <span id="include"></span>
+### include
 
-### 包含
+[ROS 1 中也有此标签](https://wiki.ros.org/roslaunch/XML/include)，用于包含另一个启动文件。与 ROS 1 的区别：
 
-- [原文为ROS 1。](https://wiki.ros.org/roslaunch/XML/include).
-
-- 允许包含另一个发射文件 。
-
-- 与ROS 1的区别:
-
-  > - ROS 1 中包含的内容被限定范围。在ROS 2 中则没有。这意味着 `arg` 标记被传播到包含的发射文件中,好像 `pass_all_args="true"` 但是,这种传播只用于具有默认值的参数(在内部/包含的发射文件中)。 `group` 标记以显示范围(另见 `group` 属性 `scoped` 财务报告和财务报告 `forwarding` ).
-  >
-  > - `ns` 属性不支持。请参见 `push_ros_namespace` 标记一个工作四周。
-  >
-  > - `arg` 标记嵌入一个 `include` 标记是现在 `let`然而, `arg` 目前仍然得到支持。
-  >
-  > - `let` 标记嵌入一个 `include` 标签不支持条件( Q)`if`, `unless`)或为: `description` 属性。
-  >
-  > - 没有人支持筑巢 `env` 标记。 `set_env` 财务报告和财务报告 `unset_env` 可改为使用。
-  >
-  > - 两者 `clear_params` 财务报告和财务报告 `pass_all_args` 属性不支持。 ROS 2 发射表现为 `pass_all_args` 被确定为真实的(见上文)。
+- ROS 1 中被包含的内容有独立作用域，ROS 2 中则没有。因此，`arg` 标签的值会传播到被包含的文件中，类似 ROS 1 中设置了 `pass_all_args="true"`。但只有在被包含文件中带有默认值的参数才会这样传播；必填参数仍须显式传递。可以将 `include` 嵌套在 `group` 中来限定作用域，另见 `group` 的 `scoped` 和 `forwarding` 属性。
+- 不支持 `ns` 属性，可以使用 `push_ros_namespace`，参见后文示例。
+- 嵌套在 `include` 中的 `arg` 标签改为 `let`，不过目前仍支持 `arg`。
+- 嵌套在 `include` 中的 `let` 不支持条件属性 `if`、`unless`，也不支持 `description`。
+- 不支持嵌套 `env`，可以改用 `set_env` 和 `unset_env`。
+- 不支持 `clear_params` 和 `pass_all_args` 属性。ROS 2 launch 的行为类似于将 `pass_all_args` 设为 true，具体限制见上文。
 
 <span id="examples"></span>
-
-#### 实例
-
-见 [替换包含标记](#replacing-an-include-tag).
-
-<span id="arg"></span>
-
-### 参数
-
-- [原文为ROS 1。](https://wiki.ros.org/roslaunch/XML/arg).
-
-- `arg` 用于宣布发射理由,或用于在使用 `include` 标记。
-
-- 与ROS 1的区别:
-
-  > - `value` 属性不允许。使用 `let` 标记此选项。
-  >
-  > - `doc` 现在 `description`.
-  >
-  > - 当筑巢于一个 `include` 标签 :
-  >
-  >   > - 使用 `let` 改为 `arg`.
-  >   >
-  >   > - `if`, `unless`,以及 `description` 属性不被允许。
-
-<span id="id4"></span>
-
 #### 示例
 
-``` xml
+见[替换 include 标签](#replacing-an-include-tag)。
+
+<span id="arg"></span>
+### arg
+
+[ROS 1 中也有此标签](https://wiki.ros.org/roslaunch/XML/arg)。`arg` 用于声明启动参数，或在使用 `include` 时传递参数。与 ROS 1 的区别：
+
+- 不允许使用 `value` 属性，应改用 `let` 标签。
+- `doc` 改为 `description`。
+- 嵌套在 `include` 中时，应使用 `let` 替代 `arg`，并且不允许使用 `if`、`unless`、`description` 属性。
+
+<span id="id4"></span>
+#### 示例
+
+```xml
 <launch>
    <arg name="topic_name" default="chatter"/>
    <node pkg="demo_nodes_cpp" exec="talker">
@@ -259,38 +186,29 @@ source: How-To-Guides/Migrating-from-ROS1/Migrating-Launch-Files.rst
 ```
 
 <span id="passing-an-argument-to-the-launch-file"></span>
+#### 向启动文件传递参数
 
-#### 向发射文件传递参数
+上面的 XML 文件中，`topic_name` 默认为 `chatter`，但可以从命令行配置。假设文件名为 `mylaunch.xml`，可以通过以下命令使用其他话题名称：
 
-在上面的 XML 发射文件中, `topic_name` 默认名称 `chatter`,但可以在命令行上配置。假设上面的发射配置在一个名为文件的文件中 `mylaunch.xml`,可以使用不同的主题名称,其启动方式如下:
-
-``` console
+```console
 $ ros2 launch mylaunch.xml topic_name:=custom_topic_name
 ```
 
-有关通过命令行参数的更多信息,请访问 [使用替换](../../Tutorials/Intermediate/Launch/Using-Substitutions.md).
+传递命令行参数的更多信息见[使用替换表达式](../../Tutorials/Intermediate/Launch/Using-Substitutions.md)。
 
 <span id="env"></span>
+### env
 
-### 内置
+[ROS 1 中的 env](https://wiki.ros.org/roslaunch/XML/env) 用于设置环境变量。ROS 2 将其替换为 `env`、`set_env` 和 `unset_env`：
 
-- [原文为ROS 1。](https://wiki.ros.org/roslaunch/XML/env).
-
-- 设置环境变量。
-
-- 现改为: `env`, `set_env` 财务报告和财务报告 `unset_env`:
-
-  > - `env` 只能用在一个巢穴中 `node` 或 时 间 `executable` 标记 。 `if` 财务报告和财务报告 `unless` 标签不支持 。
-  >
-  > - `set_env` 可以在根标记内嵌入 `launch` 或以内 `group` 标记。它接受的属性与 `env`,以及 `if` 财务报告和财务报告 `unless` 标记。
-  >
-  > - `unset_env` 取消设置环境变量。它接受一个 `name` 属性和条件。
+- `env` 只能嵌套在 `node` 或 `executable` 中，不支持 `if` 和 `unless`。
+- `set_env` 可以嵌套在根标签 `launch` 或 `group` 中，接受与 `env` 相同的属性，并支持 `if` 和 `unless`。
+- `unset_env` 用于取消设置环境变量，接受 `name` 属性和条件属性。
 
 <span id="id5"></span>
-
 #### 示例
 
-``` xml
+```xml
 <launch>
    <set_env name="MY_ENV_VAR" value="MY_VALUE" if="CONDITION_A"/>
    <set_env name="ANOTHER_ENV_VAR" value="ANOTHER_VALUE" unless="CONDITION_B"/>
@@ -306,30 +224,21 @@ $ ros2 launch mylaunch.xml topic_name:=custom_topic_name
 ```
 
 <span id="group"></span>
+### group
 
-### 组
+[ROS 1 中也有此标签](https://wiki.ros.org/roslaunch/XML/group)，用于限制启动配置的作用域，通常与 `let`、`include` 和 `push_ros_namespace` 一起使用。与 ROS 1 的区别：
 
-- [原文为ROS 1。](https://wiki.ros.org/roslaunch/XML/group).
-
-- 允许限制发射配置的范围。通常与 `let`, `include` 财务报告和财务报告 `push_ros_namespace` 标记。
-
-- 与ROS 1的区别:
-
-  > - 没有 `ns` 属性。见新 `push_ros_namespace` 标记为工作。
-  >
-  > - `clear_params` 属性不可用 。
-  >
-  > - 它不接受 `remap` 也无 `param` 作为孩子的标签。
-  >
-  > - 它有两个新的属性: `scoped` 财务报告和财务报告 `forwarding` (两者在默认情况下都是真实的)。如果 `scoped` 错误,该组不引入新的变量范围,因此对组内变量采取的行动也会影响外部变量。如果 `forwarding` 假的,没有外部发射配置( `arg` 用于分离包含的发射文件,从而防止在参数名称中发生碰撞。
+- 不支持 `ns` 属性，可以改用新增的 `push_ros_namespace`。
+- 不支持 `clear_params` 属性。
+- 不接受 `remap` 或 `param` 作为子标签。
+- 新增 `scoped` 和 `forwarding` 属性，默认均为 true。`scoped` 为 false 时，分组不会创建新的变量作用域，因此组内的变量操作也会影响组外。`forwarding` 为 false 时，组外的启动配置（`arg`）在组内不可用，这可以隔离被包含的启动文件，避免参数名冲突。
 
 <span id="launch-prefix-example"></span> <span id="id6"></span>
-
 #### 示例
 
-`launch-prefix` 配置对两者都有影响 `executable` 财务报告和财务报告 `node` 标记的动作。此示例将使用 `time` 作为前缀,如果 `use_time_prefix_in_talker` 参数是 `1`只能给说话的人
+`launch-prefix` 配置同时影响 `executable` 和 `node` 标签对应的动作。以下示例在 `use_time_prefix_in_talker` 为 `1` 时，仅为 talker 添加 `time` 前缀：
 
-``` xml
+```xml
 <launch>
    <arg name="use_time_prefix_in_talker" default="0"/>
    <group>
@@ -341,34 +250,29 @@ $ ros2 launch mylaunch.xml topic_name:=custom_topic_name
 ```
 
 <span id="machine"></span>
+### machine
 
-### 机器
-
-它目前没有得到支持。
+目前不支持。
 
 <span id="test"></span>
+### test
 
-### 测试
-
-它目前没有得到支持。
+目前不支持。
 
 <span id="new-tags-in-ros-2"></span>
-
-## ROS 2 中的新标签
+## ROS 2 新增的标签
 
 <span id="set-env-and-unset-env"></span>
+### set_env 与 unset_env
 
-### 设置_env 和 未设置_env
-
-见 [内置](#env) 标签描述。
+见 [env 标签说明](#env)。
 
 <span id="push-ros-namespace"></span>
-
 ### push_ros_namespace
 
-`include` 财务报告和财务报告 `group` 标签不接受 `ns` 属性。此动作可用作工作环路 :
+`include` 和 `group` 不接受 `ns` 属性，可以使用以下动作替代：
 
-``` xml
+```xml
 <!-Other tags-->
 <group>
    <push_ros_namespace namespace="my_ns"/>
@@ -387,89 +291,75 @@ $ ros2 launch mylaunch.xml topic_name:=custom_topic_name
 ```
 
 <span id="let"></span>
+### let
 
-### 开始
+它替代了带 `value` 属性的 `arg` 标签：
 
-换成是 `arg` 带有值属性的标记。
-
-``` xml
+```xml
 <let name="foo" value="asd"/>
 ```
 
-`let` 财务报告和财务报告 `arg` 服务于ROS 2:两个不同目的:
+ROS 2 中，`let` 和 `arg` 的用途不同：
 
-- `let` 设置发射配置值。
-
-- `arg` 声明一个发射参数/配置,并选择提供默认值。该值可以与 CLI 单独设定,也可以在包含指定发射文件时设定。如果没有设定值,则使用默认值,否则报告错误。
+- `let` 设置一个启动配置值。
+- `arg` 声明一个启动参数或配置，并可以提供默认值。值可以通过命令行或包含该启动文件时单独设置。如果没有设置值，则使用已提供的默认值；没有默认值时会报错。
 
 <span id="executable"></span>
+### executable
 
-### 可执行文件
-
-它允许运行任何可执行文件 。
+用于运行任意可执行程序。
 
 <span id="id7"></span>
-
 #### 示例
 
-``` xml
+```xml
 <executable cmd="ls -las" cwd="/var/log" name="my_exec" launch-prefix="something" output="screen" shell="true">
    <env name="LD_LIBRARY" value="/lib/some.so"/>
 </executable>
 ```
 
 <span id="replacing-an-include-tag"></span>
+## 替换 include 标签
 
-## 替换包含标记
+如果希望像 ROS 1 一样，在某个**命名空间**内包含启动文件，需要将 `include` 嵌套在 `group` 中：
 
-为了把发射文件列入 **命名空间** 与《规则》第1条相同,然后 `include` 标记必须嵌入一个 `group` 标记 。
-
-``` xml
+```xml
 <group>
    <include file="another_launch_file"/>
 </group>
 ```
 
-然后, 而不是使用 `ns` 属性,添加 `push_ros_namespace` 指定命名空间的动作标记 :
+然后添加 `push_ros_namespace` 动作来指定命名空间，替代 `ns` 属性：
 
-``` xml
+```xml
 <group>
    <push_ros_namespace namespace="my_ns"/>
    <include file="another_launch_file"/>
 </group>
 ```
 
-缠绕 `include` a 下标记 `group` 标记仅在指定命名空间时需要
+只有需要指定命名空间时，才必须将 `include` 嵌套在 `group` 中。
 
 <span id="substitutions"></span>
+## 替换表达式
 
-## 替代
+ROS 1 替换表达式的文档见 [roslaunch XML wiki](https://wiki.ros.org/roslaunch/XML)。基本语法没有变化，仍采用 `$(substitution-name arg1 arg2 ...)` 形式，但有以下区别：
 
-有关ROS 1的替代文件可见于 [ros 发射 XML 维基](https://wiki.ros.org/roslaunch/XML)替代语法没有改变, `$(substitution-name arg1 arg2 ...)` 但是,有些变化是W.r.t. ROS 1:
-
-- `env` 财务报告和财务报告 `optenv` 标记已被替换为 `env` 标记 。 `$(env <NAME>)` 如果环境变量不存在, 将会失败 。 `$(env <NAME> '')` 与ROS 1 相同 `$(optenv <NAME>)`. `$(env <NAME> <DEFAULT>)` 与ROS 1 相同 `$(env <NAME> <DEFAULT>)` 或 时 间 `$(optenv <NAME> <DEFAULT>)`.
-
-- `find` 已替换为 `find-pkg-share` (替换已安装软件包的共享目录)。或者 `find-pkg-prefix` 将返回已安装软件包的根。
-
-- 有一个新的 `exec-in-pkg` 替换,例如: `$(exec-in-pkg <exec_name> <package_name>)`.
-
-- 有一个新的 `find-exec` 替换。
-
-- `arg` 已替换为 `var`。它查看定义的配置 `arg` 或 时 间 `let` 标记 。
-
-- `eval` 财务报告和财务报告 `dirname` 替换需要字符串值的逃逸字符,例如. `if="$(eval '\'$(var variable)\' == \'val1\'')"`。您也可以使用 HTML 类的逃逸 `&quot;` .
-
-- `eval` 不通过配置( N) `arg` )作为本地 Python 变量。它们必须通过 `$(var name)`.
-
-- 论点是: `eval` 必须在ROS 2. 中引用字符串,这也是为什么必须逃避表达式中的引用的原因.
+- `env` 和 `optenv` 统一改为 `env`。环境变量不存在时，`$(env <NAME>)` 会失败。`$(env <NAME> '')` 等价于 ROS 1 的 `$(optenv <NAME>)`。`$(env <NAME> <DEFAULT>)` 等价于 ROS 1 的 `$(env <NAME> <DEFAULT>)` 或 `$(optenv <NAME> <DEFAULT>)`。
+- `find` 改为 `find-pkg-share`，返回已安装软件包的 share 目录。另一个选择是 `find-pkg-prefix`，返回已安装软件包的根目录。
+- 新增 `exec-in-pkg`，例如 `$(exec-in-pkg <exec_name> <package_name>)`。
+- 新增 `find-exec`。
+- `arg` 改为 `var`，读取通过 `arg` 或 `let` 标签定义的配置。
+- `eval` 和 `dirname` 中的字符串值需要转义，例如 `if="$(eval '\'$(var variable)\' == \'val1\'')"`，也可以使用 `&quot;` 等 HTML 转义。
+- `eval` 不再将配置（`arg`）作为 Python 局部变量传入，必须通过 `$(var name)` 访问。
+- ROS 2 中 `eval` 的参数必须是带引号的字符串，这也是表达式内部引号需要转义的原因。
 
 <span id="id8"></span>
+## 类型推断规则
 
-## 推论规则类型
+前文 `param` 的“类型推断规则”同样适用于任意属性。例如：
 
-显示的规则 `Type inference rules` 分节 `param` 标记适用于任意属性。例如:
-
-``` xml
+```xml
 <!--Setting a string value to an attribute expecting an int will raise an error.-->
 <tag1 attr-expecting-an-int="'1'"/>
 <!--Correct version.-->
@@ -484,4 +374,4 @@ $ ros2 launch mylaunch.xml topic_name:=custom_topic_name
 <tag3 attr-expecting-a-str="don't use a separator"/>
 ```
 
-有些属性接受不止一个类型, 例如 `value` 属性 `param` 标签。常见的参数是类型 `int` (或 减) `float`) 并接受 `str`中,后将替换,并试图转换为 `int` (或 减) `float`由行动进行。
+某些属性接受多种类型，例如 `param` 的 `value` 属性。通常，类型为 `int` 或 `float` 的参数也接受 `str`，动作稍后会执行替换，并尝试将结果转换为 `int` 或 `float`。

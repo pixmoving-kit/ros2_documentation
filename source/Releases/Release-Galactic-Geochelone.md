@@ -3,10 +3,6 @@ translation_status: machine_translated
 source: Releases/Release-Galactic-Geochelone.rst
 ---
 
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="galactic-geochelone-galactic"></span> <span id="galactic-release"></span>
 
 # Galactic Geochelone（`galactic`)

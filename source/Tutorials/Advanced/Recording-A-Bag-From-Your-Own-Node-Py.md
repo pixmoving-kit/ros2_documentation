@@ -3,10 +3,6 @@ translation_status: machine_translated
 source: Tutorials/Advanced/Recording-A-Bag-From-Your-Own-Node-Py.rst
 ---
 
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="recording-a-bag-from-a-node-python"></span> <span id="ros2bagownnodepython"></span>
 
 # 在节点中录制 bag（Python）

@@ -1,15 +1,7 @@
----
-translation_status: machine_translated
-source: How-To-Guides/Releasing/_Clean-Up-Changelog.rst
----
+在编辑器中打开所有 `CHANGELOG.rst` 文件。
+你会看到 `catkin_generate_changelog` 根据提交说明自动生成了一个 `Forthcoming` 小节：
 
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
-全部打开 `CHANGELOG.rst` 在编辑器中保存文件。你会看到 `catkin_generate_changelog` 已自动生成包含承诺信件中注释的下一节 :
-
-``` rst
+```rst
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package your_package
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -20,4 +12,5 @@ Forthcoming
 * and this
 ```
 
-清理承诺信息清单,以简洁地传达自上次发布以来对软件包的显著变化,以及 **输入所有 ChangeGELOG.rst 文件 。** 不修改 `Forthcoming` 头曰.
+整理这些提交说明，简明描述软件包自上次发布以来的重要变化，然后**提交所有 `CHANGELOG.rst` 文件**。
+不要修改 `Forthcoming` 标题。

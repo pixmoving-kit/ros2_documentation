@@ -1,56 +1,43 @@
----
-translation_status: machine_translated
-source: The-ROS2-Project/Release-Schedule.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="release-schedule"></span>
 
 # 发布计划
 
 <span id="frequency"></span>
 
-## 频率
+## 发布频率
 
-新的ROS 2 发布版本 **每12个月**其原理是,周期较短(如6个月)会导致大量间接费用,并可能同时出现许多活性释放(假设其支持长度相同),另一方面,较长的周期(如2年)对于用户来说太长,无法等待ROS 2的发布中提供新的功能。
+ROS 2 每 **12 个月**发布一个新版本。更短的周期（例如 6 个月）会带来显著的维护开销，并可能使多个发行版同时处于维护期，前提是它们的支持期限相同。更长的周期（例如 2 年）则会让用户等待新功能进入 ROS 2 发行版的时间过长。
 
 <span id="targeted-platforms"></span>
 
 ## 目标平台
 
-由于非LTS(长期支持)Ubuntu的释放只支持9个月,ROS 2将不会针对这些非LTS Ubuntu的释放。 **单人** Ubuntu LTS. 其原理是,完全支持两个Ubuntu LTS版本对我们的维护者来说是一个巨大的间接费用,因为可能存在长达两年的上游依赖关系。 根据具体情况,ROS 2 分布可以支持一个更古老的Ubuntu LTS分布,作为第3级,社区支持的平台。
+Ubuntu 非 LTS（长期支持）版本的支持期只有 9 个月，因此 ROS 2 不以这些版本为目标平台。每个 ROS 2 发行版只为**一个** Ubuntu LTS 版本提供完整的一级支持。完整支持两个 Ubuntu LTS 版本会给维护者带来巨大开销，因为上游依赖可能相差两年。视具体情况，一个 ROS 2 发行版也可能将较早的 Ubuntu LTS 版本列为由社区支持的三级平台。
 
-由于macOS(或至少酿酒)和Windows都是滚动平台,因此我们的目标是支持ROS 2发行时可用的最新版本。 对于Debian来说,我们还打算瞄准最新的稳定版本;但是,如果该版本比Ubuntu版本落后两年,那么它可能是不可能的。
+由于 macOS（至少 brew）和 Windows 采用滚动更新，我们力求支持 ROS 2 发行时可用的最新版本。Debian 同样以最新稳定版为目标；但如果它比对应 Ubuntu 版本落后两年，就可能无法支持。
 
 <span id="support"></span>
 
-## 支助
+## 支持期限
 
 <span id="lts-releases"></span>
 
-### LTS 发布
+### LTS 发行版
 
-自从Ubuntu LTS发布后 **5 岁** 在标准支持中,我们的目标是每个ROS LTS的发布都有类似的支持寿命. 甚至在Ubuntu LTS发布一个月后(通常指5月的ROS 2发布),新的ROS 2发布会发生. ROS 2发布会支持到Ubuntu LTS发布的标准支持窗口结束,距离ROS 2发布日期还有4年零11个月.
+Ubuntu LTS 提供 **5 年**标准支持，因此我们希望 ROS LTS 发行版拥有相近的支持期限。在偶数年，ROS 2 新发行版会在 Ubuntu LTS 发布一个月后发布，通常是在 5 月。ROS 2 的支持持续到对应 Ubuntu LTS 标准支持期结束，即从 ROS 2 发布之日起约 4 年 11 个月。
 
 <span id="non-lts-releases"></span>
 
-### 非 LTS 释放
+### 非 LTS 发行版
 
-为了向社区提供频繁的发布,在奇数年里将发布非LTS ROS 2发布版本。它的目标总是与之前的ROS 2 LTS发布版本相同,但只支持 **1.5岁**。这一期限可确保非LTS与下一次ROS LTS发布重叠6个月,以提供一个足够长的过渡窗口。
+为社区提供更频繁的更新，奇数年会发布一个非 LTS ROS 2 发行版。它始终以之前 ROS 2 LTS 所使用的同一 Ubuntu LTS 为目标平台，但只支持 **1.5 年**。这样，它会与下一个 ROS LTS 发行版重叠 6 个月，为迁移留出足够时间。
 
 <span id="releases-and-support-duration"></span>
 
-### 释放和支助期限
+### 发行版及支持时长
 
-- 2025年5月:Kilted Kaiju:非LTS发布,支持1.5年.
-
-- 2026年5月:Lyrical Luth:LTS发布,支持5年.
-
-- 2027年5月:MTurtle:非LTS发布,支持1.5年.
-
-- 2028年5月:NTurtle:LTS发布,支持5年.
-
-- 等,每年在LTS和非LTS释放之间交替发布
+- 2025 年 5 月：Kilted Kaiju，非 LTS，支持 1.5 年。
+- 2026 年 5 月：Lyrical Luth，LTS，支持 5 年。
+- 2027 年 5 月：M Turtle，非 LTS，支持 1.5 年。
+- 2028 年 5 月：N Turtle，LTS，支持 5 年。
+- 此后按年交替发布 LTS 和非 LTS 版本。

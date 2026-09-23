@@ -1,140 +1,121 @@
----
-translation_status: machine_translated
-source: Tutorials/Beginner-CLI-Tools/Understanding-ROS2-Nodes/Understanding-ROS2-Nodes.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="understanding-nodes"></span> <span id="ros2nodes"></span>
-
 # 理解节点
 
-**目标：** 学习ROS 2中节点的功能,以及与之互动的工具.
+**目标：** 了解节点在 ROS 2 中的作用，以及与节点交互的工具。
 
-**教程级别：** 入门
+**教程级别：** 初学者
 
-**用时：** 10分钟
+**预计用时：** 10 分钟
 
 <span id="background"></span>
-
 ## 背景
 
 <span id="the-ros-2-graph"></span>
+### 1 ROS 2 计算图
 
-### 1 ROS 2 图
+在接下来的几篇教程中，你将学习一系列 ROS 2 核心概念，它们共同构成所谓的“ROS（2）计算图”。
 
-在接下来的几个教程中,你们将了解一系列核心ROS 2概念,这些概念构成了所谓的“ROS(2)图”。
-
-ROS 图是 ROS 2 元素同时处理数据的网络。 它包含所有可执行文件以及它们之间的连接, 如果您要将其全部映射出来并可视化的话 。
+ROS 计算图是由共同处理数据的 ROS 2 要素组成的网络。如果将它们绘制出来，图中会包含所有可执行程序及其相互连接。
 
 <span id="nodes-in-ros-2"></span>
+### 2 ROS 2 中的节点
 
-### 2个ROS节点
+ROS 中的每个节点都应该负责一项独立、模块化的功能，例如控制车轮电机，或发布激光测距仪的传感器数据。每个节点都可以通过话题、服务、动作或参数与其他节点交换数据。
 
-ROS中的每个节点应负责单一的模块化目的,例如控制轮动机或发布激光测距器的传感器数据. 每个节点可以通过专题,服务,动作或参数发送和接收来自其他节点的数据.
+![节点通过话题和服务通信](images/Nodes-TopicandService.gif)
 
-![](images/Nodes-TopicandService.gif)
-
-一个完整的机器人系统由许多节点在协奏中工作组成. ROS 2中,一个单一的可执行程序(C++程序,Python程序等)可以包含一个或多个节点.
+完整的机器人系统由许多协同工作的节点组成。在 ROS 2 中，单个可执行程序（C++ 程序、Python 程序等）可以包含一个或多个节点。
 
 <span id="prerequisites"></span>
-
 ## 前提条件
 
-那个... [上一个教程](../Introducing-Turtlesim/Introducing-Turtlesim.md) 演示如何安装 `turtlesim` 这里使用的软件包 。
+[上一篇教程](../Introducing-Turtlesim/Introducing-Turtlesim.md)介绍了如何安装本教程使用的 `turtlesim` 软件包。
 
-与往常一样, [您打开的每个新终端](../Configuring-ROS2-Environment.md).
+与往常一样，不要忘记在[每个新打开的终端](../Configuring-ROS2-Environment.md)中加载 ROS 2 环境。
 
 <span id="tasks"></span>
-
 ## 操作步骤
 
 <span id="ros2-run"></span>
+### 1 ros2 run
 
-### 1 ros2 运行
+`ros2 run` 命令用于启动软件包中的可执行程序：
 
-命令 `ros2 run` 从软件包中发射可执行文件。
-
-``` console
+```console
 $ ros2 run <package_name> <executable_name>
 ```
 
-要运行龟兹姆,打开一个新的终端,并输入以下命令:
+打开新终端，输入以下命令运行 turtlesim：
 
-``` console
+```console
 $ ros2 run turtlesim turtlesim_node
 ```
 
-乌龟之窗会打开,就像你从... [上一个教程](../Introducing-Turtlesim/Introducing-Turtlesim.md).
+与[上一篇教程](../Introducing-Turtlesim/Introducing-Turtlesim.md)一样，turtlesim 窗口会打开。
 
-这里,软件包的名字是 `turtlesim` 可执行名称为 `turtlesim_node`.
+这里，软件包名称是 `turtlesim`，可执行程序名称是 `turtlesim_node`。
 
-但我们仍然不知道节点名称。您可以通过使用 `ros2 node list`
+不过，我们还不知道节点名称。可以使用 `ros2 node list` 查找节点名称。
 
 <span id="ros2-node-list"></span>
+### 2 ros2 node list
 
-### 2 ros2 节点列表
+`ros2 node list` 会显示所有正在运行的节点名称。当你想与某个节点交互，或系统中运行着许多节点、需要了解有哪些节点时，这个命令尤其有用。
 
-`ros2 node list` 将显示所有运行的节点的名称。当您想要与节点交互时,或者当您有一个系统运行了许多节点并需要跟踪这些节点时,这尤其有用。
+保持 turtlesim 在原终端中运行，打开新终端并输入以下命令。终端会返回节点名称：
 
-在龟兹姆仍在另一端运行时打开一个新的终端,然后输入以下命令。终端将返回节点名称 :
-
-``` console
+```console
 $ ros2 node list
 /turtlesim
 ```
 
-打开另一个新终端, 并用命令启动 Teleop 节点 :
+再打开一个新终端，运行以下命令启动遥控节点：
 
-``` console
+```console
 $ ros2 run turtlesim turtle_teleop_key
 ```
 
-在这里,我们指的是 `turtlesim` 软件包,但这次我们瞄准名为可执行文件的 `turtle_teleop_key`.
+这里仍然使用 `turtlesim` 软件包，但执行的是 `turtle_teleop_key`。
 
-回到你跑的终点站 `ros2 node list` 您将看到两个活动节点的名称 :
+回到运行过 `ros2 node list` 的终端，再次执行该命令。现在会看到两个活动节点的名称：
 
-``` console
+```console
 $ ros2 node list
 /turtlesim
 /teleop_turtle
 ```
 
 <span id="remapping"></span>
+#### 2.1 重映射
 
-#### 2.1 重新绘图
+[重映射](https://design.ros2.org/articles/ros_command_line_arguments.html#name-remapping-rules)允许你为节点名称、话题名称、服务名称等默认属性指定自定义值。在上一篇教程中，你对 `turtle_teleop_key` 进行了重映射，修改 `cmd_vel` 话题，使它控制 **turtle2**。
 
-[重新绘图](https://design.ros2.org/articles/ros_command_line_arguments.html#name-remapping-rules) 允许您重新指定默认节点属性, 如节点名称、 主题名称、 服务名称等, 用于自定义值。 在上一个教程中, 您在 `turtle_teleop_key` 更改 cmd_vel 主题和目标 **乌龟2**.
+现在修改 `/turtlesim` 节点的名称。在新终端中运行：
 
-现在,让我们重新指定我们的名字 `/turtlesim` 节点。在新的终端中,运行以下命令:
-
-``` console
+```console
 $ ros2 run turtlesim turtlesim_node --ros-args --remap __node:=my_turtle
 ```
 
-既然你打来电话 `ros2 run` 不过,现在如果你回到你运行的终点站 `ros2 node list`,然后再次运行,你会看到三个节点名称:
+由于再次通过 `ros2 run` 启动了 turtlesim，会打开另一个 turtlesim 窗口。回到运行过 `ros2 node list` 的终端，再次执行该命令，将看到三个节点名称：
 
-``` console
+```console
 /my_turtle
 /turtlesim
 /teleop_turtle
 ```
 
 <span id="ros2-node-info"></span>
+### 3 ros2 node info
 
-### 3 个 ros2 节点信息
+知道节点名称后，可以用以下命令获取更多信息：
 
-现在你知道节点的名称了,可以通过以下方式获取更多有关它们的信息:
-
-``` console
+```console
 $ ros2 node info <node_name>
 ```
 
-为了检查你最新的节点 `my_turtle`,运行以下命令:
+运行以下命令，查看刚启动的 `my_turtle` 节点：
 
-``` console
+```console
 $ ros2 node info /my_turtle
 /my_turtle
   Subscribers:
@@ -166,30 +147,27 @@ $ ros2 node info /my_turtle
   Action Clients:
 ```
 
-`ros2 node info` 返回订阅者、出版商、服务和动作的列表,即与该节点相互作用的ROS图表连接。
+`ros2 node info` 会列出订阅者、发布者、服务和动作，也就是 ROS 计算图中与该节点交互的连接。
 
-现在尝试运行相同的命令在 `/teleop_turtle` 节点,并查看其连接与 `my_turtle`.
+现在试着对 `/teleop_turtle` 节点运行同样的命令，观察它的连接与 `my_turtle` 有何不同。
 
-您将更多地了解 ROS 图表连接概念, 包括即将到来的教程中的信息类型 。
+后续教程将进一步介绍 ROS 计算图中的连接，以及消息类型等概念。
 
 <span id="summary"></span>
-
 ## 小结
 
-节点是机器人系统中服务于单一模块化目的的ROS 2基本元素.
+节点是 ROS 2 的基本组成要素，在机器人系统中承担一项独立、模块化的功能。
 
-在此教程中, 您使用了在 `turtlesim` 运行可执行文件的软件包 `turtlesim_node` 财务报告和财务报告 `turtle_teleop_key`.
+本教程通过运行 `turtlesim_node` 和 `turtle_teleop_key`，使用了 `turtlesim` 软件包创建的节点。
 
-你学会了如何使用 `ros2 node list` 以发现活动节点名称和 `ros2 node info` 这些工具对于了解复杂、现实世界的机器人系统中的数据流动至关重要。
+你学习了使用 `ros2 node list` 查找活动节点名称，以及使用 `ros2 node info` 查看单个节点的内部信息。这些工具对于理解复杂的真实机器人系统中的数据流至关重要。
 
 <span id="next-steps"></span>
-
 ## 后续步骤
 
-现在你知道ROS 2中的节点了,你可以继续前进到 [主题教程](../Understanding-ROS2-Topics/Understanding-ROS2-Topics.md)。主题是连接节点的通信类型之一。
+理解 ROS 2 节点之后，可以继续学习[话题教程](../Understanding-ROS2-Topics/Understanding-ROS2-Topics.md)。话题是连接节点的一种通信方式。
 
 <span id="related-content"></span>
-
 ## 相关内容
 
-那个... [概念](../../../Concepts.md) 页面为节点的概念增加了一些细节。
+[概念页面](../../../Concepts.md)提供了关于节点概念的更多说明。

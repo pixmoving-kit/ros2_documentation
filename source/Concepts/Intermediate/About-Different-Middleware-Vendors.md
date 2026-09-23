@@ -1,65 +1,50 @@
----
-translation_status: machine_translated
-source: Concepts/Intermediate/About-Different-Middleware-Vendors.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="different-ros-2-middleware-vendors"></span>
-
 # 不同的 ROS 2 中间件供应商
 
-ROS 2是作为它的中间软件DDS/RTPS的顶部建造的,它提供发现,序列化和运输. [本条](https://design.ros2.org/articles/ros_on_dds.html) 详细解释使用DDS执行和/或DDS的RTPS电线协议背后的动机。简言之,DDS是一个端到端的中间软件,提供与ROS系统相关的特性,如分布式发现(不像ROS 1 那样集中)和对不同的运输“服务质量”选项的控制。
+ROS 2 使用 DDS/RTPS 作为底层中间件，由其提供发现、序列化和传输功能。[这篇文章](https://design.ros2.org/articles/ros_on_dds.html)详细说明了采用 DDS 实现和／或 DDS 的 RTPS 网络传输协议的原因。概括而言，DDS 是一种端到端中间件，提供了与 ROS 系统相关的功能，例如分布式发现（与 ROS 1 的集中式发现不同），以及对传输中各种“服务质量”选项的控制。
 
-[DDS](https://www.omg.org/omg-dds-portal) 行业标准,由一系列销售商实施,例如RTI的 [Connext DDS](https://www.rti.com/products/),eProsima计划 [Fast DDS](https://fast-dds.docs.eprosima.com/)Eclipse 语录 [Cyclone DDS](https://projects.eclipse.org/projects/iot.cyclonedds),或古鲁姆网络公司 [GurumDDS (古罗马语)](https://gurum.cc/index_eng). RTPS(中文(简体) ). [DDSI - RTPS 软件](https://www.omg.org/spec/DDSI-RTPS/About-DDSI-RTPS/))是DDS用于通过网络通信的线条协议.
+[DDS](https://www.omg.org/omg-dds-portal) 是一项行业标准，有多家供应商提供实现，例如 RTI 的 [Connext DDS](https://www.rti.com/products/)、eProsima 的 [Fast DDS](https://fast-dds.docs.eprosima.com/)、Eclipse 的 [Cyclone DDS](https://projects.eclipse.org/projects/iot.cyclonedds)，以及 GurumNetworks 的 [GurumDDS](https://gurum.cc/index_eng)。RTPS（也称为 [DDSI-RTPS](https://www.omg.org/spec/DDSI-RTPS/About-DDSI-RTPS/)）是 DDS 在网络上通信时使用的传输协议。
 
-ROS 2 支持多个 DDS/RTPS 执行,因为它在选择供应商/执行时不一定“一刀切 ” 。 在选择中间软件执行时,您可能会考虑许多因素:许可证等后勤因素,或平台可用性或计算脚印等技术因素。供应商可以提供不止一个旨在满足不同需求的DDS或RTPS执行。例如,RITI 的Connext 执行有一些不同的目的,比如一个是专门针对微控制器的,另一个是针对需要特殊安全认证的应用程序的(我们此时只支持其标准桌面版本)。
+ROS 2 支持多种 DDS/RTPS 实现，因为没有一种供应商或实现必然适合所有场景。选择中间件实现时，需要考虑许多因素，例如许可证等实际约束，以及平台支持、计算资源占用等技术因素。供应商可能提供多个 DDS 或 RTPS 实现，以满足不同需求。例如，RTI 的 Connext 实现有多个面向不同用途的版本，包括专门面向微控制器的版本，以及面向需要特殊安全认证的应用的版本；目前我们只支持其标准桌面版本。
 
-为了与ROS 2一起使用DDS/RTPS的执行,一个“**R**业务办 **M**中间**w**是接口” (a.k.a) `rmw` 接口或只是 `rmw`) 需要创建使用 DDS 或 RTPS 执行的 API 和工具执行抽象 ROS 中间软件接口的软件包。 执行和维护 RMW 软件包以支持 DDS 执行,但支持至少几个执行对于确保 ROS 2 代码库不与任何特定执行捆绑很重要,因为用户可能希望根据项目需要切换执行。
+要在 ROS 2 中使用一种 DDS/RTPS 实现，需要创建一个“ROS 中间件接口”（**R**OS **M**iddle**w**are interface，简称 `rmw` 接口或 `rmw`）包，使用该 DDS 或 RTPS 实现的 API 和工具来实现抽象的 ROS 中间件接口。实现和维护支持各种 DDS 实现的 RMW 包需要大量工作。不过，至少支持几种实现非常重要，这可以确保 ROS 2 代码库不会绑定到某一种特定实现，用户也能根据项目需求切换实现。
 
 <span id="supported-rmw-implementations"></span>
+## 支持的 RMW 实现
 
-## 支持落实《保护所有移徙工人及其家庭成员权利国际公约》
+| 产品名称 | 许可证 | RMW 实现 | 状态 |
+| --- | --- | --- | --- |
+| eProsima *Fast DDS* | Apache 2 | `rmw_fastrtps_cpp` | 完整支持；默认 RMW；随二进制发行包提供。 |
+| Eclipse *Cyclone DDS* | Eclipse Public License v2.0 | `rmw_cyclonedds_cpp` | 完整支持；随二进制发行包提供。 |
+| RTI *Connext DDS* | 商业、研究许可证 | `rmw_connextdds` | 完整支持；二进制包包含对它的支持，但 Connext 需单独安装。 |
+| GurumNetworks *GurumDDS* | 商业许可证 | `rmw_gurumdds_cpp` | 社区支持；二进制包包含对它的支持，但 GurumDDS 需单独安装。 |
 
-| 产品名称 | 许可证 | RMW 执行情况 | 状态 |
-|----|----|----|----|
-| eProsima 软件 *Fast DDS* | 阿帕奇2型导弹 | `rmw_fastrtps_cpp` | 完全支持 默认的 RMW 已装有二进制版本的套件 。 |
-| 剪贴画 *Cyclone DDS* | Eclipse 公共许可证 v2.0 | `rmw_cyclonedds_cpp` | 完全支持,装有二进制版本 |
-| RTI 广播电视网 *Connext DDS* | 商业、研究 | `rmw_connextdds` | 完全支持。 支持包含在二进制中, 但Connext 单独安装 。 |
-| 古鲁姆网络 *GurumDDS (古罗马语)* | 商业 | `rmw_gurumdds_cpp` | 社区支持 支持包含在二进制中,但GurumDDS单独安装. |
-
-关于与多项《保护移栖物种公约》实施工作合作的实用信息,见《保护移栖物种公约》。 [“与多项《保护移栖物种公约》的实施合作”](../../How-To-Guides/Working-with-multiple-RMW-implementations.md) 教学。
+有关使用多种 RMW 实现的实践说明，请参见[使用多种 RMW 实现](../../How-To-Guides/Working-with-multiple-RMW-implementations.md)教程。
 
 <span id="multiple-rmw-implementations"></span>
+## 多种 RMW 实现
 
-## 多项落实《保护所有移徙工人及其家庭成员权利国际公约》
+目前仍受支持的 ROS 2 发行版，其二进制发行包内置了对多种 RMW 实现的支持，包括 Fast DDS、RTI Connext Pro、Eclipse Cyclone DDS 和 GurumNetworks GurumDDS。默认实现为 Fast DDS；它随二进制包一同分发，因此无需额外安装即可使用。
 
-目前活跃的 Distros 的 ROS 2 二进制发布已经内置支持了数个 RMW 执行出框( Fast DDS, RTI Connext Pro, Eclipse Circle DDS, GurumNetworks GurumDDS) 。 默认是 Fast DDS , 因为我们用我们的二进制包来分配它,所以没有额外的安装步骤。
+其他 RMW 实现，例如 Cyclone DDS、Connext 或 GurumDDS，可以通过[安装附加软件包](../../Installation/RMW-Implementations.md)来启用，无需重新构建任何内容，也无需替换已有软件包。
 
-其他RMW,如气旋DDS,Connext或GurumDDS都可以通过 [安装额外软件包](../../Installation/RMW-Implementations.md),但无需重建任何软件包或替换任何现有的软件包。
+从源码构建的 ROS 2 工作空间可以同时构建并安装多种 RMW 实现。编译 ROS 2 核心代码时，只要相应 DDS/RTPS 实现已正确安装，且相关环境变量已配置好，找到的 RMW 实现就会参与构建。例如，如果工作空间中有 [RTI Connext DDS 的 RMW 包](https://github.com/ros2/rmw_connextdds)源码，并且能找到已安装的 RTI Connext Pro，就会构建这个包。
 
-从源头构建的 ROS 2 工作空间可以同时构建和安装多个 RMW 执行。在编译 ROS 2 核心代码的同时,如果相关的 DDS/RTPS 执行得到妥善安装,并配置了相关的环境变量,则会构建任何 RMW 执行。例如,如果 [RTI Connext DDS 的 RMW 软件包](https://github.com/ros2/rmw_connextdds) 如果也可以找到 RTI 的 Connext Pro 的安装,则会建起来 。
+在许多情况下，使用不同 RMW 实现的节点可以互相通信，但并非所有情况都如此。以下跨供应商通信配置不受支持：
 
-在很多情况下,您会发现使用不同 RMW 执行的节点能够进行通信,但并非在所有情况下都是如此。这里列出了不支持的供应商间通信配置 :
-
-- 快速 DDS \< - \> 连接  
-  - `WString` Fast DDS 发布的 Connext 无法在 macOS 上正确接收
-
-- 连接 \<- \> 气旋DDS  
-  - 不支持 pub/sub 通信用于 `WString`
+- Fast DDS ↔ Connext：在 macOS 上，Connext 无法正确接收 Fast DDS 发布的 `WString`。
+- Connext ↔ Cyclone DDS：不支持 `WString` 的发布／订阅通信。
 
 <span id="default-rmw-implementation"></span>
+## 默认 RMW 实现
 
-## 默认的 RMW 执行
+如果 ROS 2 工作空间中存在多种 RMW 实现，只要 Fast DDS 可用，就会选用它作为默认实现。如果没有安装 Fast DDS 的 RMW 实现，则按 RMW 实现标识符的字母顺序选择排在最前面的实现。实现标识符就是提供该 RMW 实现的 ROS 包名，例如 `rmw_cyclonedds_cpp`。
 
-如果 ROS 2 工作空间有多个 RMW 执行, 快速 DDS 会被选为默认的 RMW 执行, 如果无法安装 Fast DDS  RMW 执行, 则将使用首个按字母顺序排列的 RMW 执行标识符 。 执行标识符是提供 RMW 执行的 ROS 包的名称, 例如 。 `rmw_cyclonedds_cpp`。例如,如果两者兼有 `rmw_cyclonedds_cpp` 财务报告和财务报告 `rmw_connextdds` ROS软件包已经安装, `rmw_connextdds` 将会是默认的。如果 `rmw_fastrtps_cpp` 被安装, 这将是默认的。
+例如，同时安装 `rmw_cyclonedds_cpp` 和 `rmw_connextdds` 时，默认实现为 `rmw_connextdds`。如果安装了 `rmw_fastrtps_cpp`，则它会成为默认实现。
 
-见 [指南](../../How-To-Guides/Working-with-multiple-RMW-implementations.md) 在运行 ROS 2 实例时,如何指定使用哪些 RMW 执行 。
+有关运行 ROS 2 示例时如何指定 RMW 实现，请参见[使用指南](../../How-To-Guides/Working-with-multiple-RMW-implementations.md)。
 
 <span id="cross-vendor-communication"></span> <span id="different-middleware-vendors-cross-vendor-communication"></span>
+## 跨供应商通信
 
-## 交叉风云通信
-
-虽然在有限的情况下,不同的RMW执行可能兼容,但这一点并不得到保证,因此建议用户确保分布式系统的所有部分使用相同的ROS版本和相同的RMW执行.
+不同的 RMW 实现在某些情况下可能兼容，但并无保证。因此，建议确保分布式系统的所有部分使用相同的 ROS 版本和相同的 RMW 实现。

@@ -1,29 +1,17 @@
----
-translation_status: machine_translated
-source: How-To-Guides/Setup-ROS-2-with-VSCode-and-Docker-Container.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="setup-ros-2-with-vscode-and-docker-community-contributed"></span>
-
-# 使用 VSCode 和 Docker 配置 ROS 2（社区贡献）
+# 使用 VS Code 和 Docker 配置 ROS 2（社区贡献）
 
 <span id="install-vs-code-and-docker"></span>
+## 安装 VS Code 和 Docker
 
-## 安装 VS 代码和 Docker
-
-使用 Visual Studio 代码和 Docker 容器,您可以运行您最喜欢的 ROS 2 分布, 无需更改操作系统或使用虚拟机。 您可以使用此教程设置一个 Docker 容器, 用于您未来的 ROS 2 项目 。
+借助 Visual Studio Code 和 Docker 容器，可以运行所需的 ROS 2 发行版，无须更换操作系统或使用虚拟机。本教程将帮助你配置一个可供后续 ROS 2 项目使用的 Docker 容器。
 
 <span id="install-docker"></span>
+### 安装 Docker
 
-### 安装嵌入器
+执行以下命令安装 Docker 并设置用户权限：
 
-要安装嵌入器并设定正确的用户权限,请使用以下命令.
-
-``` console
+```console
 $ sudo apt install docker.io git python3-pip
 $ pip3 install vcstool
 $ echo export PATH=$HOME/.local/bin:$PATH >> ~/.bashrc
@@ -33,25 +21,24 @@ $ sudo usermod -aG docker $USER
 $ newgrp docker
 ```
 
-现在您可以通过运行以下命令来检查安装是否成功 :
+运行以下命令，检查安装是否成功：
 
-``` console
+```console
 $ docker run hello-world
 ```
 
-如果你不能从盒子里跑出来的话, 您可能需要先启动 Docker 守护进程 :
+如果无法直接运行 hello-world，可能需要先启动 Docker 守护进程：
 
-``` console
+```console
 $ sudo systemctl start docker
 ```
 
 <span id="install-vs-code"></span>
+### 安装 VS Code
 
-### 安装 VS 代码
+使用以下命令安装 VS Code：
 
-要安装 VS 代码, 请使用以下命令 :
-
-``` console
+```console
 $ sudo apt update
 $ sudo apt install software-properties-common apt-transport-https wget -y
 $ wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -
@@ -59,34 +46,31 @@ $ sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos
 $ sudo apt install code
 ```
 
-您可以通过打字来运行 VS 代码 `code` 在终点站。
+在终端中输入 `code` 即可运行 VS Code。
 
 <span id="install-remote-development-extension"></span>
+### 安装 Remote Development 扩展
 
-### 安装远程开发扩展
-
-VS代码在扩展中搜索(CTRL+SHIFT ⁇ ),用于“远程开发”扩展并安装.
+在 VS Code 的扩展视图（`Ctrl+Shift+X`）中搜索并安装 “Remote Development” 扩展。
 
 <span id="configure-workspace-in-docker-and-vs-code"></span>
-
-## 在 Docker 和 VS 代码中配置工作空间
+## 在 Docker 和 VS Code 中配置工作空间
 
 <span id="add-your-ros-2-workspace"></span>
+### 添加 ROS 2 工作空间
 
-### 添加您的 ROS 2 工作空间
+创建一个工作空间，以便在容器中打开和构建，例如：
 
-添加一个工作空间,以便在容器中构建和打开,例如:
-
-``` console
+```console
 $ cd ~/
 $ mkdir ws
 $ cd ws
 $ mkdir src
 ```
 
-现在创建一个 `.devcontainer` 在工作空间的根中创建文件夹并添加一个 `devcontainer.json` 财务报告和财务报告 `Dockerfile` 给这个 `.devcontainer` 文件夹。工作空间结构应该像这样 :
+在工作空间根目录创建 `.devcontainer` 文件夹，并在其中添加 `devcontainer.json` 和 `Dockerfile`。工作空间结构应如下：
 
-``` default
+```text
 ws
 ├── .devcontainer
 │   ├── devcontainer.json
@@ -96,15 +80,14 @@ ws
     └── package2
 ```
 
-与 `File->Open Folder...` 或 时 间 `Ctrl+K Ctrl+O`打开 `ws` VS 代码中的工作空间文件夹。
+通过 `File -> Open Folder...` 或 `Ctrl+K Ctrl+O`，在 VS Code 中打开工作空间的 `ws` 文件夹。
 
 <span id="edit-devcontainer-json-for-your-environment"></span>
+### 按环境修改 devcontainer.json
 
-### 编辑 `devcontainer.json` 为您创造环境
+要让开发容器正常工作，需要使用正确的用户构建它。在 `.devcontainer/devcontainer.json` 中添加以下内容：
 
-为了使Dev容器正常运行,我们必须与正确的用户一起建造它。 `.devcontainer/devcontainer.json`:
-
-``` json
+```json
 {
     "name": "ROS 2 Development Container",
     "privileged": true,
@@ -148,15 +131,14 @@ ws
 }
 ```
 
-使用 `Ctrl+F` 打开搜索并替换菜单。搜索 `YOUR_USERNAME` 换成你的 `Linux username`。如果您不知道您的用户名,您可以通过运行找到它 `echo $USERNAME` 在终点站。
+按 `Ctrl+F` 打开搜索和替换菜单，查找 `YOUR_USERNAME` 并替换为你的 Linux 用户名。如果不知道用户名，可以在终端中运行 `echo $USERNAME` 查看。
 
 <span id="edit-dockerfile"></span>
+### 编辑 Dockerfile
 
-### 编辑 `Dockerfile`
+打开 Dockerfile，添加以下内容：
 
-打开 Docker 文件并添加以下内容:
-
-``` bash
+```bash
 FROM ros:ROS_DISTRO
 ARG USERNAME=USERNAME
 ARG USER_UID=1000
@@ -187,26 +169,23 @@ USER $USERNAME
 CMD ["/bin/bash"]
 ```
 
-替换 `ROS_DISTRO` 带有 ROS 2 分布图,您希望作为上方的基础图像使用,例如 `rolling`.
+将 `ROS_DISTRO` 替换为希望用作基础镜像的 ROS 2 发行版，例如 `rolling`。
 
 <span id="open-and-build-development-container"></span>
+## 打开并构建开发容器
 
-## 开放和建设发展集装箱
-
-使用 `View->Command Palette...` 或 时 间 `Ctrl+Shift+P` 打开命令调色板。搜索命令 `Dev Containers: Reopen in Container` 并执行它。这将为您建立您的开发容器。它需要一段时间 - 退后或去喝咖啡。
+通过 `View -> Command Palette...` 或 `Ctrl+Shift+P` 打开命令面板。搜索并执行 `Dev Containers: Reopen in Container`。这会构建你的 Docker 开发容器，需要稍等一会儿。
 
 <span id="test-container"></span>
-
 ### 测试容器
 
-为了测试是否一切顺利,在容器中打开一个终端。 `View->Terminal` 或 时 间 `` Ctrl+Shift+` `` 财务报告和财务报告 `New Terminal` 在 VS 代码中。在终端内进行下列操作:
+要检查配置是否成功，在 VS Code 中通过 `View -> Terminal` 或 ``Ctrl+Shift+` `` 打开终端面板，再选择 `New Terminal`，创建容器内终端。执行：
 
-``` console
+```console
 $ sudo apt install ros-$ROS_DISTRO-rviz2 -y
 $ source /opt/ros/$ROS_DISTRO/setup.bash
 $ rviz2
 ```
 
-> **说明**
->
-> 显示 RVIZ 可能有问题。 请确保允许用户访问 X 窗口系统 。 `xhost +local:<USERNAME>`。如果没有窗口出现,则检查其值。 `echo $DISPLAY` - 如果输出为 1, 您可以用 `echo "export DISPLAY=unix:1" >> /etc/bash.bashrc` ,然后再次测试。您也可以在 devcontainer.json中更改 DIPLAY 值并重建它。
+!!! note "说明"
+    RViz 可能无法显示。请执行 `xhost +local:<USERNAME>`，允许该用户访问 X 窗口系统。如果仍未弹出窗口，检查 `echo $DISPLAY` 的值；如果输出为 1，可以执行 `echo "export DISPLAY=unix:1" >> /etc/bash.bashrc`，然后重新测试。也可以修改 `devcontainer.json` 中的 DISPLAY 值并重新构建。

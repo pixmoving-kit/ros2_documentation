@@ -1,71 +1,61 @@
----
-translation_status: machine_translated
-source: How-To-Guides/Documenting-a-ROS-2-Package.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
+<span id="id1"></span>
+<span id="id2"></span>
+<span id="id3"></span>
+<span id="id4"></span>
+<span id="id5"></span>
 
 <span id="documenting-a-ros-2-package"></span>
+# 为 ROS 2 软件包编写文档
 
-# 编写 ROS 2 软件包文档
-
-本指南引入了为ROS 2 软件包创建文档的标准方法。 对于二进制发行软件包, 也会导致文件主机位于 `docs.ros.org/en/<distro>/p/<package>/`。关于如何在docs.ros.org上为本文件提供资料,请参见 [为 ROS 2 文档作贡献](../The-ROS2-Project/Contributing/Contributing-To-ROS-2-Documentation.md).
+本指南介绍为 ROS 2 软件包创建文档的标准方法。对于已发布二进制版本的软件包，生成的文档还会托管于 `docs.ros.org/en/<distro>/p/<package>/`。如果希望为 docs.ros.org 上的本套文档贡献内容，请参阅[为 ROS 2 文档做贡献](../The-ROS2-Project/Contributing/Contributing-To-ROS-2-Documentation.md)。
 
 <span id="prerequisites"></span>
-
 ## 前提条件
 
-- [安装ROS](../Installation.md)
-
-- [安装 rosdoc2](https://github.com/ros-infrastructure/rosdoc2#installation)
+- [安装 ROS](../Installation.md)。
+- [安装 rosdoc2](https://github.com/ros-infrastructure/rosdoc2#installation)。
 
 <span id="package-documentation-overview"></span>
+## 软件包文档概述
 
-## 软件包文档概览
+本指南讨论的文档通常称为“软件包文档”或“API 文档”。对于已在 ROS Index 发布的 ROS 软件包，其文档会在 ROS 构建农场上生成，发布到 docs.ros.org，并可通过 index.ros.org 的 `API Docs` 按钮访问。
 
-本指南中所讨论的文件类型称为“包文件”或“API文件”,对于已在ROS索引上发布的ROS文件包,其文件将建立在ROS构建农场上,包括在docs.ros.org上,并通过该索引可见。 `API Docs` 按钮在index.ros.org。
+负责生成 ROS 2 软件包文档的工具是 [rosdoc2](https://github.com/ros-infrastructure/rosdoc2)。
 
-负责生成 ROS 2 包文件的工具是 [罗斯多克2color](https://github.com/ros-infrastructure/rosdoc2).
+`rosdoc2` 对常用的 [Sphinx](https://www.sphinx-doc.org/) 文档框架进行了便捷封装。Sphinx 既支持自由编写的说明文档，也支持从 Python 代码注释生成 API 文档。[breathe](https://breathe.readthedocs.io/en/latest/) 和 [exhale](https://exhale.readthedocs.io/en/latest/) 可以集成 Doxygen，从而加入自动生成的 C++ API 文档。
 
-`rosdoc2` 是一个方便的包装器,围绕常用的 [狮身人面](https://www.sphinx-doc.org/) 文档框架。Sphinx允许自由格式的书面文档和API文档用于代码中注释生成的python代码。 [呼吸 呼吸 呼吸 呼吸 呼吸 呼吸 呼吸 呼吸](https://breathe.readthedocs.io/en/latest/) + [呼气 呼气](https://exhale.readthedocs.io/en/latest/) 软件包允许与 Doxygen 进行集成,包括自动生成的 C++ API 文档。
-
-`rosdoc2` 为完全没有文档或配置的软件包创建默认配置,并应用统一主题和与其他软件包整合的选项.
+对于完全没有文档或配置的软件包，`rosdoc2` 会创建默认配置，并应用统一主题以及与其他软件包集成所需的选项。
 
 <span id="building-package-docs"></span>
-
 ## 构建软件包文档
 
-为 HTML 格式的软件包生成文档 `rosdoc2`,运行 :
+使用 `rosdoc2` 生成软件包的 HTML 文档：
 
-``` console
+```console
 $ rosdoc2 build --package-path <package-path>
 ```
 
-文件写给: `docs_output/<package-name>/index.html` ,可以在浏览器中查看。
+文档将写入 `docs_output/<package-name>/index.html`，可在浏览器中查看。
 
 <span id="configuration"></span>
-
 ## 配置
 
-ROS软件包文件有3个配置位置: `rosdoc2.yaml` 用于一般设置, `conf.py` 用于狮身人面像设置和 `Doxyfile` 用于 doxygen 设置。对于所有这些设置,如果不存在,则假设或生成默认值,因此不需要严格要求。但是,一旦您想要使用自定义文本文档页面等特性,则可能有必要创建和修改默认值。
+ROS 软件包文档有三处配置：`rosdoc2.yaml` 用于通用设置，`conf.py` 用于 Sphinx 设置，`Doxyfile` 用于 Doxygen 设置。缺少任何一项时，工具都会使用或生成默认值，因此它们都不是严格必需的。不过，要使用自定义文字文档页等功能时，可能需要创建并修改这些文件。
 
 <span id="rosdoc2-yaml"></span>
-
 ### rosdoc2.yaml
 
-这是rosdoc2. 它指定了通用设置,可用于控制特定构建器(Doxygen and Sphinx)的执行,并决定哪个构建器运行.
+这是 rosdoc2 的主要配置入口，用于指定通用设置、控制特定构建器（Doxygen 和 Sphinx）的执行，并决定运行哪些构建器。
 
-`rosdoc2` 提供多种配置选项,可以在配置文件中调整 `rosdoc2.yaml`生成默认值 `rosdoc2.yaml` ,然后可以进一步自定义,运行:
+`rosdoc2` 提供了许多配置选项，可在 `rosdoc2.yaml` 中调整。运行以下命令生成默认配置，再按需定制：
 
-``` console
+```console
 $ rosdoc2 default_config --package-path <package-path>
 ```
 
-再加一点 `<rosdoc2>rosdoc2.yaml</rosdoc2>` 切换到您的导出区域 `package.xml`:
+并在 `package.xml` 的 export 部分加入 `<rosdoc2>rosdoc2.yaml</rosdoc2>`：
 
-``` xml
+```xml
 <package>
     <!-- [...] -->
     <export>
@@ -75,53 +65,53 @@ $ rosdoc2 default_config --package-path <package-path>
 </package>
 ```
 
-然而,对于大多数软件包来说,默认设置在 `rosdoc2` 将足够,不需要自定义配置。 `rosdoc2.yaml` 可见于 [rosdoc2 读取器](https://github.com/ros-infrastructure/rosdoc2#using-a-rosdoc2yaml-file-to-control-how-your-package-is-documented).
+对大多数软件包而言，`rosdoc2` 默认设置已经足够，无须自定义配置。更多信息见 [rosdoc2 README](https://github.com/ros-infrastructure/rosdoc2#using-a-rosdoc2yaml-file-to-control-how-your-package-is-documented)。
 
 <span id="conf-py-rosdoc2-settings"></span>
+### conf.py 和 rosdoc2_settings
 
-### conf.py, rosdoc2\_ 设置
+软件包文档的最终输出几乎总是由 Sphinx 构建。每个 Sphinx 项目通过 `doc` 目录中的 `conf.py` 配置。如果没有配置，构建时会创建并使用默认的 Sphinx 项目；如果软件包的 `doc` 子目录中存在 `conf.py`，则会改用该配置。
 
-包文件的最终输出( 几乎) 总是由 sphinx 构建。 每个 sphinx 工程都配置为 `conf.py` 文档中 `doc` 目录。如果没有配置,则在构建文档时创建并使用默认的Sphinx项目。但如果是 `conf.py` Sphinx 配置见于 `doc` 软件包的子目录, 取而代之。 如果您想要包含一个独立的 reStructuredText 文档页, 需要自定义的 Sphinx 工程。 一个独立的文档页可以列出多个教程和指南; 如果您想要用于您的软件包, 您需要创建自定义的 Sphinx 工程 。
+要加入独立的 reStructuredText 文档页，需要自定义 Sphinx 项目。独立文档页可以列出多个教程和指南；如果软件包需要这种内容，就应创建自定义 Sphinx 项目。
 
-`rosdoc2` 提供额外的设置到 `conf.py` 并覆盖部分。关于对狮身人面像设置进行修改的信息将登录到控制台上。 `[rosdoc2]` 前缀。
+`rosdoc2` 会向 `conf.py` 添加额外设置，并覆盖部分设置。对 Sphinx 设置所做的修改会以 `[rosdoc2]` 为前缀输出到控制台。
 
 <span id="doxyfile"></span>
+### Doxyfile
 
-### Doxy 文件
+Doxygen 可以从代码注释自动生成 C++ API 文档。虽然它能直接生成 HTML，但 ROS 软件包的常规流程是让 Doxygen 输出机器可读的 XML，再由 Sphinx 读取并整合进其余文档。
 
-Doxygen 是一个从代码注释中自动生成 C++ API docs 的工具。 虽然 Doxygen 也可以直接生成 HTML 输出, 但是在 ROS 软件包的通常工作流程中, Doxygen 以 XML 格式生成机器可读输出, 然后被 Sphinx 消耗, 并与其他文档集成 。 Doxygen 唯一的 docs 只能启用 Doxygen 构建器 。 `rosdoc2.yaml`但这是不寻常的。
+在 `rosdoc2.yaml` 中只启用 Doxygen 构建器，也能生成仅基于 Doxygen 的文档，但这种方式较少使用。
 
 <span id="customizing-sphinx-documentation"></span>
-
-## 自定义狮身人面像文档
+## 自定义 Sphinx 文档
 
 <span id="creating-a-sphinx-project"></span>
+### 创建 Sphinx 项目
 
-### 创建 Sphinx 工程
+如果希望在自动生成的 API 文档之外添加独立文档页，需要创建自定义 Sphinx 项目。该项目应位于软件包目录下名为 `doc` 的子目录中。
 
-为了在自动生成的 API docs 之外添加独立的文档页面, 需要自定义的 Sphinx 工程。 这应该在名为 API 的子目录中创建 。 `doc` 在软件包目录中。可以通过运行创建一个新的 Sphinx 项目 `sphinx-quickstart` 输入 `doc` 目录, 回答 `no` 以“分离源和构建目录”。向导需要输入工程名称、作者和版本,但这以后可以删除,并将由 Sphinx 提供 `rosdoc2` 从您的软件包中 `package.xml`。关于创建狮身人面像项目的更多信息可在 [狮身人面像快速启动页面](https://www.sphinx-doc.org/en/master/usage/quickstart.html),
+在 `doc` 目录运行 `sphinx-quickstart` 即可创建项目；对于 “Separate source and build directories” 问题回答 `no`。向导要求输入项目名称、作者和版本，但之后可以移除这些值，改由 `rosdoc2` 从软件包的 `package.xml` 提供给 Sphinx。详见 [Sphinx 快速入门](https://www.sphinx-doc.org/en/master/usage/quickstart.html)。
 
 <span id="customizing-index-rst"></span>
+### 自定义 index.rst
 
-### 自定义 `index.rst`
-
-那个... `sphinx-quickstart` 向导创建 `index.rst` 文件,这是您软件包的自定义登陆页,类似于 Github `README` 文档。
+`sphinx-quickstart` 向导会创建 `index.rst`，作为软件包的自定义首页，作用类似于 GitHub 的 `README`。
 
 <span id="adding-python-api-docs"></span>
+### 添加 Python API 文档
 
-### 正在添加 Python API- Docs
+默认情况下，`rosdoc2` 使用 [sphinx-apidoc](https://www.sphinx-doc.org/en/master/man/sphinx-apidoc.html) 和 [Sphinx 的 autodoc 扩展](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html)自动生成 Python 代码文档。为了让 autodoc 找到软件包中的 Python 模块，需要在 `conf.py` 中将其加入 Python 搜索路径：
 
-默认 `rosdoc2` 使用该 [狮身人面像工具](https://www.sphinx-doc.org/en/master/man/sphinx-apidoc.html) 页:1 [自动doc sphinx 扩展名](https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html) 以自动生成 python 代码的文档。为了让 autodoc 在您的软件包中找到 Python 模块,它必须添加到 python 搜索路径中 `conf.py`:
-
-``` python
+```python
 sys.path.insert(0, os.path.abspath('.'))
 ```
 
-这是因为 `rosdoc2` 包裹自定义 `conf.py` 包含更多将放在软件包中的脚本配置。在此情况下, `.` 路径在 `os.path.abspath` 指的是软件包的目录根,而不是软件包的根 `doc` 由于 rosdoc2 和 `conf.py`.
+这是因为 `rosdoc2` 会用放在软件包目录中的脚本，为自定义 `conf.py` 包装更多配置。由于 rosdoc2 与 `conf.py` 的这种交互，`os.path.abspath` 中的 `.` 指向软件包根目录，而不是 `doc` 目录。
 
-默认情况下,软件包 API docs 已经通过登陆页上存在的“ 模块索引” 链接可以到达 。 要使 API docs 也出现在目录中, 只需在目录中添加一个链接 `modules` 页面到您的 `index.rst`:
+默认情况下，可以通过首页的 “Module Index” 链接访问 API 文档。如果还希望它们出现在目录中，只需在 `index.rst` 中加入指向 `modules` 页面的链接：
 
-``` rst
+```rst
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -130,23 +120,22 @@ sys.path.insert(0, os.path.abspath('.'))
 ```
 
 <span id="adding-c-api-docs"></span>
+### 添加 C++ API 文档
 
-### 添加 C++ API- Docs
+要将自动生成的 API 文档加回自定义首页，在希望显示它们的位置加入 `generated/index`：
 
-如果您想要将自动生成的 API 文档添加回您的自定义登陆页面, 请添加此行 `generated/index` 您希望 API 文档显示的文档页面中:
-
-``` rst
+```rst
 .. toctree::
    :maxdepth: 2
 
    C++ API Docs <generated/index>
 ```
 
-它将“等级”、“等级”和“参考”等元素添加到边栏目录中。要使这些元素出现在一个“C++ API Docs”标题下,一个不太杂乱的边栏,一个单独的文件,例如 `cpp_api_docs.rst` 可添加与生成的文档链接的链接:
+这样会在侧边栏目录中加入 “Class Hierarchy”“File Hierarchy” 和 “Reference”。为让侧边栏更简洁，可以创建 `cpp_api_docs.rst` 等独立文件，将这些项目放到同一个 “C++ API Docs” 标题下，并链接生成的文档。
 
-<span id="id1"></span> cpp_api_docs.rst
+**cpp_api_docs.rst：**
 
-``` rst
+```rst
 C++ API Docs
 ============
 
@@ -159,11 +148,11 @@ These are the autogenerated docs for the internal implementation.
    generated/index
 ```
 
-然后还需要添加到 `index.rst` 显示在边栏中 :
+然后还要在 `index.rst` 中添加它，才能出现在侧边栏。
 
-<span id="id2"></span> 指数.rst
+**index.rst：**
 
-``` rst
+```rst
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -172,45 +161,43 @@ These are the autogenerated docs for the internal implementation.
 ```
 
 <span id="including-an-existing-readme-md"></span>
+## 引入已有的 README.md
 
-## 包括现有的 README.md
+如果 Git 仓库中已有 `README.md`，可以将它复用为文档首页，无须复制内容。要在 Sphinx 中正确引入 Markdown，并保留相对链接和图片路径，需要一些额外处理。
 
-如果您的 git 仓库已经存在 `README.md`,可以重新使用它作为文档的登陆页,而无需重复内容。要正确将Markdown文件包含在狮身人面像中,同时保存相对链接和图像,还需要做一些额外的努力。
+首先，在 `index.rst` 旁创建代理文件 `readme_include.md`。这个 Markdown 文件只引入原始 README.md，并保留图片的相对路径，否则这些路径会在下一步失效。
 
-首先创建一个代理文件 `readme_include.md` 旁边 `index.rst`。这是一个标记下的文件,它仅仅包括了原始的 README.md,但保留了相对的图像路径,否则在下一步会中断:
+**readme_include.md：**
 
-<span id="id3"></span> readme_include.md
-
-```` markdown
+````markdown
 ```{include} ../README.md
 :relative-images:
 ```
 ````
 
-然后,包含此文件的内容来自 `index.rst` 使用 `myst` 包含从 rst 降级:
+然后在 `index.rst` 中通过 `myst` 引入该 Markdown 文件的内容。
 
-<span id="id4"></span> 指数.rst
+**index.rst：**
 
-``` rst
+```rst
 .. include:: readme_include.md
    :parser: myst_parser.sphinx_
 ```
 
-这还需要增加: `myst_parser` 到扩展名 `conf.py`:
+同时还需要将 `myst_parser` 加入 `conf.py` 的扩展列表。
 
-<span id="id5"></span> conf.py
+**conf.py：**
 
-``` python
+```python
 extensions = ["myst_parser"]
 ```
 
 <span id="ci-docs-ros-org"></span>
+## CI 和 docs.ros.org
 
-## CI, docs.ros.org 互联网档案馆的存檔,存档日期2013-12-02.
+ROS 构建农场使用 `rosdoc2` 构建托管于 `docs.ros.org/en/<distro>/p/<package>/` 的软件包文档。要启用这一功能，需要在 [rosdistro/rolling/distribution.yaml](https://github.com/ros/rosdistro/blob/master/rolling/distribution.yaml) 中配置包含文档的仓库，通常就是软件包的源码仓库：
 
-ROS建造农场用途 `rosdoc2` 以构建托管于 `docs.ros.org/en/<distro>/p/<package>/`。要启用此功能,包含文档的寄存器必须配置在 [rosdistro/rolling/distribution.yaml](https://github.com/ros/rosdistro/blob/master/rolling/distribution.yaml)。这通常是软件包源寄存器:
-
-``` yaml
+```yaml
 <package_name>:
   doc:
     type: git
@@ -220,14 +207,13 @@ ROS建造农场用途 `rosdoc2` 以构建托管于 `docs.ros.org/en/<distro>/p/<
   [...]
 ```
 
-建设农场单独托管每次分发的文件, 并定期从指定分支的最新承诺中重建文件。 不需要为更新主控文件而标记新版本 。 要查看您的软件包的文档构建状态, 请搜索 `doc__<package_name>` 打开 <https://build.ros2.org>。为发布软件包的每个分发版本创建了一个任务。在每个工作页面上,您可以看到一个构建上次触发的时间,以及每个构建的状态和日志。
+构建农场为每个发行版分别托管文档，并定期根据指定分支的最新提交重新构建。更新在线文档不需要为新版本打标签。
+
+要查看软件包文档的构建状态，在 <https://build.ros2.org> 搜索 `doc__<package_name>`。软件包发布到的每个发行版都有一个任务。在任务页面上，可以查看最近一次触发构建的时间，以及每次构建的状态和日志。
 
 <span id="further-reading"></span>
+## 延伸阅读
 
-## 进一步阅读
-
-- [rosdoc2 读取器](https://github.com/ros-infrastructure/rosdoc2/blob/main/README.md)
-
-- [关于包件文件的ROS 2设计文件](https://design.ros2.org/articles/per_package_documentation.html)
-
-- [ROS 2 烹饪本](https://github.com/mikeferguson/ros2_cookbook/blob/main/pages/rosdoc2.md)
+- [rosdoc2 README](https://github.com/ros-infrastructure/rosdoc2/blob/main/README.md)
+- [ROS 2 软件包文档设计文档](https://design.ros2.org/articles/per_package_documentation.html)
+- [ROS 2 cookbook](https://github.com/mikeferguson/ros2_cookbook/blob/main/pages/rosdoc2.md)

@@ -3,10 +3,6 @@ translation_status: machine_translated
 source: Tutorials/Advanced/Discovery-Server/Discovery-Server.rst
 ---
 
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="using-fast-dds-discovery-server-as-discovery-protocol-community-contributed"></span>
 
 # 使用 Fast DDS Discovery Server 发现协议（社区贡献）

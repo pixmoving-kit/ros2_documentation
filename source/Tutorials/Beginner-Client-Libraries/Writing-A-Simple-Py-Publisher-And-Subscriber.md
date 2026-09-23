@@ -1,97 +1,76 @@
----
-translation_status: machine_translated
-source: Tutorials/Beginner-Client-Libraries/Writing-A-Simple-Py-Publisher-And-Subscriber.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="writing-a-simple-publisher-and-subscriber-python"></span> <span id="pypubsub"></span>
+# 编写简单的发布者和订阅者（Python）
 
-# 编写简单的发布者与订阅者（Python）
+**目标：** 使用 Python 创建并运行发布者和订阅者节点。
 
-**目标：** 使用 Python 创建并运行一个出版商和订阅者节点.
+**教程级别：** 初学者
 
-**教程级别：** 入门
-
-**用时：** 20分钟
+**预计用时：** 20 分钟
 
 <span id="background"></span>
-
 ## 背景
 
-在此教程中, 您将创建 [节点](../Beginner-CLI-Tools/Understanding-ROS2-Nodes/Understanding-ROS2-Nodes.md) 以字符串信息的形式传递信息 [话题](../Beginner-CLI-Tools/Understanding-ROS2-Topics/Understanding-ROS2-Topics.md). 这里使用的例子是一个简单的“谈话者”和“听众”系统;一个节点公布数据,另一个节点订阅这个专题,以便接收数据。
+本教程创建通过[话题](../Beginner-CLI-Tools/Understanding-ROS2-Topics/Understanding-ROS2-Topics.md)传递字符串消息的[节点](../Beginner-CLI-Tools/Understanding-ROS2-Nodes/Understanding-ROS2-Nodes.md)。示例是简单的 talker（发布者）和 listener（订阅者）系统：一个节点发布数据，另一个订阅话题并接收数据。
 
-这些示例中使用的代码可以找到 [这儿](https://github.com/ros2/examples/tree/rolling/rclpy/topics).
+示例代码见 [ros2/examples](https://github.com/ros2/examples/tree/rolling/rclpy/topics)。
 
 <span id="prerequisites"></span>
-
 ## 前提条件
 
-在之前的教程中,你学会了如何 [创建工作空间](Creating-A-Workspace/Creating-A-Workspace.md) 财务报告和财务报告 [创建软件包](Creating-Your-First-ROS2-Package.md).
+之前的教程介绍了[创建工作空间](Creating-A-Workspace/Creating-A-Workspace.md)和[创建软件包](Creating-Your-First-ROS2-Package.md)。
 
-建议对Python有一个基本的理解,但并不完全必要.
+建议具备基本的 Python 知识，但这不是硬性要求。
 
 <span id="tasks"></span>
-
 ## 操作步骤
 
 <span id="create-a-package"></span>
-
 ### 1 创建软件包
 
-打开一个新的终端 [源代码 ROS 2 安装](../Beginner-CLI-Tools/Configuring-ROS2-Environment.md) 这样一来 `ros2` 命令会起作用的。
+打开新终端，[加载 ROS 2 安装环境](../Beginner-CLI-Tools/Configuring-ROS2-Environment.md)，使 `ros2` 命令可用。
 
-导航到 `ros2_ws` 在 a 中创建目录 [上一个教程](Creating-A-Workspace/Creating-A-Workspace.md#new-directory).
+进入[此前创建](Creating-A-Workspace/Creating-A-Workspace.md#new-directory)的 `ros2_ws` 工作空间。软件包应创建在 `src` 中，而非工作空间根目录，因此进入 `ros2_ws/src` 并运行：
 
-回顾 应在 `src` 目录,不是工作空间的根。所以,导航到 `ros2_ws/src`,并运行软件包创建命令:
-
-``` console
+```console
 $ ros2 pkg create --build-type ament_python --license Apache-2.0 py_pubsub
 ```
 
-您的终端将返回一个消息, 以验证您的软件包的创建 `py_pubsub` 以及所有必要的文件和文件夹。
+终端会显示消息，确认 `py_pubsub` 及其必需文件和目录已经创建。
 
 <span id="write-the-publisher-node"></span>
+### 2 编写发布者节点
 
-### 2 写入出版商节点
+进入 `ros2_ws/src/py_pubsub/py_pubsub`。这是一个与外层 ROS 2 软件包同名的 [Python 包](https://docs.python.org/3/tutorial/modules.html#packages)。
 
-导航进入 `ros2_ws/src/py_pubsub/py_pubsub`。回顾此目录是 [Python 软件包](https://docs.python.org/3/tutorial/modules.html#packages) 与ROS 2 套件同名,
+运行对应命令，下载 talker 示例代码。
 
-输入以下命令, 下载“ 举例谈话者” 代码 :
+**Linux**
 
-##### Linux
-
-``` console
+```console
 $ wget https://raw.githubusercontent.com/ros2/examples/rolling/rclpy/topics/minimal_publisher/examples_rclpy_minimal_publisher/publisher_member_function.py
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ wget https://raw.githubusercontent.com/ros2/examples/rolling/rclpy/topics/minimal_publisher/examples_rclpy_minimal_publisher/publisher_member_function.py
 ```
 
-##### Windows
+**Windows 命令提示符**
 
-在 Windows 命令行提示中 :
-
-``` console
+```console
 $ curl -sk https://raw.githubusercontent.com/ros2/examples/rolling/rclpy/topics/minimal_publisher/examples_rclpy_minimal_publisher/publisher_member_function.py -o publisher_member_function.py
 ```
 
-或于权壳中:
+**Windows PowerShell**
 
-``` console
+```console
 $ curl https://raw.githubusercontent.com/ros2/examples/rolling/rclpy/topics/minimal_publisher/examples_rclpy_minimal_publisher/publisher_member_function.py -o publisher_member_function.py
 ```
 
-现在有一个新的文件命名 `publisher_member_function.py` 邻接 `__init__.py`.
+`__init__.py` 旁边会出现新文件 `publisher_member_function.py`。用文本编辑器打开：
 
-使用您首选的文本编辑器打开文件 。
-
-``` python
+```python
 import rclpy
 from rclpy.node import Node
 
@@ -134,37 +113,36 @@ if __name__ == '__main__':
 ```
 
 <span id="examine-the-code"></span>
+#### 2.1 分析代码
 
-#### 2.1 审查守则
+开头导入 [rclpy](https://docs.ros.org/en/rolling/p/rclpy/)，以便使用其中的 [Node](https://docs.ros.org/en/rolling/p/rclpy/api/node.html) 类：
 
-导入注释后的首行代码 [rclpy](https://docs.ros.org/en/rolling/p/rclpy/) 因此,它会 [节点](https://docs.ros.org/en/rolling/p/rclpy/api/node.html) 可使用类。
-
-``` python
+```python
 import rclpy
 from rclpy.node import Node
 ```
 
-下一个语句导入内置 [std_msgs/msg/String](https://docs.ros.org/en/rolling/p/std_msgs/msg/String.html) 消息类型,节点用于构建它传递的关于该主题的数据。
+下一条语句导入内置的 [std_msgs/msg/String](https://docs.ros.org/en/rolling/p/std_msgs/msg/String.html) 消息类型，节点使用它组织通过话题传递的数据：
 
-``` python
+```python
 from std_msgs.msg import String
 ```
 
-这些线条代表了节点的附属关系。 提醒注意, 附属关系必须添加到 `package.xml`,您将在下一节中这样做。
+这些导入语句体现了节点的依赖，下一节需要将它们添加到 `package.xml`。
 
-接下来, `MinimalPublisher` 类是创建的,它继承(或是一个子类) [节点](https://docs.ros.org/en/rolling/p/rclpy/api/node.html).
+接下来定义 `MinimalPublisher` 类，它继承 [Node](https://docs.ros.org/en/rolling/p/rclpy/api/node.html)：
 
-``` python
+```python
 class MinimalPublisher(Node):
 ```
 
-以下是该类建筑师的定义 。 `super().__init__` 呼唤 [节点](https://docs.ros.org/en/rolling/p/rclpy/api/node.html) 类的建构器, 并给出您的节点名称, 在这种情况下 `minimal_publisher`.
+随后是构造函数。`super().__init__` 调用 `Node` 的构造函数，并指定节点名称为 `minimal_publisher`。
 
-[create_publisher](https://docs.ros.org/en/rolling/p/rclpy/api/node.html#rclpy.node.Node.create_publisher) 声明节点发布类型消息 [std_msgs/msg/String](https://docs.ros.org/en/rolling/p/std_msgs/msg/String.html) (进口自 `std_msgs.msg` 模块),在一个命名的主题之上 `topic`,且“队列大小”为10。队列大小是必需的。 [服务质量](../../Concepts/Intermediate/About-Quality-of-Service-Settings.md) (QoS) 设定, 如果订阅者接收速度不够快, 则限制排队信件的数量 。
+[create_publisher](https://docs.ros.org/en/rolling/p/rclpy/api/node.html#rclpy.node.Node.create_publisher) 创建发布者，向名为 `topic` 的话题发布从 `std_msgs.msg` 导入的 `String` 消息，队列大小为 10。队列大小是一项必要的[服务质量（QoS）](../../Concepts/Intermediate/About-Quality-of-Service-Settings.md)设置，用于在订阅者接收不够快时限制排队消息的数量。
 
-下一个 [create_timer](https://docs.ros.org/en/rolling/p/rclpy/api/node.html#rclpy.node.Node.create_timer) 用于创建每0.5秒执行一次的回调。 `self.i` 是一个在召回中使用的计数器。
+[create_timer](https://docs.ros.org/en/rolling/p/rclpy/api/node.html#rclpy.node.Node.create_timer) 创建定时器，每 0.5 秒执行一次回调。`self.i` 是回调使用的计数器。
 
-``` python
+```python
 def __init__(self):
     super().__init__('minimal_publisher')
     self.publisher_ = self.create_publisher(String, 'topic', 10)
@@ -173,9 +151,9 @@ def __init__(self):
     self.i = 0
 ```
 
-`timer_callback` 创建带有对应值的信件,将其发布,并打印到控制台 [get_logger()](https://docs.ros.org/en/rolling/p/rclpy/api/node.html#rclpy.node.Node.get_logger)’s [信息( )](https://docs.ros.org/en/rolling/p/rclpy/rclpy.impl.rcutils_logger.html#rclpy.impl.rcutils_logger.RcutilsLogger.info) 函数。
+`timer_callback` 创建一条附有计数值的消息并发布，然后通过 [get_logger()](https://docs.ros.org/en/rolling/p/rclpy/api/node.html#rclpy.node.Node.get_logger) 返回的日志器的 [info()](https://docs.ros.org/en/rolling/p/rclpy/rclpy.impl.rcutils_logger.html#rclpy.impl.rcutils_logger.RcutilsLogger.info) 将其打印到控制台：
 
-``` python
+```python
 def timer_callback(self):
     msg = String()
     msg.data = 'Hello World: %d' % self.i
@@ -184,9 +162,9 @@ def timer_callback(self):
     self.i += 1
 ```
 
-最后,确定了主要职能。
+最后定义主函数：
 
-``` python
+```python
 def main(args=None):
     rclpy.init(args=args)
 
@@ -201,51 +179,45 @@ def main(args=None):
     rclpy.shutdown()
 ```
 
-首先是 [rclpy](https://docs.ros.org/en/rolling/p/rclpy/) 库初始化,然后创建节点,然后“spins”节点(使用 [旋转( )](https://docs.ros.org/en/rolling/p/rclpy/api/init_shutdown.html#rclpy.spin))所以它的召回被称作.
+先初始化 `rclpy`，再创建节点，然后调用 [spin()](https://docs.ros.org/en/rolling/p/rclpy/api/init_shutdown.html#rclpy.spin)，让节点处理回调。
 
 <span id="add-dependencies"></span>
+#### 2.2 添加依赖
 
-#### 2.2 增加依附关系
+返回上一级 `ros2_ws/src/py_pubsub`，其中已经有 `setup.py`、`setup.cfg` 和 `package.xml`。
 
-导航一个关卡返回 `ros2_ws/src/py_pubsub` 目录,其中 `setup.py`, `setup.cfg`,以及 `package.xml` 已经为您创建文件 。
+用编辑器打开 `package.xml`。按照[上一篇教程](Creating-Your-First-ROS2-Package.md)，填写 `<description>`、`<maintainer>` 和 `<license>`：
 
-打开 `package.xml` 与您的文本编辑器。
-
-如本报告所述, [上一个教程](Creating-Your-First-ROS2-Package.md)中,确保填写 `<description>`, `<maintainer>` 财务报告和财务报告 `<license>` 标签 :
-
-``` xml
+```xml
 <description>Examples of minimal publisher/subscriber using rclpy</description>
 <maintainer email="you@email.com">Your Name</maintainer>
 <license>Apache License 2.0</license>
 ```
 
-在以上各行之后,添加与您节点的导入语句相对应的以下依赖性:
+在这些行后添加与节点导入语句对应的依赖：
 
-``` xml
+```xml
 <exec_depend>rclpy</exec_depend>
 <exec_depend>std_msgs</exec_depend>
 ```
 
-此声明软件包需要 [rclpy](https://docs.ros.org/en/rolling/p/rclpy/) 财务报告和财务报告 [std_msgs](https://docs.ros.org/en/rolling/p/std_msgs/) 当它的代码被执行时。
-
-确保保存文件 。
+这表示软件包运行时需要 [rclpy](https://docs.ros.org/en/rolling/p/rclpy/) 和 [std_msgs](https://docs.ros.org/en/rolling/p/std_msgs/)。保存文件。
 
 <span id="add-an-entry-point"></span>
+#### 2.3 添加入口点
 
-#### 2.3 增加一个切入点
+打开 `setup.py`，使 `maintainer`、`maintainer_email`、`description` 和 `license` 与 `package.xml` 保持一致：
 
-打开 `setup.py` 文档。再次,匹配 `maintainer`, `maintainer_email`, `description` 财务报告和财务报告 `license` 字段为您 `package.xml`:
-
-``` python
+```python
 maintainer='YourName',
 maintainer_email='you@email.com',
 description='Examples of minimal publisher/subscriber using rclpy',
 license='Apache License 2.0',
 ```
 
-在下行中添加以下行 `console_scripts` 括号 [entry_points](https://setuptools.pypa.io/en/latest/userguide/entry_point.html) 字段 :
+在 [entry_points](https://setuptools.pypa.io/en/latest/userguide/entry_point.html) 字段的 `console_scripts` 列表中添加：
 
-``` python
+```python
 entry_points={
         'console_scripts': [
                 'talker = py_pubsub.publisher_member_function:main',
@@ -253,70 +225,65 @@ entry_points={
 },
 ```
 
-不要忘记拯救。
+保存文件。
 
 <span id="check-setup-cfg"></span>
+#### 2.4 检查 setup.cfg
 
-#### 2.4 检查设置。cfg
+`setup.cfg` 应已自动生成以下正确内容：
 
-报告的内容 `setup.cfg` 文件应自动正确配置, 像这样 :
-
-``` ini
+```ini
 [develop]
 script_dir=$base/lib/py_pubsub
 [install]
 install_scripts=$base/lib/py_pubsub
 ```
 
-这仅仅是在说 [设置工具](https://setuptools.pypa.io/en/latest/userguide) 将您的可执行文件放入 `lib`,因为 `ros2 run` 会在那里寻找他们。
+这会让 [setuptools](https://setuptools.pypa.io/en/latest/userguide) 将可执行程序安装到 `lib`，因为 `ros2 run` 会到那里查找它们。
 
-您现在可以构建您的软件包, 源代码本地设置文件, 并运行它, 但让我们先创建用户节点, 这样您就可以在工作时看到完整的系统 。
+现在已经可以构建软件包、加载本地环境并运行。不过，先创建订阅者节点，便能观察整个系统的运行情况。
 
 <span id="write-the-subscriber-node"></span>
+### 3 编写订阅者节点
 
-### 3 写入订阅者节点
+返回 `ros2_ws/src/py_pubsub/py_pubsub`，运行以下命令获取下一个节点。
 
-返回到 `ros2_ws/src/py_pubsub/py_pubsub` 创建下一个节点。在终端中输入以下代码:
+**Linux**
 
-##### Linux
-
-``` console
+```console
 $ wget https://raw.githubusercontent.com/ros2/examples/rolling/rclpy/topics/minimal_subscriber/examples_rclpy_minimal_subscriber/subscriber_member_function.py
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ wget https://raw.githubusercontent.com/ros2/examples/rolling/rclpy/topics/minimal_subscriber/examples_rclpy_minimal_subscriber/subscriber_member_function.py
 ```
 
-##### Windows
+**Windows 命令提示符**
 
-在 Windows 命令行提示中 :
-
-``` console
+```console
 $ curl -sk https://raw.githubusercontent.com/ros2/examples/rolling/rclpy/topics/minimal_subscriber/examples_rclpy_minimal_subscriber/subscriber_member_function.py -o subscriber_member_function.py
 ```
 
-或于权壳中:
+**Windows PowerShell**
 
-``` console
+```console
 $ curl https://raw.githubusercontent.com/ros2/examples/rolling/rclpy/topics/minimal_subscriber/examples_rclpy_minimal_subscriber/subscriber_member_function.py -o subscriber_member_function.py
 ```
 
-现在目录应该有这些文件 :
+现在目录应包含以下文件：
 
-``` console
+```console
 __init__.py  publisher_member_function.py  subscriber_member_function.py
 ```
 
 <span id="id4"></span>
+#### 3.1 分析代码
 
-#### 3.1 审查守则
+用编辑器打开 `subscriber_member_function.py`：
 
-打开 `subscriber_member_function.py` 与您的文本编辑器。
-
-``` python
+```python
 import rclpy
 from rclpy.node import Node
 
@@ -356,9 +323,9 @@ if __name__ == '__main__':
     main()
 ```
 
-订阅者节点的代码与出版者几乎完全相同。 构建者创建的订阅者与出版者使用相同的参数。 [create_subscription](https://docs.ros.org/en/rolling/p/rclpy/api/node.html#rclpy.node.Node.create_subscription)。从 [主题教程](../Beginner-CLI-Tools/Understanding-ROS2-Topics/Understanding-ROS2-Topics.md) ,出版商和订阅商使用的主题名称和消息类型必须匹配,以允许它们进行通信。
+订阅者代码与发布者非常相似。构造函数通过 [create_subscription](https://docs.ros.org/en/rolling/p/rclpy/api/node.html#rclpy.node.Node.create_subscription) 创建订阅，使用与发布者匹配的参数。根据[话题教程](../Beginner-CLI-Tools/Understanding-ROS2-Topics/Understanding-ROS2-Topics.md)，双方的话题名称和消息类型必须一致才能通信。
 
-``` python
+```python
 self.subscription = self.create_subscription(
     String,
     'topic',
@@ -366,32 +333,31 @@ self.subscription = self.create_subscription(
     10)
 ```
 
-用户的构建者和召回者并不包括任何定时器定义,因为它不需要定时器定义。 它的召回一旦收到消息就会被调用。
+订阅者不需要定时器，因此构造函数和回调中没有定时器定义。收到消息时就会调用回调。
 
-回调定义只是向控制台打印一条信息信息,连同它收到的数据。请回顾,出版商定义了 `msg.data = 'Hello World: %d' % self.i`
+回调仅以 Info 级别将收到的数据打印到控制台。发布者设置的数据是 `msg.data = 'Hello World: %d' % self.i`。
 
-``` python
+```python
 def listener_callback(self, msg):
     self.get_logger().info('I heard: "%s"' % msg.data)
 ```
 
-那个... `main` 定义几乎完全相同,用订阅者取代了出版商的创建和旋转。
+`main` 的定义几乎相同，只是改为创建订阅者并对其调用 spin：
 
-``` python
+```python
 minimal_subscriber = MinimalSubscriber()
 
 rclpy.spin(minimal_subscriber)
 ```
 
-因为这个节点和出版商有相同的依赖关系,所以没有什么新内容可以补充 `package.xml`。该词 `setup.cfg` 文件也可以保持不变。
+这个节点与发布者具有相同依赖，因此无需向 `package.xml` 添加新依赖，也无需修改 `setup.cfg`。
 
 <span id="id5"></span>
+#### 3.2 添加入口点
 
-#### 3.2 增加一个切入点
+重新打开 `setup.py`，在发布者入口点下面添加订阅者入口点。[entry_points](https://setuptools.pypa.io/en/latest/userguide/entry_point.html) 应变为：
 
-重新打开 `setup.py` ,并在出版商的切入点下添加订阅者节点的切入点。 [entry_points](https://setuptools.pypa.io/en/latest/userguide/entry_point.html) 字段现在应该是这样的:
-
-``` python
+```python
 entry_points={
         'console_scripts': [
                 'talker = py_pubsub.publisher_member_function:main',
@@ -400,71 +366,66 @@ entry_points={
 },
 ```
 
-确保保存文件,然后你的酒吧/子系统应该准备好.
+保存后，发布/订阅系统就准备好了。
 
 <span id="build-and-run"></span>
+### 4 构建并运行
 
-### 4 构建和运行
+ROS 2 安装中通常已经包含 `rclpy` 和 `std_msgs`。不过，推荐构建前在工作空间根目录 `ros2_ws` 运行 [rosdep](https://docs.ros.org/en/independent/api/rosdep/html/) 检查缺失依赖，详见 [rosdep 教程](../Intermediate/Rosdep.md)。
 
-你可能已经拥有了 [rclpy](https://docs.ros.org/en/rolling/p/rclpy/) 财务报告和财务报告 [std_msgs](https://docs.ros.org/en/rolling/p/std_msgs/) 作为 ROS 2 系统的一部分安装的软件包。运行是好的做法 [rosdep](https://docs.ros.org/en/independent/api/rosdep/html/) (请检查date=中的日期值) [罗斯德教程](../Intermediate/Rosdep.md))在工作空间的根部(`ros2_ws`在建构前检查缺失的依赖性 :
+**Linux**
 
-##### Linux
-
-``` console
+```console
 $ rosdep install -i --from-path src --rosdistro rolling -y
 ```
 
-##### macOS
+**macOS 和 Windows**
 
-rosdep只运行在Linux上,所以可以提前跳到下一步.
+本教程的 rosdep 步骤仅适用于 Linux，可跳到下一步。
 
-##### Windows
+仍在 `ros2_ws` 根目录，构建新软件包。
 
-rosdep只运行在Linux上,所以可以提前跳到下一步.
+**Linux**
 
-还在你工作空间的根部 `ros2_ws`,构建您的新软件包 :
-
-##### Linux
-
-``` console
+```console
 $ colcon build --packages-select py_pubsub
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ colcon build --packages-select py_pubsub
 ```
 
-##### Windows
+**Windows**
 
-``` console
+```console
 $ colcon build --merge-install --packages-select py_pubsub
 ```
 
-打开新终端, 导航到 `ros2_ws`,并源代码设置文件 :
+打开新终端，进入 `ros2_ws`，加载环境设置文件。
 
-##### Linux
+**Linux**
 
-``` console
+```console
 $ source install/setup.bash
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ . install/setup.bash
 ```
 
-##### Windows
+**Windows**
 
-``` console
+```console
 $ call install/setup.bat
 ```
 
-现在运行谈话者节点。终端应该开始每0.5秒发布一次信息信息,比如:
+运行 talker 节点，终端应每 0.5 秒输出一条 Info 消息：
 
-``` console
+```console
 $ ros2 run py_pubsub talker
 [info] [minimal_publisher]: publishing: "hello world: 0"
 [info] [minimal_publisher]: publishing: "hello world: 1"
@@ -474,9 +435,9 @@ $ ros2 run py_pubsub talker
 ...
 ```
 
-打开另一个终端, 从内部源出设置文件 `ros2_ws` 然后启动收听器节点。收听器将开始向控制台打印消息,从任何信息开始计算出版商当时的状态,就像这样:
+再打开一个终端，在 `ros2_ws` 中加载环境，然后启动 listener。它会从发布者当前的计数开始打印收到的消息：
 
-``` console
+```console
 $ ros2 run py_pubsub listener
 [INFO] [minimal_subscriber]: I heard: "Hello World: 10"
 [INFO] [minimal_subscriber]: I heard: "Hello World: 11"
@@ -485,22 +446,19 @@ $ ros2 run py_pubsub listener
 [INFO] [minimal_subscriber]: I heard: "Hello World: 14"
 ```
 
-输入 `Ctrl+C` 在每个终端中阻止节点旋转。
+在两个终端分别按 `Ctrl+C`，停止节点。
 
 <span id="summary"></span>
-
 ## 小结
 
-您创建了两个节点来在一个话题上发布和订阅数据。 在运行之前, 您会在软件包配置文件中添加它们的依赖性和切入点 。
+你创建了两个通过话题发布和订阅数据的节点，并在运行前将它们的依赖和入口点添加到软件包配置文件。
 
 <span id="next-steps"></span>
-
 ## 后续步骤
 
-您接下来会使用服务/客户端模式创建另一个简单的ROS 2 软件包。 您也可以选择将其写入其中之一 [C++](Writing-A-Simple-Cpp-Service-And-Client.md) 或 时 间 [Python](Writing-A-Simple-Py-Service-And-Client.md).
+接下来创建另一个使用服务/客户端模型的简单 ROS 2 软件包，同样可以选择 [C++](Writing-A-Simple-Cpp-Service-And-Client.md) 或 [Python](Writing-A-Simple-Py-Service-And-Client.md)。
 
 <span id="related-content"></span>
-
 ## 相关内容
 
-您可以在 Python 中写一个出版商和订阅商。 `minimal_publisher` 财务报告和财务报告 `minimal_subscriber` 软件包中 [ros2/examples](https://github.com/ros2/examples/tree/rolling/rclpy/topics) 复传.
+Python 发布者和订阅者有多种写法，可参阅 [ros2/examples](https://github.com/ros2/examples/tree/rolling/rclpy/topics) 中的 `minimal_publisher` 和 `minimal_subscriber` 软件包。

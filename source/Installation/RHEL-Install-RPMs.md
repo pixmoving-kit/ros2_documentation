@@ -1,89 +1,65 @@
----
-translation_status: machine_translated
-source: Installation/RHEL-Install-RPMs.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="rhel-rpm-packages"></span>
 
 # RHEL（RPM 软件包）
 
-ROS 2 Rolling Ridley的RPM软件包目前可供 RHEL 8. 目标平台定义于 [REP 2000 环境方案](https://reps.openrobotics.org/rep-2000/).
+目前为 RHEL 8 提供 ROS 2 Rolling Ridley 的 RPM 软件包。目标平台定义见 [REP 2000](https://reps.openrobotics.org/rep-2000/)。
 
 <span id="resources"></span>
 
 ## 资源
 
-- 状态页面 :
-
-  - ROS 2滚(RHEL 8): [amd64 (中文(简体) ).](http://repo.ros2.org/status_page/ros_rolling_rhel.html)
-
-- [詹金斯实例](http://build.ros2.org/)
-
-- [仓库](http://repo.ros2.org)
+- ROS 2 Rolling（RHEL 8）状态页面：[amd64](http://repo.ros2.org/status_page/ros_rolling_rhel.html)。
+- [Jenkins 实例](http://build.ros2.org/)
+- [软件源](http://repo.ros2.org)
 
 <span id="set-locale"></span>
 
-## 设置区域
+## 设置区域设置
 
-确定您有支持的地址 `UTF-8`。如果您处于一个最小的环境(例如一个插座容器),那么当地可能就是最小的环境,比如: `C`。我们用以下设置进行测试。但是,如果您使用不同的UTF-8支持的语境,则应该没问题。
+按照 [RHEL 区域设置说明](_RHEL-Set-Locale.md)配置支持 UTF-8 的区域设置。
 
-``` console
-$ locale  # check for UTF-8
+<span id="setup-sources"></span>
+<span id="rhel-install-rpms-setup-sources"></span>
 
-$ sudo dnf install langpacks-en glibc-langpack-en
-$ export LANG=en_US.UTF-8
+## 配置软件源
 
-$ locale  # verify settings
-```
+需要启用 EPEL 和 PowerTools 软件源：
 
-<span id="setup-sources"></span> <span id="rhel-install-rpms-setup-sources"></span>
-
-## 设置来源
-
-您需要启用 EPEL 寄存器和 PowerTools 寄存器 :
-
-``` console
+```console
 $ sudo dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-$(rpm -E %rhel).noarch.rpm
 $ sudo env FORCE_DNF=1 crb enable
 ```
 
-> **说明**
->
-> 这个步骤可能因您使用的分布而略有不同 。 [检查 EPEL 文档](https://docs.fedoraproject.org/en-US/epel/getting-started/)
+!!! note "说明"
 
-下一个,下载 `ros2-release` 包并安装它 :
+    此步骤可能因所用发行版而略有不同，请查阅 [EPEL 文档](https://docs.fedoraproject.org/en-US/epel/getting-started/)。
 
-``` console
+接下来，下载并安装 `ros2-release` 软件包：
+
+```console
 $ sudo dnf install curl
 $ export ROS_APT_SOURCE_VERSION=$(curl -s https://api.github.com/repos/ros-infrastructure/ros-apt-source/releases/latest | grep -F "tag_name" | awk -F'"' '{print $4}')
 $ sudo dnf install "https://github.com/ros-infrastructure/ros-apt-source/releases/download/${ROS_APT_SOURCE_VERSION}/ros2-release-${ROS_APT_SOURCE_VERSION}-1.noarch.rpm"
 ```
 
-那个... [rOS2 释放](https://github.com/ros-infrastructure/ros-apt-source/) 软件包为各种ROS寄存器提供密钥和重传配置。当此软件包的新版本发布到ROS寄存器时,更新到寄存器配置会自动发生。
+[ros2-release](https://github.com/ros-infrastructure/ros-apt-source/) 软件包为各个 ROS 软件源提供密钥和软件源配置。当 ROS 软件源发布该软件包的新版本时，软件源配置也会自动更新。
 
-<span id="install-ros-2-packages"></span> <span id="rhel-install-rpms-install-ros-2-packages"></span>
+<span id="install-ros-2-packages"></span>
+<span id="rhel-install-rpms-install-ros-2-packages"></span>
 
-## 安装 ROS 2 套件
+## 安装 ROS 2 软件包
 
-ROS 2 软件包建立在经常更新的 RHEL 系统上。总是建议您在安装新软件包之前确保您的系统更新。
+先按照[系统更新说明](_Dnf-Update-Admonition.md)更新系统。
 
-``` console
-$ sudo dnf update
-```
+桌面版安装（推荐）：包含 ROS、RViz、演示和教程。
 
-桌面安装(建议):ROS,RViz,演示,教程.
-
-``` console
+```console
 $ sudo dnf install ros-rolling-desktop
 ```
 
-ROS-Base安装(Bare Bones):通信库,消息包,命令行工具。没有GUI工具。
+ROS-Base 安装（基础组件）：包含通信库、消息软件包和命令行工具，不含图形界面工具。
 
-``` console
+```console
 $ sudo dnf install ros-rolling-ros-base
 ```
 
@@ -93,72 +69,72 @@ $ sudo dnf install ros-rolling-ros-base
 
 <span id="sourcing-the-setup-script"></span>
 
-### 测试设置脚本
+### 加载设置脚本
 
-通过获取以下文件来设置您的环境 。
+通过加载以下文件配置环境：
 
-``` console
+```console
 $ source /opt/ros/rolling/setup.bash
 ```
 
-> **说明**
->
-> 替换 `.bash` 如果您不使用控制台, 则使用您的外壳。 可能的值是 : `setup.bash`, `setup.sh`, `setup.zsh`.
+!!! note "说明"
+
+    请根据所用 shell 选择相应的设置脚本扩展名。可用形式包括 `setup.bash`、`setup.sh` 和 `setup.zsh`。
 
 <span id="try-some-examples"></span>
 
-## 尝试一些例子
+## 运行示例
 
-如果您安装了 `ros-rolling-desktop` 上面可以举几个例子。
+如果前面安装了 `ros-rolling-desktop`，就可以运行一些示例。
 
-在一个终端中, 源代码设置文件, 然后运行 C++ `talker`:
+在一个终端中加载设置文件，然后运行 C++ `talker`：
 
-``` console
+```console
 $ source /opt/ros/rolling/setup.bash
 $ ros2 run demo_nodes_cpp talker
 ```
 
-在另一个终端源代码中, 设置文件然后运行 Python `listener`:
+在另一个终端中加载设置文件，然后运行 Python `listener`：
 
-``` console
+```console
 $ source /opt/ros/rolling/setup.bash
 $ ros2 run demo_nodes_py listener
 ```
 
-你应该看看 `talker` 说,这是 `Publishing` 信件和资料 `listener` 说 `I heard` 这证明C++和Python API都正常工作。万岁!
+你应该看到 `talker` 输出 `Publishing`，表示正在发布消息；`listener` 输出 `I heard`，表示收到了这些消息。这说明 C++ 和 Python API 都在正常工作，恭喜！
 
-如果你想使用其他 RMW 执行,你可以检查 [指南](RMW-Implementations.md).
+如果希望使用其他 RMW 实现，请参阅[指南](RMW-Implementations.md)。
 
 <span id="next-steps-after-installing"></span>
 
-## 安装后的下一步
+## 安装后的后续步骤
 
-继续 [教程和演示](../Tutorials.md) 来配置环境,创建自己的工作空间和软件包,并学习ROS 2核心概念。
+继续学习[教程和演示](../Tutorials.md)，配置环境，创建自己的工作空间和软件包，并了解 ROS 2 核心概念。
 
 <span id="additional-rmw-implementations-optional"></span>
 
-## 更多落实RMW(可选)
+## 其他 RMW 实现（可选）
 
-ROS 2 使用的默认中间软件是 `Fast DDS`,但中间软件(RMW)可以在运行时替换。 [指南](../How-To-Guides/Working-with-multiple-RMW-implementations.md) 如何与多个RMW合作。
+ROS 2 默认使用 `Fast DDS` 中间件，但可以在运行时切换中间件（RMW）。有关使用多个 RMW 的方法，请参阅[指南](../How-To-Guides/Working-with-multiple-RMW-implementations.md)。
 
 <span id="troubleshooting"></span>
 
-## 麻烦的解决
+## 问题排查
 
-可以找到解决问题的技巧 [这儿](../How-To-Guides/Installation-Troubleshooting.md).
+参阅[安装问题排查](../How-To-Guides/Installation-Troubleshooting.md)。
 
 <span id="uninstall"></span>
 
 ## 卸载
 
-如果您需要卸载ROS 2, 或一旦从二进制安装完毕, 就切换到基于源的安装, 请运行以下命令 :
+如果已经通过二进制软件包安装 ROS 2，现在需要卸载，或切换为源码安装，请运行：
 
-``` console
+```console
 $ sudo dnf remove ros-rolling-*
 ```
 
-删除仓库配置运行
+要移除软件源配置，请运行：
 
-``` console
+```console
 $ sudo dnf remove ros2-release
 ```

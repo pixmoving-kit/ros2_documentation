@@ -3,10 +3,6 @@ translation_status: machine_translated
 source: Releases/Release-Kilted-Kaiju.rst
 ---
 
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="kilted-kaiju-codename-kilted-may-2025"></span> <span id="kilted-release"></span>
 
 # Kilted Kaiju（代号 kilted；2025 年 5 月）

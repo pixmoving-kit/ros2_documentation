@@ -1,13 +1,5 @@
----
-translation_status: machine_translated
-source: Installation/Alternatives/macOS-Development-Setup.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
-<span id="macos-source"></span> <span id="macos-latest"></span>
+<span id="macos-source"></span>
+<span id="macos-latest"></span>
 
 # macOS（源码安装）
 
@@ -15,113 +7,109 @@ source: Installation/Alternatives/macOS-Development-Setup.rst
 
 ## 系统要求
 
-我们目前支持macOS Mojave(10.14)。
+目前支持 macOS Mojave（10.14）。
 
 <span id="install-prerequisites"></span>
 
-## 安装先决条件
+## 安装前置依赖
 
-您需要安装以下设备来构建 ROS 2:
+构建 ROS 2 需要安装以下组件。
 
-1.  **Xcode 代码**
+### 1. Xcode
 
-    - 如果您还没有安装, 请安装 [Xcode 代码](https://apps.apple.com/app/xcode/id497799835).
+如果尚未安装，请安装 [Xcode](https://apps.apple.com/app/xcode/id497799835)。注意：Xcode 11.3.1 之后的版本无法安装在 macOS Mojave 上，因此需要手动安装旧版本，参阅 <https://stackoverflow.com/a/61046761>。
 
-    - 注:Xcode的版本晚于11.3.1,无法再安装在macOS Mojave上,所以需要手动安装旧版本,参见: <https://stackoverflow.com/a/61046761>
+如果尚未安装命令行工具，也请安装：
 
-    - 如果您还没有安装, 请安装命令行工具 :
+```console
+$ xcode-select --install
+$ sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+```
 
-      ``` console
-      $ xcode-select --install
-      $ sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
-      ```
+如果手动安装了 Xcode.app，需要接受其许可协议。可以打开 Xcode.app，或运行以下命令：
 
-    > **说明**
-    >
-    > 如果您手动安装了 Xcode. app, 您需要接受 Xcode. app 许可证。 您可以打开 Xcode. app 或 运行 :
-    >
-    > ``` console
-    > $ sudo xcodebuild -license
-    > ```
+```console
+$ sudo xcodebuild -license
+```
 
-2.  **酿酒** *(需要安装更多东西; 您可能已经拥有了)*:
+### 2. Homebrew
 
-    - 执行安装指令 : <http://brew.sh/>
+Homebrew 用于安装后续组件，你可能已经安装过它。按照 <http://brew.sh/> 的说明安装。
 
-    - *可选*: 请检查 `brew` 运行时对您的系统配置感到满意 :
+可选：运行以下命令，检查 `brew` 是否发现系统配置问题，并修复它报告的问题。
 
-      ``` console
-      $ brew doctor
-      ```
+```console
+$ brew doctor
+```
 
-      解决它发现的任何问题。
+### 3. 使用 brew 安装其他组件
 
-3.  使用 `brew` 以安装更多内容 :
+```console
+$ brew install asio assimp bison bullet cmake console_bridge cppcheck \
+   cunit eigen freetype graphviz opencv openssl orocos-kdl pcre poco \
+   pyqt@5 python qt@5 sip spdlog osrf/simulation/tinyxml1 tinyxml2
+```
 
-    ``` console
-    $ brew install asio assimp bison bullet cmake console_bridge cppcheck \
-       cunit eigen freetype graphviz opencv openssl orocos-kdl pcre poco \
-       pyqt@5 python qt@5 sip spdlog osrf/simulation/tinyxml1 tinyxml2
-    ```
+### 4. 设置环境变量
 
-4.  设置一些环境变量 :
+```console
+~ Add the openssl dir for DDS-Security
+~ if you are using BASH, then replace '.zshrc' with '.bashrc'
+$ echo "export OPENSSL_ROOT_DIR=$(brew --prefix openssl)" >> ~/.zshrc
 
-    ``` console
-    ~ Add the openssl dir for DDS-Security
-    ~ if you are using BASH, then replace '.zshrc' with '.bashrc'
-    $ echo "export OPENSSL_ROOT_DIR=$(brew --prefix openssl)" >> ~/.zshrc
+~ Add the Qt directory to the PATH and CMAKE_PREFIX_PATH
+$ export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:$(brew --prefix qt@5)
+$ export PATH=$PATH:$(brew --prefix qt@5)/bin
+```
 
-    ~ Add the Qt directory to the PATH and CMAKE_PREFIX_PATH
-    $ export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:$(brew --prefix qt@5)
-    $ export PATH=$PATH:$(brew --prefix qt@5)/bin
-    ```
+### 5. 使用 python3 -m pip 安装其他组件
 
-5.  使用 `python3 -m pip` (刚刚) `pip` 可能安装 Python3 或 Python2 以安装更多内容 :
+请使用 `python3 -m pip`；仅使用 `pip` 可能会为 Python 3 或 Python 2 安装软件包。
 
-    ``` console
-    $ python3 -m pip install --upgrade pip
+```console
+$ python3 -m pip install --upgrade pip
 
-    $ python3 -m pip install -U \
-      --config-settings="--global-option=build_ext" \
-      --config-settings="--global-option=-I$(brew --prefix graphviz)/include/" \
-      --config-settings="--global-option=-L$(brew --prefix graphviz)/lib/" \
-      argcomplete catkin_pkg colcon-common-extensions coverage \
-      cryptography empy flake8 flake8-blind-except==0.1.1 flake8-builtins \
-      flake8-class-newline flake8-comprehensions flake8-deprecated \
-      flake8-docstrings flake8-import-order flake8-quotes \
-      importlib-metadata lark==1.1.1 lxml matplotlib mock mypy==0.931 netifaces \
-      nose pep8 psutil pydocstyle pydot pygraphviz pyparsing==2.4.7 \
-      pytest-mock rosdep rosdistro setuptools==59.6.0 vcstool
-    ```
+$ python3 -m pip install -U \
+  --config-settings="--global-option=build_ext" \
+  --config-settings="--global-option=-I$(brew --prefix graphviz)/include/" \
+  --config-settings="--global-option=-L$(brew --prefix graphviz)/lib/" \
+  argcomplete catkin_pkg colcon-common-extensions coverage \
+  cryptography empy flake8 flake8-blind-except==0.1.1 flake8-builtins \
+  flake8-class-newline flake8-comprehensions flake8-deprecated \
+  flake8-docstrings flake8-import-order flake8-quotes \
+  importlib-metadata lark==1.1.1 lxml matplotlib mock mypy==0.931 netifaces \
+  nose pep8 psutil pydocstyle pydot pygraphviz pyparsing==2.4.7 \
+  pytest-mock rosdep rosdistro setuptools==59.6.0 vcstool
+```
 
-    请确保 `$PATH` 环境变量包含二进制的安装位置( E)`$(brew --prefix)/bin`)
+请确保 `$PATH` 环境变量中包含可执行文件的安装位置（`$(brew --prefix)/bin`）。
 
-6.  *可选*:如果想要建造 ROS 1 \< \> 2 桥,你还必须安装 ROS 1:
+### 6. 安装 ROS 1（可选）
 
-    - 从正常安装指令开始 : <http://wiki.ros.org/kinetic/Installation/OSX/Homebrew/Source>
+如果希望构建 ROS 1 与 ROS 2 之间的桥接，还必须安装 ROS 1。
 
-    - 当你到达你呼唤的台阶 `rosinstall_generator` 获取源代码,这里有一个替代的引用, 带入只需要最小的 产生有用的桥:
+先按照[常规安装说明](http://wiki.ros.org/kinetic/Installation/OSX/Homebrew/Source)操作。在使用 `rosinstall_generator` 获取源码的步骤，可以改用以下命令，只获取构建可用桥接所需的最少组件：
 
-      ``` console
-      $ rosinstall_generator catkin common_msgs roscpp rosmsg --rosdistro kinetic --deps --wet-only --tar > kinetic-ros2-bridge-deps.rosinstall
-      $ wstool init -j8 src kinetic-ros2-bridge-deps.rosinstall
-      ```
+```console
+$ rosinstall_generator catkin common_msgs roscpp rosmsg --rosdistro kinetic --deps --wet-only --tar > kinetic-ros2-bridge-deps.rosinstall
+$ wstool init -j8 src kinetic-ros2-bridge-deps.rosinstall
+```
 
-      否则,只是遵循正常指示,然后源 产生的结果 `install_isolated/setup.bash` 之前在这里开始建造ROS 2。
+其余步骤仍按照常规说明操作，然后加载生成的 `install_isolated/setup.bash`，再继续构建 ROS 2。
 
 <span id="disable-system-integrity-protection-sip"></span>
 
-## 禁用系统完整性保护( SIP)
+## 禁用系统完整性保护（SIP）
 
-macOS/OS X版本 QQ10.11 默认启用了系统完整性保护 。 这样 SIP 就不会阻止进程继承动态链接器环境变量, 例如 `DYLD_LIBRARY_PATH`,您需要禁用它 [遵照这些指示](https://developer.apple.com/library/content/documentation/Security/Conceptual/System_Integrity_Protection_Guide/ConfiguringSystemIntegrityProtection/ConfiguringSystemIntegrityProtection.html).
+macOS/OS X 10.11 及更高版本默认启用系统完整性保护。为了避免 SIP 阻止进程继承 `DYLD_LIBRARY_PATH` 等动态链接器环境变量，需要按照[这些说明](https://developer.apple.com/library/content/documentation/Security/Conceptual/System_Integrity_Protection_Guide/ConfiguringSystemIntegrityProtection/ConfiguringSystemIntegrityProtection.html)禁用它。
 
 <span id="get-the-ros-2-code"></span>
 
 ## 获取 ROS 2 代码
 
-创建工作空间并复制全部重置 :
+创建工作空间，并克隆所有仓库：
 
-``` console
+```console
 $ mkdir -p ~/ros2_rolling/src
 $ cd ~/ros2_rolling
 $ vcs import --input https://raw.githubusercontent.com/ros2/ros2/rolling/ros2.repos src
@@ -129,91 +117,90 @@ $ vcs import --input https://raw.githubusercontent.com/ros2/ros2/rolling/ros2.re
 
 <span id="install-additional-dds-vendors-optional"></span>
 
-## 安装更多DDS供应商(可选)
+## 安装其他 DDS 供应商实现（可选）
 
-如果您想要在默认之外使用另一个 DDS 或 RTPS 供应商, 您可以找到指令 [这儿](../RMW-Implementations.md).
+如果希望使用默认供应商以外的 DDS 或 RTPS 实现，请参阅 [RMW 实现](../RMW-Implementations.md)。
 
 <span id="build-the-ros-2-code"></span>
 
 ## 构建 ROS 2 代码
 
-运行 `colcon` 工具来构建一切(更多关于使用 `colcon` 输入 [此教程](../../Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.md)):
+运行 `colcon` 构建所有组件。有关 `colcon` 的更多用法，请参阅[此教程](../../Tutorials/Beginner-Client-Libraries/Colcon-Tutorial.md)。
 
-``` console
+```console
 $ cd ~/ros2_rolling/
 $ colcon build --symlink-install --packages-skip-by-dep python_qt_binding
 ```
 
-注:由于SIP, Qt@5和PyQt5的未决问题, 我们需要禁用 `python_qt_binding` 当问题得到解决时,将删除此内容,请参见: <https://github.com/ros-visualization/python_qt_binding/issues/103>
+注意：由于 SIP、Qt@5 和 PyQt5 之间尚未解决的问题，需要禁用 `python_qt_binding` 才能成功构建。问题解决后将移除此限制，参阅 <https://github.com/ros-visualization/python_qt_binding/issues/103>。
 
 <span id="environment-setup"></span>
 
 ## 环境设置
 
-来源 ROS 2 设置文件 :
+加载 ROS 2 设置文件：
 
-``` console
+```console
 $ . ~/ros2_rolling/install/setup.zsh
 ```
 
-这将自动为任何已建立支助的DDS供应商建立环境。
+这会自动配置构建时已启用支持的各个 DDS 供应商实现所需的环境。
 
 <span id="try-some-examples"></span>
 
-## 尝试一些例子
+## 运行示例
 
-在一个终端中,设置上述 ROS 2 环境,然后运行一个 C++ `talker`:
+在一个终端中，按照上述说明设置 ROS 2 环境，然后运行 C++ `talker`：
 
-``` console
+```console
 $ ros2 run demo_nodes_cpp talker
 ```
 
-在另一个终端源代码中, 设置文件然后运行 Python `listener`:
+在另一个终端中加载设置文件，然后运行 Python `listener`：
 
-``` console
+```console
 $ ros2 run demo_nodes_py listener
 ```
 
-你应该看看 `talker` 说,这是 `Publishing` 信件和资料 `listener` 说 `I heard` 这证明C++和Python API都正常工作。万岁!
+你应该看到 `talker` 输出 `Publishing`，表示正在发布消息；`listener` 输出 `I heard`，表示收到了这些消息。这说明 C++ 和 Python API 都在正常工作，恭喜！
 
 <span id="next-steps-after-installing"></span>
 
-## 安装后的下一步
+## 安装后的后续步骤
 
-继续 [教程和演示](../../Tutorials.md) 来配置环境,创建自己的工作空间和软件包,并学习ROS 2核心概念。
+继续学习[教程和演示](../../Tutorials.md)，配置环境，创建自己的工作空间和软件包，并了解 ROS 2 核心概念。
 
 <span id="using-the-ros-1-bridge"></span>
 
-## 使用 ROS 1 桥
+## 使用 ROS 1 桥接
 
-ROS 1 桥可以连接 ROS 1 和 ROS 2 的主题,反之亦然。 [文档](https://github.com/ros2/ros1_bridge/blob/master/README.md) 如何建造和使用 ROS 1 桥。
+ROS 1 桥接可以连接 ROS 1 和 ROS 2 的话题，实现双向通信。有关构建和使用方法，请参阅[专门的文档](https://github.com/ros2/ros1_bridge/blob/master/README.md)。
 
 <span id="additional-rmw-implementations-optional"></span>
 
-## 更多落实RMW(可选)
+## 其他 RMW 实现（可选）
 
-ROS 2 使用的默认中间软件是 `Fast DDS`,但中间软件(RMW)可以在运行时替换。 [指南](../../How-To-Guides/Working-with-multiple-RMW-implementations.md) 如何与多个RMW合作。
+ROS 2 默认使用 `Fast DDS` 中间件，但可以在运行时切换中间件（RMW）。有关使用多个 RMW 的方法，请参阅[指南](../../How-To-Guides/Working-with-multiple-RMW-implementations.md)。
 
 <span id="stay-up-to-date"></span>
 
-## 保持最新进展
+## 保持更新
 
-见 [维护源码工作副本](../Maintaining-a-Source-Checkout.md) 以定期刷新您的源安装。
+参阅[维护源码工作副本](../Maintaining-a-Source-Checkout.md)，定期更新从源码安装的环境。
 
 <span id="troubleshooting"></span>
 
-## 麻烦的解决
+## 问题排查
 
-可以找到解决问题的技巧 [这儿](../../How-To-Guides/Installation-Troubleshooting.md#macos-troubleshooting).
+参阅 [macOS 问题排查](../../How-To-Guides/Installation-Troubleshooting.md#macos-troubleshooting)。
 
 <span id="uninstall"></span>
 
 ## 卸载
 
-1.  如果您按照上述指示将工作空间安装在colcon上, " 完全取消 " 可能只是打开一个新的终端,而不是提供工作空间。 `setup` 文件。这样,您的环境将表现为没有在您的系统中安装滚动。
+1. 如果按照以上说明使用 colcon 安装了工作空间，只需打开一个新终端，不加载工作空间的 `setup` 文件，就可以视为“卸载”。这样，当前环境的行为就如同系统未安装 Rolling 一样。
+2. 如果还希望释放空间，可以删除整个工作空间目录：
 
-2.  如果您还试图腾出空间, 您可以删除整个工作空间目录 :
-
-    ``` console
-    $ rm -rf ~/ros2_rolling
-    ```
+```console
+$ rm -rf ~/ros2_rolling
+```

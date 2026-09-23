@@ -1,79 +1,66 @@
----
-translation_status: machine_translated
-source: Tutorials/Intermediate/Creating-an-Action.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="creating-an-action"></span> <span id="actioncreate"></span>
 
 # 创建动作
 
-**目标：** 在 ROS 2 包中定义动作 。
+**目标：** 在 ROS 2 软件包中定义动作。
 
 **教程级别：** 中级
 
-**用时：** 5分钟
+**预计耗时：** 5 分钟
 
 <span id="background"></span>
 
 ## 背景
 
-之前你学到了什么? [理解动作](../Beginner-CLI-Tools/Understanding-ROS2-Actions/Understanding-ROS2-Actions.md) 。与其他通信类型及其相应的接口(主题/msg和服务/srv)一样,您也可以在您的软件包中自定义动作。此教程显示您如何定义和构建您可以在下一个教程中写入的动作服务器和动作客户端的动作。
+此前的[理解 ROS 2 动作](../Beginner-CLI-Tools/Understanding-ROS2-Actions/Understanding-ROS2-Actions.md)教程介绍了动作。与其他通信类型及其接口（话题/msg、服务/srv）一样，也可以在软件包中自定义动作。本教程介绍如何定义并构建动作，以供下一篇教程编写的动作服务端和客户端使用。
 
 <span id="prerequisites"></span>
 
 ## 前提条件
 
-你应该有 [ROS 2](../../Installation.md) 财务报告和财务报告 [colcon](https://colcon.readthedocs.org) 已安装。
+应先安装 [ROS 2](../../Installation.md) 和 [colcon](https://colcon.readthedocs.org)。
 
-设置一个 [工作空间](../Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.md) 创建名为 `action_tutorials_interfaces`:
+建立[工作空间](../Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.md)，创建名为 `action_tutorials_interfaces` 的包。记得先[加载 ROS 2 环境](../Beginner-CLI-Tools/Configuring-ROS2-Environment.md)。
 
-(记住: [源代码 ROS 2 安装](../Beginner-CLI-Tools/Configuring-ROS2-Environment.md) (第一编)
+Linux：
 
-##### Linux
-
-``` console
+```console
 $ mkdir -p ros2_ws/src # you can reuse an existing workspace with this naming convention
 $ cd ros2_ws/src
 $ ros2 pkg create --build-type ament_cmake action_tutorials_interfaces
 ```
 
-##### macOS
+macOS：
 
-``` console
+```console
 $ mkdir -p ros2_ws/src
 $ cd ros2_ws/src
 $ ros2 pkg create --build-type ament_cmake action_tutorials_interfaces
 ```
 
-##### Windows
+Windows：
 
-``` console
+```console
 $ md ros2_ws\src
 $ cd ros2_ws\src
 $ ros2 pkg create --build-type ament_cmake action_tutorials_interfaces
 ```
 
-`custom_action_interfaces` 是新软件包的名称。 请注意, 它是一个并且只能是一个 CMake 软件包, 但这并不限制您可以使用哪种软件包 。 `--build-type ament_cmake` 创建新的 ROS 2 软件包时, 旗帜基本上是可选的, 但我们为了完整性而将它列入其中。 您可以在 CMake 软件包中创建自定义接口, 然后在 C++ 或 Python 节点中使用它 。
+新建的接口包必须是 CMake 包，但这不限制在哪类包中使用动作。创建 ROS 2 包时，`--build-type ament_cmake` 通常可以省略，这里为完整起见显式写出。可以在 CMake 包中创建自定义接口，再在 C++ 或 Python 节点中使用。
 
-> **说明**
->
-> 保持良好的做法 `.msg`, `.srv`,以及 `.action` 文档中与使用它们的节点分开的软件包中。这使不同软件包的界面定义更容易重新使用。
+> 建议将 `.msg`、`.srv` 和 `.action` 文件放在独立于使用它们的节点的软件包中，便于在多个包之间复用接口定义。
 
 <span id="tasks"></span>
 
-## 操作步骤
+## 任务
 
 <span id="defining-an-action"></span>
 
-### 1 界定一项行动
+### 1 定义动作
 
-行动定义如下: `.action` 窗体文件 :
+动作在 `.action` 文件中定义，形式为：
 
-``` bash
+```bash
 # Request
 ---
 # Result
@@ -81,44 +68,40 @@ $ ros2 pkg create --build-type ament_cmake action_tutorials_interfaces
 # Feedback
 ```
 
-动作定义由三个电文定义组成,由下列三个词分隔: `---`.
+一个动作定义由三个消息定义组成，以 `---` 分隔：
 
-- A *请求* 消息从动作客户端发送到启动新目标的动作服务器.
+- **请求**：由动作客户端发送给动作服务端，发起新目标。
+- **结果**：目标完成后，由服务端发送给客户端。
+- **反馈**：由服务端定期发送给客户端，报告目标的进展。
 
-- A *结果* 当一个目标完成后,消息从动作服务器发送到动作客户端.
+动作的一个实例通常称为一个**目标**。
 
-- *反馈* 消息会定期从动作服务器发送到动作客户端,并更新一个目标.
+假设要定义名为 `Fibonacci` 的新动作，用于计算[斐波那契数列](https://en.wikipedia.org/wiki/Fibonacci_number)。在 `action_tutorials_interfaces` 包中创建 `action` 目录。
 
-诉讼案件通常称为: *目标*.
+Linux：
 
-说我们要定义一个新的动作“Fibonacci”来计算 [Fibonacci 序列](https://en.wikipedia.org/wiki/Fibonacci_number).
-
-创建一个 `action` 我们ROS 2 软件包中的目录 `action_tutorials_interfaces`:
-
-##### Linux
-
-``` console
+```console
 $ cd action_tutorials_interfaces
 $ mkdir action
 ```
 
-##### macOS
+macOS：
 
-``` console
+```console
 $ cd action_tutorials_interfaces
 $ mkdir action
 ```
 
-##### Windows
+Windows：
 
-``` console
+```console
 $ cd action_tutorials_interfaces
 $ md action
 ```
 
-内部 `action` 目录,创建名为的文件 `Fibonacci.action` 内容如下:
+在 `action` 目录中创建 `Fibonacci.action`，内容如下：
 
-``` bash
+```bash
 int32 order
 ---
 int32[] sequence
@@ -126,17 +109,17 @@ int32[] sequence
 int32[] partial_sequence
 ```
 
-目标要求是 `order` Fibonacci序列中,我们想要计算的结果是最终结果 `sequence`,反馈是 `partial_sequence` 计算到目前为止。
+目标请求为要计算的斐波那契数列阶数 `order`，结果为最终的 `sequence`，反馈为当前已计算出的 `partial_sequence`。
 
 <span id="building-an-action"></span>
 
-### 2 采取行动
+### 2 构建动作
 
-在使用我们代码中新的Fibonacci动作类型之前,我们必须将定义传递给rosidl代码生成管道.
+在代码中使用新动作类型前，必须将定义交给 rosidl 代码生成流程。
 
-为此,我们增加了以下几行: `CMakeLists.txt` 开始前 `ament_package()` 线条,在 `action_tutorials_interfaces`:
+在 `action_tutorials_interfaces` 的 `CMakeLists.txt` 中，`ament_package()` 之前添加：
 
-``` cmake
+```cmake
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -144,9 +127,9 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 )
 ```
 
-我们还应该增加必要的依赖性 `package.xml`:
+在 `package.xml` 中添加所需依赖：
 
-``` xml
+```xml
 <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
 <depend>action_msgs</depend>
@@ -154,42 +137,40 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 <member_of_group>rosidl_interface_packages</member_of_group>
 ```
 
-注意,我们需要依赖 `action_msgs` 由于动作定义包括额外的元数据(例如目标ID).
+由于动作定义包含目标 ID 等额外元数据，因此需要依赖 `action_msgs`。
 
-我们现在应该能够制定一揽子计划,其中包括: `Fibonacci` 动作定义 :
+现在可以构建包含 `Fibonacci` 定义的软件包：
 
-``` console
+```console
 $ cd ~/ros2_ws # Change to the root of the workspace
 $ colcon build # Build
 ```
 
-我们说完了!
+按惯例，动作类型以前缀“包名/action”限定，因此新动作的完整名称为 `action_tutorials_interfaces/action/Fibonacci`。
 
-根据惯例,动作类型将按其软件包名称和单词前缀 `action`因此,当我们想提及我们的新行动时,它将有全名 `action_tutorials_interfaces/action/Fibonacci`.
+通过命令行工具检查构建是否成功：
 
-我们可以检查一下我们的行动是否成功地用命令行工具构建:
-
-``` console
+```console
 $ . install/setup.bash  # Source our workspace. On Windows: call install/setup.bat
 $ ros2 interface show action_tutorials_interfaces/action/Fibonacci  # Check that our action definition exists
 ```
 
-您应该看到 Fibonacci 动作定义打印到屏幕上 。
+屏幕上应显示 Fibonacci 动作定义。
 
 <span id="summary"></span>
 
 ## 小结
 
-在此教程中, 您学会了动作定义的结构。 您还学会了如何正确构建新的动作界面 。 `CMakeLists.txt` 财务报告和财务报告 `package.xml`,以及如何验证一个成功的建筑。
+本教程介绍了动作定义的结构、如何通过 `CMakeLists.txt` 和 `package.xml` 正确构建新动作接口，以及如何验证构建成功。
 
 <span id="next-steps"></span>
 
 ## 后续步骤
 
-接着,让我们通过创建动作服务和客户端来利用您新定义的动作界面(在 [Python](Writing-an-Action-Server-Client/Py.md) 或 时 间 [C++](Writing-an-Action-Server-Client/Cpp.md)).
+接下来用新接口创建动作服务端和客户端，可选择 [Python](Writing-an-Action-Server-Client/Py.md) 或 [C++](Writing-an-Action-Server-Client/Cpp.md)。
 
 <span id="related-content"></span>
 
 ## 相关内容
 
-欲了解关于ROS行动的更详细资料,请参见: [设计文章](http://design.ros2.org/articles/actions.html).
+ROS 动作的更多细节见[设计文章](http://design.ros2.org/articles/actions.html)。

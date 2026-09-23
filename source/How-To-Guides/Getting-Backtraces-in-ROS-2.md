@@ -3,10 +3,6 @@ translation_status: machine_translated
 source: How-To-Guides/Getting-Backtraces-in-ROS-2.rst
 ---
 
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="getting-backtraces-in-ros-2"></span>
 
 # 获取 ROS 2 调用栈

@@ -1,26 +1,15 @@
----
-translation_status: machine_translated
-source: Concepts/Basic/About-Discovery.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="discovery"></span>
 
 # 发现机制
 
-通过ROS 2的内置中间软件自动发现节点,可以归纳如下:
+ROS 2 的底层中间件会自动发现节点，其过程可以概括为：
 
-1.  当一个节点启动时,它会以相同的ROS域名(ROS_DOMAIN_ID环境变量设置)在网络上向其他节点发布其存在广告. 节点会以自己的信息来响应这个广告,从而可以进行适当的连接,节点也可以进行通信.
+1. 节点启动时，会向网络中同一 ROS 域内的其他节点宣告自身的存在。ROS 域由 `ROS_DOMAIN_ID` 环境变量指定。其他节点会回应并提供自身信息，以便建立合适的连接并开始通信。
+2. 节点会周期性地宣告自身的存在，因此即使初始发现阶段已经结束，仍能与新发现的实体建立连接。
+3. 节点离线时，会通知其他节点。
 
-2.  节点定期公布其存在情况,以便与新发现的实体建立联系,即使在初始发现期之后也是如此。
+只有[服务质量（QoS）](../../Tutorials/Demos/Quality-of-Service.md)设置兼容的节点才会建立连接。
 
-3.  节点下线时向其他节点发布广告.
+以 [talker-listener 演示](../../Installation/Alternatives/Ubuntu-Development-Setup.md#talker-listener)为例：在一个终端中运行 C++ talker 节点，向某个话题发布消息；在另一个终端中运行 Python listener 节点，订阅同一个话题。
 
-节点只有在具有兼容性时才会与其他节点建立连接 [服务质量](../../Tutorials/Demos/Quality-of-Service.md) 设置。
-
-拿着 [谈话者-听众演示](../../Installation/Alternatives/Ubuntu-Development-Setup.md#talker-listener) 例如,在一个终端中运行 C++ 聊天器节点将发布关于一个话题的信息,在另一个终端中运行的 Python 聆听器节点将订阅关于同一话题的信息。
-
-您应该看到这些节点会自动发现彼此, 并开始交换消息 。
+你会看到两个节点自动发现彼此，并开始交换消息。

@@ -1,94 +1,77 @@
----
-translation_status: machine_translated
-source: Tutorials/Beginner-Client-Libraries/Custom-ROS2-Interfaces.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="creating-custom-msg-and-srv-files"></span> <span id="custominterfaces"></span>
-
 # 创建自定义 msg 和 srv 文件
 
-**目标：** 定义自定义接口文件( E)`.msg` 财务报告和财务报告 `.srv`),并使用Python和C++节点.
+**目标：** 定义自定义接口文件（`.msg` 和 `.srv`），并在 Python 和 C++ 节点中使用。
 
-**教程级别：** 入门
+**教程级别：** 初学者
 
-**用时：** 20分钟
+**预计用时：** 20 分钟
 
 <span id="background"></span>
-
 ## 背景
 
-在之前的教程中, 您使用信件和服务接口来了解 [话题](../Beginner-CLI-Tools/Understanding-ROS2-Topics/Understanding-ROS2-Topics.md), [服务](../Beginner-CLI-Tools/Understanding-ROS2-Services/Understanding-ROS2-Services.md),以及简单的出版商/订阅商([C++](Writing-A-Simple-Cpp-Publisher-And-Subscriber.md)/[Python](Writing-A-Simple-Py-Publisher-And-Subscriber.md))和服务/客户([C++](Writing-A-Simple-Cpp-Service-And-Client.md)/[Python](Writing-A-Simple-Py-Service-And-Client.md)) 节点。您使用的接口在这些情况下是预先定义的。
+此前教程使用消息和服务接口介绍了[话题](../Beginner-CLI-Tools/Understanding-ROS2-Topics/Understanding-ROS2-Topics.md)、[服务](../Beginner-CLI-Tools/Understanding-ROS2-Services/Understanding-ROS2-Services.md)，以及简单的发布者/订阅者（[C++](Writing-A-Simple-Cpp-Publisher-And-Subscriber.md) / [Python](Writing-A-Simple-Py-Publisher-And-Subscriber.md)）和服务端/客户端节点（[C++](Writing-A-Simple-Cpp-Service-And-Client.md) / [Python](Writing-A-Simple-Py-Service-And-Client.md)）。这些示例使用的都是预定义接口。
 
-虽然使用预先定义的界面定义是好的做法,但有时你可能也需要定义自己的消息和服务。这个教程会向您介绍创建自定义界面定义的最简单方法。
+虽然推荐复用预定义接口，但有时仍需要定义自己的消息和服务。本教程介绍创建自定义接口定义的最简单方法。
 
 <span id="prerequisites"></span>
-
 ## 前提条件
 
-你应该有一个 [ROS 2 工作空间](Creating-A-Workspace/Creating-A-Workspace.md).
+需要准备一个 [ROS 2 工作空间](Creating-A-Workspace/Creating-A-Workspace.md)。
 
-此教程还使用出版商/订阅商中创建的软件包( Name[C++](Writing-A-Simple-Cpp-Publisher-And-Subscriber.md) 财务报告和财务报告 [Python](Writing-A-Simple-Py-Publisher-And-Subscriber.md))和服务/客户([C++](Writing-A-Simple-Cpp-Service-And-Client.md) 财务报告和财务报告 [Python](Writing-A-Simple-Py-Service-And-Client.md)) 测试新自定义消息的教程。
+本教程还会使用此前发布者/订阅者（[C++](Writing-A-Simple-Cpp-Publisher-And-Subscriber.md)、[Python](Writing-A-Simple-Py-Publisher-And-Subscriber.md)）和服务端/客户端（[C++](Writing-A-Simple-Cpp-Service-And-Client.md)、[Python](Writing-A-Simple-Py-Service-And-Client.md)）教程中创建的软件包，测试新的自定义接口。
 
 <span id="tasks"></span>
-
 ## 操作步骤
 
 <span id="create-a-new-package"></span>
-
 ### 1 创建新软件包
 
-您将会为此教程创建自定义 `.msg` 财务报告和财务报告 `.srv` 文件在自己的软件包中,然后在单独的软件包中使用。两个软件包应该在同一工作空间中。
+本教程将自定义 `.msg` 和 `.srv` 文件放在独立的软件包中，再由另一个软件包使用它们。两个软件包应位于同一工作空间。
 
-既然我们将使用在早期的教程中创建的 pub/sub 和服务/客户端软件包, 请确保您与这些软件包处于相同的工作空间(`ros2_ws/src`),然后运行以下命令来创建新软件包:
+由于要使用此前的发布/订阅和服务端/客户端软件包，请进入它们所在工作空间的 `ros2_ws/src`，运行：
 
-``` console
+```console
 $ ros2 pkg create --build-type ament_cmake --license Apache-2.0 tutorial_interfaces
 ```
 
-`tutorial_interfaces` 是新软件包的名称。请注意它是一个,而且只能是ament_cmake软件包,但这并不限制您可以使用您的信件和服务的类型。您可以在 ament_cmake软件包中创建自己的自定义接口,然后在C++或Python节点中使用,该节点将在最后一节中覆盖。
+新软件包名为 `tutorial_interfaces`。定义这些接口的软件包只能使用 `ament_cmake` 构建类型，但这并不限制使用接口的软件包类型。可以在 `ament_cmake` 软件包中定义接口，再由 C++ 或 Python 节点使用，最后一节将演示这一点。
 
-那个... `.msg` 财务报告和财务报告 `.srv` 需要将文件放置在名为“ ” 的目录中 `msg` 财务报告和财务报告 `srv` 创建目录。 `ros2_ws/src/tutorial_interfaces`:
+`.msg` 和 `.srv` 文件必须分别放在名为 `msg` 和 `srv` 的目录中。在 `ros2_ws/src/tutorial_interfaces` 中创建它们：
 
-``` console
+```console
 $ mkdir msg srv
 ```
 
 <span id="create-custom-definitions"></span>
-
-### 2 创建自定义
+### 2 创建自定义定义文件
 
 <span id="msg-definition"></span>
-
 #### 2.1 msg 定义
 
-在那个 `tutorial_interfaces/msg` 您刚刚创建的目录, 创建一个新文件 `Num.msg` 并用一行代码声明其数据结构:
+在刚创建的 `tutorial_interfaces/msg` 中新建 `Num.msg`，用一行声明数据结构：
 
-``` bash
+```bash
 int64 num
 ```
 
-这是一个自定义消息, 它可以传输一个名为 64 位整数的单个 `num`.
+这个自定义消息传递一个名为 `num` 的 64 位整数。
 
-同样在... `tutorial_interfaces/msg` 您刚刚创建的目录, 创建一个新文件 `Sphere.msg` 内容如下:
+在同一目录中新建 `Sphere.msg`，内容为：
 
-``` bash
+```bash
 geometry_msgs/Point center
 float64 radius
 ```
 
-此自定义消息使用来自另一个消息包的消息( Name`geometry_msgs/Point` (第6条)。
+该消息使用了其他消息软件包中的消息，这里是 `geometry_msgs/Point`。
 
 <span id="srv-definition"></span>
-
 #### 2.2 srv 定义
 
-回到过去 `tutorial_interfaces/srv` 您刚刚创建的目录, 创建一个新文件 `AddThreeInts.srv` 附有下列请求和答复结构:
+在 `tutorial_interfaces/srv` 中新建 `AddThreeInts.srv`，定义以下请求和响应结构：
 
-``` bash
+```bash
 int64 a
 int64 b
 int64 c
@@ -96,15 +79,14 @@ int64 c
 int64 sum
 ```
 
-这是您的自定义服务, 需要三个整数 。 `a`, `b`,以及 `c`,然后用整数响应 `sum`.
+自定义服务的请求包含 `a`、`b`、`c` 三个整数，响应包含一个名为 `sum` 的整数。
 
 <span id="cmakelists-txt"></span>
+### 3 CMakeLists.txt
 
-### 3 `CMakeLists.txt`
+要将接口定义转换为 C++、Python 等语言的代码，使这些语言能够使用接口，请在 `CMakeLists.txt` 中添加：
 
-要将您定义的界面转换成语言专用代码( 如 C++ 和 Python) , 以便用于这些语言, 请添加以下行到 `CMakeLists.txt`:
-
-``` cmake
+```cmake
 find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
@@ -116,19 +98,17 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 )
 ```
 
-> **说明**
->
-> 中的第一个参数( 库名称) `rosidl_generate_interfaces` 必须从软件包的名称开始,例如简单 `${PROJECT_NAME}` 或 时 间 `${PROJECT_NAME}_suffix`。见 <https://github.com/ros2/rosidl/issues/441#issuecomment-591025515>.
+!!! note "注意"
+    `rosidl_generate_interfaces` 的第一个参数是库名称，必须以软件包名称开头，例如 `${PROJECT_NAME}` 或 `${PROJECT_NAME}_suffix`。详见[相关讨论](https://github.com/ros2/rosidl/issues/441#issuecomment-591025515)。
 
 <span id="package-xml"></span>
+### 4 package.xml
 
-### 4 `package.xml`
+生成各语言的接口代码依赖 `rosidl_default_generators`，因此需要将其声明为构建工具依赖。`rosidl_default_runtime` 则是之后使用接口时所需的运行时依赖。`rosidl_interface_packages` 是 `tutorial_interfaces` 应加入的依赖组，通过 `<member_of_group>` 声明。
 
-因为界面依赖 `rosidl_default_generators` 用于生成语言特定代码,您需要声明一个构建工具依赖它。 `rosidl_default_runtime` 是一个运行时间或执行阶段的依赖性,需要后期才能使用接口。 `rosidl_interface_packages` 您的软件包是依赖组的名称, `tutorial_interfaces`,应当与使用 `<member_of_group>` 标记 。
+在 `package.xml` 的 `<package>` 元素中添加：
 
-在下图中添加以下行 `<package>` 要素 `package.xml`:
-
-``` xml
+```xml
 <depend>geometry_msgs</depend>
 <buildtool_depend>rosidl_default_generators</buildtool_depend>
 <exec_depend>rosidl_default_runtime</exec_depend>
@@ -136,63 +116,61 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 ```
 
 <span id="build-the-tutorial-interfaces-package"></span>
+### 5 构建 tutorial_interfaces 软件包
 
-### 5 建设 `tutorial_interfaces` 软件包
+自定义接口软件包的各部分已经准备好。在工作空间根目录 `~/ros2_ws` 中运行对应命令进行构建。
 
-现在您的自定义接口软件包的所有部分都已经到位,您可以构建软件包。 在您工作空间的根部( R)`~/ros2_ws`),运行以下命令:
+**Linux**
 
-##### Linux
-
-``` console
+```console
 $ colcon build --packages-select tutorial_interfaces
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ colcon build --packages-select tutorial_interfaces
 ```
 
-##### Windows
+**Windows**
 
-``` console
+```console
 $ colcon build --merge-install --packages-select tutorial_interfaces
 ```
 
-现在这些接口将被其他ROS 2软件包发现.
+构建后，其他 ROS 2 软件包就能发现这些接口。
 
 <span id="confirm-msg-and-srv-creation"></span>
+### 6 确认 msg 和 srv 已创建
 
-### 6 确认 msg 和 srv 创建
+打开新终端，在工作空间 `ros2_ws` 中加载环境。
 
-在新的终端中, 从工作空间内运行以下命令( Q) :`ros2_ws`来源:
+**Linux**
 
-##### Linux
-
-``` console
+```console
 $ source install/setup.bash
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ . install/setup.bash
 ```
 
-##### Windows
+**Windows**
 
-``` console
+```console
 $ call install/setup.bat
 ```
 
-现在您可以确认您的界面创建通过使用 `ros2 interface show` 命令。您在终端中看到的输出应该与下列输出相似 :
+使用 `ros2 interface show` 确认接口生成成功。输出应类似于：
 
-``` console
+```console
 $ ros2 interface show tutorial_interfaces/msg/Num
 int64 num
 ```
 
-``` console
+```console
 $ ros2 interface show tutorial_interfaces/msg/Sphere
 geometry_msgs/Point center
         float64 x
@@ -201,7 +179,7 @@ geometry_msgs/Point center
 float64 radius
 ```
 
-``` console
+```console
 $ ros2 interface show tutorial_interfaces/srv/AddThreeInts
 int64 a
 int64 b
@@ -211,22 +189,18 @@ int64 sum
 ```
 
 <span id="test-the-new-interfaces"></span>
-
 ### 7 测试新接口
 
-对于此步骤, 您可以使用您在前一个教程中创建的软件包 。 对节点进行一些简单的修改 , `CMakeLists.txt` 财务报告和财务报告 `package.xml` 文件将允许您使用新的界面。
+可以使用之前教程创建的软件包进行测试。简单修改节点代码、`CMakeLists.txt` 和 `package.xml`，就能使用新接口。
 
 <span id="testing-num-msg-with-pub-sub"></span>
+#### 7.1 用发布/订阅系统测试 Num.msg
 
-#### 7.1 测试 `Num.msg` 与酒吧/子公司
+修改此前的发布者/订阅者软件包（[C++](Writing-A-Simple-Cpp-Publisher-And-Subscriber.md) 或 [Python](Writing-A-Simple-Py-Publisher-And-Subscriber.md)），即可观察 `Num.msg` 的运行效果。由于将标准字符串消息改为了数值消息，输出会略有不同。
 
-对前一个教程中创建的出版商/订阅者包进行了几处修改([C++](Writing-A-Simple-Cpp-Publisher-And-Subscriber.md) 或 时 间 [Python](Writing-A-Simple-Py-Publisher-And-Subscriber.md),你可以看到 `Num.msg` 。由于您将把标准字符串 msg 更改为数字,输出会略有不同。
+**C++ 发布者**
 
-**出版商**
-
-##### C++
-
-``` c++
+```c++
 #include <chrono>
 #include <memory>
 
@@ -268,15 +242,11 @@ int main(int argc, char * argv[])
 }
 ```
 
-> **说明**
->
-> `rclcpp/rclcpp.hpp` 是一个 *便利性* 头部 整个都拉着 `rclcpp` API同时——节点,出版商,订阅,服务,定时器,参数,执行器,速率,等位集,等等——所以每个包含它的翻译单元都是根据它从未使用过的特性编译的.
->
-> 在教程之外, 偏爱只包含您实际使用的 API 特定调用时的页眉 。 例如, `rclcpp::Node` 已声明为 `rclcpp/node.hpp`, `rclcpp::spin` 输入 `rclcpp/executors.hpp`,以及 `rclcpp::init` 财务报告和财务报告 `rclcpp::shutdown` 输入 `rclcpp/utilities.hpp`。保存量最大的是从未创建或旋转节点的翻译单位——标题、插件和辅助工具库,它们只需要像 `rclcpp/qos.hpp` 或 时 间 `rclcpp/time.hpp` - 因为... `rclcpp/node.hpp` 财务报告和财务报告 `rclcpp/executors.hpp` 他们本身就很大。 `rclcpp/rclcpp.hpp` 只不过是这些信头的列表,所以在研究你需要哪个信头的时候,这是一个很好的开始。
+另见 [rclcpp 便捷头文件说明](../../_internal/Rclcpp-Convenience-Header-Note.md)。
 
-##### Python
+**Python 发布者**
 
-``` python
+```python
 import rclpy
 from rclpy.node import Node
 
@@ -315,11 +285,9 @@ if __name__ == '__main__':
     main()
 ```
 
-**订阅者**
+**C++ 订阅者**
 
-##### C++
-
-``` c++
+```c++
 #include <functional>
 #include <memory>
 
@@ -355,9 +323,9 @@ int main(int argc, char * argv[])
 }
 ```
 
-##### Python
+**Python 订阅者**
 
-``` python
+```python
 import rclpy
 from rclpy.node import Node
 
@@ -394,11 +362,11 @@ if __name__ == '__main__':
     main()
 ```
 
-**CMakeLists.txt (中文(简体) ).**
+**CMakeLists.txt**
 
-添加以下行(仅C++):
+添加以下内容，仅适用于 C++：
 
-``` cmake
+```cmake
 #...
 
 find_package(ament_cmake REQUIRED)
@@ -421,91 +389,82 @@ ament_package()
 
 **package.xml**
 
-增加以下一行:
+C++ 添加：
 
-##### C++
-
-``` c++
+```c++
 <depend>tutorial_interfaces</depend>
 ```
 
-##### Python
+Python 添加：
 
-``` python
+```python
 <exec_depend>tutorial_interfaces</exec_depend>
 ```
 
-在进行上述编辑和保存所有修改后,构建软件包:
+保存以上修改后，构建软件包。
 
-##### C++
+**C++，Linux/macOS**
 
-在 Linux/macOS 上:
-
-``` console
+```console
 $ colcon build --packages-select cpp_pubsub
 ```
 
-在 Windows 上:
+**C++，Windows**
 
-``` console
+```console
 $ colcon build --merge-install --packages-select cpp_pubsub
 ```
 
-##### Python
+**Python，Linux/macOS**
 
-在 Linux/macOS 上:
-
-``` console
+```console
 $ colcon build --packages-select py_pubsub
 ```
 
-在 Windows 上:
+**Python，Windows**
 
-``` console
+```console
 $ colcon build --merge-install --packages-select py_pubsub
 ```
 
-然后打开两个新的终端, 源 `ros2_ws` 中,并运行:
+打开两个新终端，分别加载 `ros2_ws` 环境，再分别运行发布者和订阅者。
 
-##### C++
+**C++**
 
-``` console
+```console
 $ ros2 run cpp_pubsub talker
 ```
 
-``` console
+```console
 $ ros2 run cpp_pubsub listener
 ```
 
-##### Python
+**Python**
 
-``` console
+```console
 $ ros2 run py_pubsub talker
 ```
 
-``` console
+```console
 $ ros2 run py_pubsub listener
 ```
 
-自兹 `Num.msg` 中继仅是一个整数,说话者应该只发布整数值,而不是它以前发布的字符串:
+`Num.msg` 只传递一个整数，因此 talker 现在发布的是整数值，而非之前的字符串：
 
-``` console
+```console
 [INFO] [minimal_publisher]: Publishing: '0'
 [INFO] [minimal_publisher]: Publishing: '1'
 [INFO] [minimal_publisher]: Publishing: '2'
 ```
 
 <span id="testing-addthreeints-srv-with-service-client"></span>
+#### 7.2 用服务端/客户端系统测试 AddThreeInts.srv
 
-#### 7.2 测试 `AddThreeInts.srv` 有服务/客户服务
+修改此前的服务端/客户端软件包（[C++](Writing-A-Simple-Cpp-Service-And-Client.md) 或 [Python](Writing-A-Simple-Py-Service-And-Client.md)），即可观察 `AddThreeInts.srv` 的运行效果。请求从两个整数改为三个整数，因此输出也会略有不同。
 
-在前一个教程中创建的服务/客户软件包的几处修改后( Name[C++](Writing-A-Simple-Cpp-Service-And-Client.md) 或 时 间 [Python](Writing-A-Simple-Py-Service-And-Client.md),你可以看到 `AddThreeInts.srv` 。由于您将把原来的两个整数请求srv修改为三个整数请求srv,输出会略有不同。
+**C++ 服务端**
 
-**服务**
-
-##### C++
-
-``` c++
+```c++
 #include "rclcpp/rclcpp.hpp"
 #include "tutorial_interfaces/srv/add_three_ints.hpp"                                        // CHANGE
 
@@ -536,9 +495,9 @@ int main(int argc, char **argv)
 }
 ```
 
-##### Python
+**Python 服务端**
 
-``` python
+```python
 from tutorial_interfaces.srv import AddThreeInts                                                           # CHANGE
 
 import rclpy
@@ -570,11 +529,9 @@ if __name__ == '__main__':
     main()
 ```
 
-**客户端**
+**C++ 客户端**
 
-##### C++
-
-``` c++
+```c++
 #include "rclcpp/rclcpp.hpp"
 #include "tutorial_interfaces/srv/add_three_ints.hpp"                                       // CHANGE
 
@@ -625,9 +582,9 @@ int main(int argc, char **argv)
 }
 ```
 
-##### Python
+**Python 客户端**
 
-``` python
+```python
 from tutorial_interfaces.srv import AddThreeInts                            # CHANGE
 import sys
 import rclpy
@@ -678,11 +635,11 @@ if __name__ == '__main__':
     main()
 ```
 
-**CMakeLists.txt (中文(简体) ).**
+**CMakeLists.txt**
 
-添加以下行(仅C++):
+添加以下内容，仅适用于 C++：
 
-``` cmake
+```cmake
 #...
 
 find_package(ament_cmake REQUIRED)
@@ -707,82 +664,74 @@ ament_package()
 
 **package.xml**
 
-增加以下一行:
+C++ 添加：
 
-##### C++
-
-``` c++
+```c++
 <depend>tutorial_interfaces</depend>
 ```
 
-##### Python
+Python 添加：
 
-``` python
+```python
 <exec_depend>tutorial_interfaces</exec_depend>
 ```
 
-在进行上述编辑和保存所有修改后,构建软件包:
+保存以上修改后，构建软件包。
 
-##### C++
+**C++，Linux/macOS**
 
-在 Linux/macOS 上:
-
-``` console
+```console
 $ colcon build --packages-select cpp_srvcli
 ```
 
-在 Windows 上:
+**C++，Windows**
 
-``` console
+```console
 $ colcon build --merge-install --packages-select cpp_srvcli
 ```
 
-##### Python
+**Python，Linux/macOS**
 
-在 Linux/macOS 上:
-
-``` console
+```console
 $ colcon build --packages-select py_srvcli
 ```
 
-在 Windows 上:
+**Python，Windows**
 
-``` console
+```console
 $ colcon build --merge-install --packages-select py_srvcli
 ```
 
-然后打开两个新的终端, 源 `ros2_ws` 中,并运行:
+打开两个新终端，分别加载 `ros2_ws` 环境，再分别运行服务端和客户端。
 
-##### C++
+**C++**
 
-``` console
+```console
 $ ros2 run cpp_srvcli server
 ```
 
-``` console
+```console
 $ ros2 run cpp_srvcli client 2 3 1
 ```
 
-##### Python
+**Python**
 
-``` console
+```console
 $ ros2 run py_srvcli service
 ```
 
-``` console
+```console
 $ ros2 run py_srvcli client 2 3 1
 ```
 
 <span id="summary"></span>
-
 ## 小结
 
-在这个教程中,你学会了如何在他们自己的包中创建自定义接口,以及如何在其他包中使用这些接口.
+本教程介绍了如何在独立软件包中创建自定义接口，并在其他软件包中使用。
 
-此教程只抓取关于定义自定义界面的表面。 您可以在 [关于 ROS 2 接口](../../Concepts/Basic/About-Interfaces.md).
+这里只介绍了自定义接口的基础内容，更多细节见 [ROS 2 接口](../../Concepts/Basic/About-Interfaces.md)。
 
 <span id="next-steps"></span>
-
 ## 后续步骤
 
-那个... [下一个教程](Single-Package-Define-And-Use-Interface.md) 在ROS 2中涵盖更多使用界面的方式.
+[下一篇教程](Single-Package-Define-And-Use-Interface.md)将介绍 ROS 2 接口的更多用法。

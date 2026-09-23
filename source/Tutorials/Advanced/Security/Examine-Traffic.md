@@ -1,82 +1,72 @@
----
-translation_status: machine_translated
-source: Tutorials/Advanced/Security/Examine-Traffic.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
-<span id="examining-network-traffic"></span> <span id="examine-traffic"></span>
+<span id="examining-network-traffic"></span>
+<span id="examine-traffic"></span>
+<span id="overview"></span>
+<span id="prerequisites"></span>
+<span id="run-the-demo"></span>
+<span id="install-tcpdump"></span>
+<span id="start-the-talker-and-listener"></span>
+<span id="display-unencrypted-discovery-packets"></span>
+<span id="display-unencrypted-data-packets"></span>
+<span id="enable-encryption"></span>
+<span id="display-encrypted-discovery-packets"></span>
+<span id="display-encrypted-data-packets"></span>
 
 # 检查网络流量
 
-**目标：** 捕捉和检查原始ROS 2网络流量。
+**目标：** 捕获并检查原始 ROS 2 网络流量。
 
 **教程级别：** 高级
 
-**用时：** 20分钟
-
-<span id="overview"></span>
+**耗时：** 20 分钟
 
 ## 概述
 
-ROS 2 通信安全, 都是为了保护节点之间的通信。 先前的教程启用了安全, 但您如何 ? **痷** 如果流量被加密的话, 我们将会在此教程中查看如何捕捉网络直播流量, 以显示加密流量和未加密流量的区别 。
+ROS 2 通信安全旨在保护节点之间的通信。前面的教程启用了安全功能，但如何**真正**判断流量是否已加密？本教程通过捕获实时网络流量，展示加密流量与未加密流量之间的区别。
 
-> **说明**
->
-> `rmw_fastrtps_cpp` 用途 [共享内存传输](https://fast-dds.docs.eprosima.com/en/latest/fastdds/transport/shared_memory/shared_memory.html) 当端点在同一主机系统中时,默认会改善传输层的性能。安全飞地仍然被应用,数据将被加密。但是,由于数据不会在网络界面上,因此无法捕获直播网络流量。如果您正在使用 `rmw_fastrtps_cpp`,您需要通过此教程,在发布者和订阅者之间使用不同的主机系统,或者禁用共享内存传输。 [启用 UDP 运输](https://fast-dds.docs.eprosima.com/en/latest/fastdds/transport/udp/udp.html#enabling-udp-transport) 财务报告和财务报告 [如何设置快速 DDS XML 配置](https://github.com/ros2/rmw_fastrtps#full-qos-configuration).
+!!! note "说明"
 
-<span id="prerequisites"></span>
+    当通信端点位于同一主机时，`rmw_fastrtps_cpp` 默认使用[共享内存传输](https://fast-dds.docs.eprosima.com/en/latest/fastdds/transport/shared_memory/shared_memory.html)提高传输层性能。安全隔离域仍然生效，数据也会加密，但数据不经过网络接口，因此无法捕获实时网络流量。使用 `rmw_fastrtps_cpp` 时，请在不同主机上运行发布者和订阅者来完成本教程，或者按照[启用 UDP 传输](https://fast-dds.docs.eprosima.com/en/latest/fastdds/transport/udp/udp.html#enabling-udp-transport)和[设置 Fast DDS XML 配置](https://github.com/ros2/rmw_fastrtps#full-qos-configuration)的说明禁用共享内存传输。
 
 ## 前提条件
 
-此指南仅运行在 Linux 上, 并假设您已经 [已安装 ROS 2](../../../Installation.md).
-
-<span id="run-the-demo"></span>
+本指南仅适用于 Linux，并假设你已[安装 ROS 2](../../../Installation.md)。
 
 ## 运行演示
 
-<span id="install-tcpdump"></span>
-
 ### 安装 `tcpdump`
 
-通过安装在新终端窗口中开始 [tcpdump 调试器](https://www.tcpdump.org/manpages/tcpdump.1.html),用于捕捉和显示网络流量的命令行工具。尽管此教程描述 `tcpdump` 命令,您也可以使用 [线莎克](https://www.wireshark.org/),是用于捕捉和分析流量的类似图形工具。
+在新终端中安装 [tcpdump](https://www.tcpdump.org/manpages/tcpdump.1.html)，这是用于捕获和显示网络流量的命令行工具。本教程使用 `tcpdump` 命令，你也可以使用功能类似的图形化流量捕获和分析工具 [Wireshark](https://www.wireshark.org/)。
 
-``` console
+```console
 $ sudo apt update
 $ sudo apt install tcpdump
 ```
 
-通过多个程序在单机上运行以下命令 `ssh` 届会。
+通过多个 `ssh` 会话，在同一台机器上运行下面的命令。
 
-<span id="start-the-talker-and-listener"></span>
+### 启动 talker 和 listener
 
-### 开口听
+再次分别在两个终端中启动 talker 和 listener。未设置安全环境变量，因此这些会话没有启用安全功能。在一个终端运行：
 
-重新启动谈话者和听众, 各自在自己的终端。 安全环境变量没有设置, 因此无法为这些会话设定安全性 。 在一次终端运行中 :
-
-``` console
+```console
 $ unset ROS_SECURITY_ENABLE
 $ ros2 run demo_nodes_cpp talker --ros-args --enclave /talker_listener/talker
 ```
 
-在另一个终端运行中 :
+在另一个终端运行：
 
-``` console
+```console
 $ unset ROS_SECURITY_ENABLE
 $ ros2 run demo_nodes_cpp listener --ros-args --enclave /talker_listener/listener
 ```
 
-<span id="display-unencrypted-discovery-packets"></span>
+### 显示未加密的发现数据包
 
-### 显示未加密的发现包
+保持 talker 和 listener 运行，打开另一个终端并启动 `tcpdump` 查看网络流量。读取原始网络流量需要特权，因此必须使用 `sudo`。
 
-随着说话者和听众的运行,打开另一个终端开始 `tcpdump` 以查看网络流量。您需要使用 `sudo` 因为读取原始网络流量是一种特权操作.
+下面的命令通过 `-X` 输出数据包内容，通过 `-i` 监听所有接口，并且只捕获 [UDP](https://en.wikipedia.org/wiki/User_Datagram_Protocol) 7400 端口的流量：
 
-以下命令使用 `-X` 选项以打印数据包内容, `-i` 选项,用于在任何界面上收听数据包,并仅抓取 [UDP 维基百科](https://en.wikipedia.org/wiki/User_Datagram_Protocol) 蚌埠7400交通.
-
-``` console
+```console
 $ sudo tcpdump -X -i any udp port 7400
 20:18:04.400770 IP 8_xterm.46392 > 239.255.0.1.7400: UDP, length 252
   0x0000:  4500 0118 d48b 4000 0111 7399 c0a8 8007  E.....@...s.....
@@ -90,21 +80,19 @@ $ sudo tcpdump -X -i any udp port 7400
   0x0110:  0000 0000 0100 0000                      ........
 ```
 
-这是一个发现数据图 - 寻找订阅者的谈话者。 您可以看到节点名称( NAME OF TRANSLATORS)`/talker_listener/talker`飞地和飞地 `/talker_listener/talker`)以纯文本传递。您还应看到从“% 1”中获取的类似发现数据。 `listener` 节点。 典型的发现包的一些其他特性 :
+这是一个发现数据报，表示 talker 正在寻找订阅者。可以看到，节点名 `/talker_listener/talker` 和隔离域名（也是 `/talker_listener/talker`）以明文传输。你还应能看到来自 `listener` 节点的类似发现数据报。
 
-- 目的地地址为239.255.01,是一个多播IP地址;ROS 2使用多播流量默认发现.
+典型发现数据包还有以下特点：
 
-- UDP 7400是目的地港口,按照 [DDS-RTPS 规格](https://www.omg.org/spec/DDSI-RTPS/About-DDSI-RTPS/).
-
-- 包中包含“RTPS”标记,也定义为DDS-RTPS规格。
-
-<span id="display-unencrypted-data-packets"></span>
+- 目标地址为组播 IP 地址 239.255.0.1；ROS 2 默认使用组播进行发现。
+- 根据 [DDS-RTPS 规范](https://www.omg.org/spec/DDSI-RTPS/About-DDSI-RTPS/)，目标端口为 UDP 7400。
+- 数据包包含 DDS-RTPS 规范定义的 `RTPS` 标记。
 
 ### 显示未加密的数据包
 
-使用 `tcpdump` 通过过滤在 UDP 端口上超过 7400 来捕捉非发现的 RTPS 数据包。 您将看到很少不同的数据包类型, 但请注意类似以下的数据, 这些数据显然是从说话者发送到听众的 :
+使用 `tcpdump` 过滤高于 7400 的 UDP 端口，捕获非发现类 RTPS 数据包。你会看到几种不同的数据包，请留意类似下面的包，其中显然包含 talker 发给 listener 的数据：
 
-``` console
+```console
 $ sudo tcpdump -i any -X udp portrange 7401-7500
 20:49:17.927303 IP localhost.46392 > localhost.7415: UDP, length 84
   0x0000:  4500 0070 5b53 4000 4011 e127 7f00 0001  E..p[S@.@..'....
@@ -116,43 +104,38 @@ $ sudo tcpdump -i any -X udp portrange 7401-7500
   0x0060:  6f20 576f 726c 643a 2032 3133 3500 0000  o.World:.2135...
 ```
 
-有关此包的一些特性 :
+注意该数据包的以下特点：
 
-- 信息内容“Hello World: 2135”,以明确文本发送
-
-- 源和目的地IP地址是: `localhost`:由于两个节点都在同一个机器上运行,因此节点在其中发现了彼此. `localhost` 接口
-
-<span id="enable-encryption"></span>
+- 消息内容 `Hello World: 2135` 以明文发送。
+- 源和目标 IP 地址均为 `localhost`。两个节点运行在同一台机器上，通过 `localhost` 接口发现了彼此。
 
 ### 启用加密
 
-停止谈话者和收听者节点。 通过设置安全环境变量并再次运行它们, 启用两者的加密 。
+停止 talker 和 listener 节点。为两者设置安全环境变量以启用加密，然后重新运行。
 
-在1号航站楼
+在终端 1 中：
 
-``` console
+```console
 $ export ROS_SECURITY_KEYSTORE=~/sros2_demo/demo_keystore
 $ export ROS_SECURITY_ENABLE=true
 $ export ROS_SECURITY_STRATEGY=Enforce
 $ ros2 run demo_nodes_cpp talker --ros-args --enclave /talker_listener/talker
 ```
 
-在2号航站楼
+在终端 2 中：
 
-``` console
+```console
 $ export ROS_SECURITY_KEYSTORE=~/sros2_demo/demo_keystore
 $ export ROS_SECURITY_ENABLE=true
 $ export ROS_SECURITY_STRATEGY=Enforce
 $ ros2 run demo_nodes_cpp listener --ros-args --enclave /talker_listener/listener
 ```
 
-<span id="display-encrypted-discovery-packets"></span>
+### 显示启用加密后的发现数据包
 
-### 显示加密的发现包
+再次运行之前的 `tcpdump` 命令，检查启用加密后的发现流量。典型发现数据包类似下面这样：
 
-运行相同 `tcpdump` 命令先前用来通过加密检查发现流量的输出 允许 典型的发现包看起来有点像以下:
-
-``` console
+```console
 $ sudo tcpdump -X -i any udp port 7400
 21:09:07.336617 IP 8_xterm.60409 > 239.255.0.1.7400: UDP, length 596
   0x0000:  4500 0270 c2f6 4000 0111 83d6 c0a8 8007  E..p..@.........
@@ -174,15 +157,13 @@ $ sudo tcpdump -X -i any udp port 7400
   0x0260:  0510 0800 0700 0080 0600 0080 0100 0000  ................
 ```
 
-此包更大, 包括可用于在 ROS 节点间设置加密的信息 。 正如我们不久后看到的, 这实际上包括一些在我们启用安全时创建的安全配置文件 。 有兴趣学习更多吗 ? 请查看优秀的纸张 。 [网络侦察和脆弱性挖掘安全DS系统](https://arxiv.org/abs/1908.05310) 来理解为什么这很重要。
+数据包明显变大，包含了用于在 ROS 节点间建立加密通信的信息。正如接下来会看到的，其中实际上包含启用安全功能时创建的一些安全配置文件。想了解更多，可阅读论文 [Network Reconnaissance and Vulnerability Excavation of Secure DDS Systems](https://arxiv.org/abs/1908.05310)，了解这一点为何重要。
 
-<span id="display-encrypted-data-packets"></span>
+### 显示加密的数据包
 
-### 显示加密数据包
+现在使用 `tcpdump` 捕获数据包。典型的数据包如下：
 
-现在使用 `tcpdump` 以获取数据包。一个典型的数据包看起来像如下:
-
-``` console
+```console
 $ sudo tcpdump -i any -X udp portrange 7401-7500
 21:18:14.531102 IP localhost.54869 > localhost.7415: UDP, length 328
   0x0000:  4500 0164 bb42 4000 4011 8044 7f00 0001  E..d.B@.@..D....
@@ -198,6 +179,6 @@ $ sudo tcpdump -i any -X udp portrange 7401-7500
   0x0160:  0000 0000                                ....
 ```
 
-这个RTPS包中的数据都是加密的.
+该 RTPS 数据包中的数据已全部加密。
 
-除此数据包外, 您应该看到带有节点和飞地名称的额外数据包; 这些数据包支持其他 ROS 特性, 如参数和服务。 这些数据包的加密选项也可以由安全政策控制 。
+除此之外，你还会看到包含节点名和隔离域名的其他数据包，它们用于支持参数、服务等 ROS 功能。这些数据包的加密选项同样可以通过安全策略控制。

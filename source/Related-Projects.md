@@ -1,12 +1,3 @@
----
-translation_status: machine_translated
-source: Related-Projects.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="related-projects"></span>
 
 # 相关项目
@@ -15,33 +6,30 @@ source: Related-Projects.rst
 
 ## Gazebo
 
-**Gazebo** [(加泽博西姆.](https://gazebosim.org/) 及其前身"Gazebo Classic"是3D物理模拟ROS型机器人的第一个开源选择.
+**[Gazebo](https://gazebosim.org/)** 及其前身 Gazebo Classic，是对基于 ROS 的机器人进行三维物理仿真的首选开源工具。
 
 <span id="large-community-projects"></span>
 
-## 大社区项目
+## 大型社区项目
 
-大型社区项目涉及来自全球各地的多个开发商,通常由一个专门的工作组提供支持(参见第2段)。 [项目治理](The-ROS2-Project/Governance.md)).
+大型社区项目通常由来自世界各地的多位开发者共同参与，并有专门的工作组支持，参见[项目治理](The-ROS2-Project/Governance.md)。
 
-- **ros2_control** [(control.ros.org) (中文(简体) ).](https://control.ros.org/): 使用ROS 2执行的机器人实时控制灵活框架.
-
-- **导航2** [(nav2.org) (英语).](https://nav2.org/): 使用ROS 2. 的移动机器人的全面和灵活的导航堆栈.
-
-- **移动它** [(移动.ai)](https://moveit.ai/):一个丰富的平台,用于构建操控应用程序,其特点是先进的动能,运动规划,控制,碰撞检查,以及更多.
-
-- **微型办公用房** [(微博.ros.org) (中文(简体) ).](https://micro.ros.org/):一个将ROS 2放到微控制器上的平台,从不到100 kB的RAM开始.
+- **[ros2_control](https://control.ros.org/)**：基于 ROS 2 实现的灵活机器人实时控制框架。
+- **[Navigation2](https://nav2.org/)**：面向使用 ROS 2 的移动机器人的全面、灵活的导航软件栈。
+- **[MoveIt](https://moveit.ai/)**：用于构建机器人操作应用的丰富平台，提供先进的运动学、运动规划、控制、碰撞检测等功能。
+- **[micro-ROS](https://micro.ros.org/)**：将 ROS 2 带到微控制器的平台，最低 RAM 需求不足 100 kB。
 
 <span id="further-community-projects"></span>
 
-## 社区项目
+## 更多社区项目
 
-全球ROS社区在 ROS 2 堆栈核心之上开发并维护了数百个进一步的软件包。 有些软件包会带着自己的网站来进行文档。 您发现这些作品的最佳切入点是 **ROS 指数** [(指数.ros.org)](https://index.ros.org/packages/).
+全球 ROS 社区在 ROS 2 核心软件栈之上开发和维护着数百个其他软件包，其中一些拥有独立文档网站。查找这些项目的最佳入口是 **[ROS Index](https://index.ros.org/packages/)**。
 
-*开发者的提示 :* 如果你保持一个 `README.md` 在您的软件包文件夹根中的文件( 不一定是您的寄存器根), 此文件将在您的软件包的概览页面中显示 。 [索引.ros.org](https://index.ros.org/packages/)。该文件可用于记录您的软件包,并取代ROS Wiki中来自ROS 1的软件包文档页面。 [fmi_适应器软件包](https://index.ros.org/p/fmi_adapter/#rolling) 作为例子。
+*开发者提示：* 如果在软件包文件夹的根目录（不一定是仓库根目录）维护一个 `README.md` 文件，该文件会显示在 [index.ros.org](https://index.ros.org/packages/) 上的软件包概览页中。可以用它编写软件包文档，以替代 ROS 1 中 ROS Wiki 上的软件包文档页。例如，参见 [fmi_adapter 软件包](https://index.ros.org/p/fmi_adapter/#rolling)。
 
 <span id="company-driven-projects"></span>
 
-## 公司推动的项目
+## 企业主导的项目
 
 - [Intel ROS 2 项目](Related-Projects/Intel-ROS2-Projects.md)
 - [NVIDIA ROS 2 项目](Related-Projects/Nvidia-ROS2-Projects.md)

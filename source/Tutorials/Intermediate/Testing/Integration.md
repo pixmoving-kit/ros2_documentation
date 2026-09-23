@@ -1,45 +1,35 @@
----
-translation_status: machine_translated
-source: Tutorials/Intermediate/Testing/Integration.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="writing-basic-integration-tests-with-launch-testing"></span>
 
-# 使用 launch_testing 编写基础集成测试
+# 使用 launch_testing 编写基本集成测试
 
-**目标：** 在ROS 2龟兹姆节点上创建并运行集成测试.
+**目标：** 为 ROS 2 turtlesim 节点创建并运行集成测试。
 
 **教程级别：** 中级
 
-**用时：** 20分钟
+**预计耗时：** 20 分钟
 
 <span id="prerequisites"></span>
 
 ## 前提条件
 
-在开始这个教程之前,建议完成关于发射节点的下列教程:
+开始前，建议先完成以下有关启动节点的教程：
 
 - [启动多个节点](../../Beginner-CLI-Tools/Launching-Multiple-Nodes/Launching-Multiple-Nodes.md)
-
 - [创建启动文件](../Launch/Creating-Launch-Files.md)
 
 <span id="background"></span>
 
 ## 背景
 
-当单位测试侧重于验证一个非常具体的功能块时,集成测试侧重于验证代码块之间的相互作用。在ROS 2中,这通常通过启动一个或几个节点的系统来实现,例如: [Gazebo 模拟器](https://gazebosim.org/home) 页:1 [Nav2 导航](https://github.com/ros-planning/navigation2.git) 因此,这些测试无论是设置还是运行都更为复杂。
+单元测试着重验证某个具体功能，集成测试则着重验证不同代码部分之间的交互。在 ROS 2 中，这通常通过启动由一个或多个节点组成的系统来实现，例如 [Gazebo 仿真器](https://gazebosim.org/home)和 [Nav2 导航软件栈](https://github.com/ros-planning/navigation2.git)。因此，这类测试的配置和运行都更复杂。
 
-ROS 2 集成测试的一个关键方面是,作为不同测试的一部分的节点,即使平行运行,也不应该相互交流。 这一点将在这里使用一个特定的测试跑车来选择独特的 [ROS 域名标识](../../../Concepts/Intermediate/About-Domain-ID.md)此外,集成测试必须适应整个测试工作流程,一个标准化的方法是确保每个测试输出一个XUnit文件,这些文件使用通用测试工具很容易解析.
+ROS 2 集成测试的关键要求之一是：即使测试并行运行，不同测试中的节点也不应相互通信。本教程使用专门的测试运行器，为各测试选择不同的 [ROS 域 ID](../../../Concepts/Intermediate/About-Domain-ID.md) 来实现隔离。此外，集成测试必须融入整体测试流程。一种标准做法是让每个测试输出 XUnit 文件，以便常用测试工具解析。
 
 <span id="overview"></span>
 
 ## 概述
 
-这里使用的主要工具是: [launch_testing](https://docs.ros.org/en/rolling/p/launch_testing/index.html) 软件包( R)[启动_测试仓库](https://github.com/ros2/launch/tree/rolling/launch_testing))),这种ROS-不可知功能可以扩展一个Python发射文件,同时具有主动测试(在节点同时运行时运行)和shutdown后测试(在所有节点退出后运行一次)两种功能. `launch_testing` 依赖于 Python 标准模块 [单位测试](https://docs.python.org/3/library/unittest.html) 为了让我们的整合测试成为其中的一部分 `colcon test`,我们将发射文件登记在 `CMakeLists.txt`.
+本教程主要使用 [launch_testing](https://docs.ros.org/en/rolling/p/launch_testing/index.html) 包（[代码仓库](https://github.com/ros2/launch/tree/rolling/launch_testing)）。它本身不依赖 ROS，可为 Python 启动文件添加运行期间测试和关闭后测试：前者在节点仍运行时执行，后者在所有节点退出后执行一次。`launch_testing` 使用 Python 标准库 [unittest](https://docs.python.org/3/library/unittest.html) 实施具体测试。为了让 `colcon test` 运行集成测试，需要在 `CMakeLists.txt` 中注册该启动文件。
 
 <span id="steps"></span>
 
@@ -47,19 +37,19 @@ ROS 2 集成测试的一个关键方面是,作为不同测试的一部分的节�
 
 <span id="describe-the-test-in-the-test-launch-file"></span>
 
-### 1 在试验发射文件中描述试验
+### 1 在测试启动文件中描述测试
 
-测试中的节点和测试本身都使用类似ROS 2 Python发射文件的Python发射文件进行发射,习惯的做法是使集成测试发射文件名称遵循模式. `test/test_*.py`.
+被测节点和测试本身都通过 Python 启动文件启动，其形式类似 ROS 2 的 Python 启动文件。集成测试启动文件通常采用 `test/test_*.py` 的命名方式。
 
-在集成测试中,有两种常见的测试类型:主动测试,在测试的节点运行时运行,以及休整后测试,这些测试在退出节点后运行。我们会在本教程中同时覆盖两种测试.
+集成测试常见的两种类型是运行期间测试和关闭后测试。本教程将介绍这两种类型。
 
 <span id="imports"></span>
 
-#### 1.1 进口
+#### 1.1 导入模块
 
-我们首先导入我们将要使用的 Python 模块。 只有两个模块是用于测试的:通用 `unittest`,以及 `launch_testing`.
+首先导入需要的 Python 模块。其中只有两个模块专门用于测试：通用的 `unittest` 和 `launch_testing`。
 
-``` python
+```python
 import os
 import sys
 import time
@@ -74,13 +64,13 @@ from turtlesim.msg import Pose
 
 <span id="generate-the-test-description"></span>
 
-#### 1.2 生成测试说明
+#### 1.2 生成测试描述
 
-职能 `generate_test_description` 描述什么是发射,类似于 `generate_launch_description` 在ROS 2 Python 发射文件中。在下面的例子中,我们发射乌龟节点,半秒后进行测试。
+`generate_test_description` 函数描述要启动的内容，类似 ROS 2 Python 启动文件中的 `generate_launch_description`。下面的示例启动 turtlesim 节点，并在半秒后启动测试。
 
-在更复杂的集成测试设置中,您可能想要启动一个由多个节点组成的系统,同时同时推出附加的节点,这些节点进行模拟或者必须与正在测试的节点进行互动.
+对于更复杂的集成测试，通常需要启动由多个节点组成的系统，以及用于模拟或以其他方式与被测节点交互的辅助节点。
 
-``` python
+```python
 def generate_test_description():
     return (
         launch.LaunchDescription(
@@ -102,21 +92,19 @@ def generate_test_description():
 
 <span id="active-tests"></span>
 
-#### 1.3 主动测试
+#### 1.3 运行期间测试
 
-主动测试与运行中的节点相互作用。 在这个教程中,我们将检查龟头节点是否发布摆姿势信息(通过听节点的“turtle1/pose ” ) , 以及它是否记录它产卵龟(通过听stderr ) 。
+运行期间测试与正在运行的节点交互。本教程将检查 turtlesim 节点是否发布位姿消息（监听其 `turtle1/pose` 话题），以及是否记录了生成海龟的日志（监听标准错误输出）。
 
-主动测试的定义是继承自 [单位测试。](https://docs.python.org/3/library/unittest.html#unittest.TestCase)孩子们的课,在这里 `TestTurtleSim`,包含下列方法:
+运行期间测试定义为继承 [unittest.TestCase](https://docs.python.org/3/library/unittest.html#unittest.TestCase) 的类中的方法。本例中的子类 `TestTurtleSim` 包含以下方法：
 
-- `test_*`:测试方法,每个测试方法与测试中的节点进行一些ROS通信,和/或监听过程输出(通过 `proc_output`。它们按顺序执行。
+- `test_*`：测试方法，与被测节点进行 ROS 通信，和/或监听通过 `proc_output` 传入的进程输出。各方法按顺序执行。
+- `setUp`、`tearDown`：分别在每个测试方法执行前后运行，用于准备和清理测试环境。在 `setUp` 中创建节点，可让每个测试使用独立的节点实例，减少测试之间相互通信的风险。
+- `setUpClass`、`tearDownClass`：类方法，分别在所有测试方法执行之前和之后运行一次。
 
-- `setUp`, `tearDown`: 分别运行在( 准备测试固定) 和执行每个测试方法之后。 `setUp` 方法,我们使用不同的节点实例来进行每次测试,以减少测试相互沟通的风险.
+强烈建议阅读 [launch_testing 对这一主题的详细文档](https://docs.ros.org/en/rolling/p/launch_testing/index.html)。
 
-- `setUpClass`, `tearDownClass`:这些类方法分别在执行所有测试方法之前和之后运行一次.
-
-我非常建议你走过去 [发射 \_ 测试关于这一主题的详细文件](https://docs.ros.org/en/rolling/p/launch_testing/index.html).
-
-``` python
+```python
 # Active tests
 class TestTurtleSim(unittest.TestCase):
     @classmethod
@@ -157,17 +145,17 @@ class TestTurtleSim(unittest.TestCase):
             timeout=5, stream='stderr')
 ```
 
-请注意,我们倾听\`turtle1/pose ' 专题的方式在 `test_publishes_pose` 与 [通常办法](../../Beginner-Client-Libraries/Writing-A-Simple-Py-Publisher-And-Subscriber.md)。而不是称屏蔽 `rclpy.spin`,我们触发 `spin_once` 方法 - 它执行第一个可用的回调( 如果信件在 1 秒内到达, 我们的订阅者会回调) - 直到我们收集到过去 10 秒内发布的所有信件。 软件包 [launch_testing_ros](https://docs.ros.org/en/rolling/p/launch_testing_ros/index.html) 提供一些实现类似行为的便利功能,例如 [等待时空](https://docs.ros.org/en/rolling/p/launch_testing_ros/launch_testing_ros.wait_for_topics.html).
+注意，`test_publishes_pose` 中监听 `turtle1/pose` 的方式与[通常的做法](../../Beginner-Client-Libraries/Writing-A-Simple-Py-Publisher-And-Subscriber.md)不同。这里没有调用阻塞的 `rclpy.spin`，而是反复调用 `spin_once`，直到收集完 10 秒内发布的消息。`spin_once` 执行第一个可用的回调；如果 1 秒内收到消息，就会执行订阅回调。[launch_testing_ros](https://docs.ros.org/en/rolling/p/launch_testing_ros/index.html) 提供了实现类似行为的便捷功能，例如 [WaitForTopics](https://docs.ros.org/en/rolling/p/launch_testing_ros/launch_testing_ros.wait_for_topics.html)。
 
-如果您想更进一步, 您可以执行第三个测试, 发布一个曲折消息, 要求龟移动, 然后检查它是否移动了, 因为它断言摆放信息已经改变 。 这实际上可以自动化其中的一部分 。 [Turtlsim 介绍教程](../../Beginner-CLI-Tools/Introducing-Turtlesim/Introducing-Turtlesim.md).
+如果想进一步练习，可以添加第三个测试：发布 Twist 消息让海龟移动，再通过断言位姿消息发生变化来验证移动。这实际上将 [Turtlesim 入门教程](../../Beginner-CLI-Tools/Introducing-Turtlesim/Introducing-Turtlesim.md)中的部分操作自动化了。
 
 <span id="post-shutdown-tests"></span>
 
-#### 1.4 下沉后试验
+#### 1.4 关闭后测试
 
-标有 `launch_testing.post_shutdown_test` 装饰器在让节点进入测试退出状态后运行。 这里一个典型的测试是节点是否干净地退出, 对于它 `launch_testing` 提供方法 [自动交换码( A)](https://docs.ros.org/en/rolling/p/launch_testing/launch_testing.asserts.html#launch_testing.asserts.assertExitCodes).
+带有 `launch_testing.post_shutdown_test` 装饰器的类会在被测节点退出后运行。典型测试是检查节点是否正常退出，`launch_testing` 为此提供了 [asserts.assertExitCodes](https://docs.ros.org/en/rolling/p/launch_testing/launch_testing.asserts.html#launch_testing.asserts.assertExitCodes) 方法。
 
-``` python
+```python
 # Post-shutdown tests
 @launch_testing.post_shutdown_test()
 class TestTurtleSimShutdown(unittest.TestCase):
@@ -180,15 +168,14 @@ class TestTurtleSimShutdown(unittest.TestCase):
 
 ### 2 在 CMakeLists.txt 中注册测试
 
-将测试登记在 `CMakeLists.txt` 履行两项职能:
+在 `CMakeLists.txt` 中注册测试有两个作用：
 
-- 它将它融入到 `CTest` 框架 ROS 2 基于 CMake 的软件包依赖(因此运行时将调用) `colcon test`).
+- 将测试集成到 ROS 2 的 CMake 软件包所使用的 `CTest` 框架中，使其在运行 `colcon test` 时被调用。
+- 指定测试的运行方式。本例为每个测试分配不同的域 ID，以保证隔离。
 
-- 它允许指定 *怎么样* 测试要运行——在这种情况下,有一个独特的域名ID,以确保测试隔离.
+后者通过专用测试运行器 [run_test_isolated.py](https://github.com/ros2/ament_cmake_ros/blob/rolling/ament_cmake_ros/cmake/run_test_isolated.py) 实现。为了方便添加多个集成测试，我们定义 CMake 函数 `add_ros_isolated_launch_test`，这样每增加一个测试只需添加一行。
 
-后一方面是使用特殊测试跑车实现的 [run_test_isolated.py](https://github.com/ros2/ament_cmake_ros/blob/rolling/ament_cmake_ros/cmake/run_test_isolated.py)。为方便添加几个集成测试,我们定义了 CMake 函数 `add_ros_isolated_launch_test` 因此,每个附加测试只需要一条线。
-
-``` cmake
+```cmake
 cmake_minimum_required(VERSION 3.8)
 project(app)
 
@@ -210,11 +197,11 @@ endif()
 
 <span id="dependencies-and-package-organization"></span>
 
-### 3 依赖性和一揽子组织
+### 3 依赖项与软件包组织
 
-最后,请在您 `package.xml`:
+最后，在 `package.xml` 中添加以下依赖：
 
-``` XML
+```XML
 <test_depend>ament_cmake_ros</test_depend>
 <test_depend>launch</test_depend>
 <test_depend>launch_ros</test_depend>
@@ -224,9 +211,9 @@ endif()
 <test_depend>turtlesim</test_depend>
 ```
 
-遵循上述步骤后,您的包件(此处命名为 " app " )应看以下内容:
+完成上述步骤后，软件包（本例名为 `app`）应具有以下结构：
 
-``` default
+```
 app/
   CMakeLists.txt
   package.xml
@@ -234,36 +221,31 @@ app/
       test_integration.py
 ```
 
-整合测试可以是 ROS 软件包的一部分。 我们可以将一个或多个软件包用于简单的整合测试, 或者把它们添加到测试功能的软件包中。 在这个教程中, 我们先选择第一个选项, 来测试已有的龟兹节点 。
+集成测试可以放在任何 ROS 软件包中。可以专门创建一个或多个包存放集成测试，也可以将测试加入被测功能所在的包。本教程采用第一种方式，因为我们测试的是现有的 turtlesim 节点。
 
 <span id="running-tests-and-report-generation"></span>
 
-### 4 运行测试和报告生成
+### 4 运行测试并生成报告
 
-关于综合测试的运行和结果的检查,请参见教程 [从命令行运行 ROS 2 测试](CLI.md).
+运行集成测试和查看结果的方法，请参阅[从命令行运行 ROS 2 测试](CLI.md)。
 
 <span id="summary"></span>
 
 ## 小结
 
-在这个教程中,我们探索了在ROS 2龟兹姆节点上创建和运行集成测试的过程,我们讨论了集成测试发射文件,并覆盖了写作主动测试和下沉后测试. 重述,集成测试发射文件的四个关键要素是:
+本教程介绍了为 ROS 2 turtlesim 节点创建并运行集成测试的过程，包括集成测试启动文件、运行期间测试和关闭后测试。测试启动文件的四个关键组成部分是：
 
-- 职能 `generate_test_description`我们的节点在测试和测试下发射
+- `generate_test_description` 函数：启动被测节点和测试。
+- `launch_testing.actions.ReadyToTest()`：通知测试框架可以运行测试，保证运行期间测试与节点同时运行。
+- 继承 `unittest.TestCase` 且不带装饰器的类：包含运行期间测试及其准备、清理逻辑，并通过 `proc_output` 访问 ROS 日志。
+- 继承 `unittest.TestCase` 且带有 `@launch_testing.post_shutdown_test()` 装饰器的第二个类：在所有节点关闭后运行测试，通常用于断言节点正常退出。
 
-- `launch_testing.actions.ReadyToTest()`:这提醒测试框架,测试应该运行,并确保主动测试和节点一起运行.
-
-- 未装饰的类继承自 `unittest.TestCase`:这包含积极的测试,包括设置和拆卸,并允许ROS通过 `proc_output`.
-
-- 继承自 `unittest.TestCase` 装饰 `@launch_testing.post_shutdown_test()`:这些测试是在所有节点关闭后运行的;通常可以断言节点已经干净地退出.
-
-发射试验随后登记在 `CMakeLists.txt` 使用自定义的 CMake 宏 `add_ros_isolated_launch_test` 确保每次发射试验都有一个独特的 `ROS_DOMAIN_ID`,避免不受欢迎的交叉交流。
+随后，在 `CMakeLists.txt` 中使用自定义 CMake 宏 `add_ros_isolated_launch_test` 注册启动测试。它确保每个测试使用不同的 `ROS_DOMAIN_ID`，避免意外的跨测试通信。
 
 <span id="related-content"></span>
 
 ## 相关内容
 
-- [为什么是自动测试?](Testing-Main.md)
-
-- [使用 GTest 测试的 C++ 单位](Cpp.md) 财务报告和财务报告 [用 Pytest 测试 Python 单元](Python.md)
-
-- [启动\_ pyst 文档](https://docs.ros.org/en/rolling/p/launch_pytest/index.html),替代发射集成测试包 `launch_testing`
+- [为什么要自动化测试？](Testing-Main.md)
+- [使用 GTest 进行 C++ 单元测试](Cpp.md)及[使用 Pytest 进行 Python 单元测试](Python.md)
+- [launch_pytest 文档](https://docs.ros.org/en/rolling/p/launch_pytest/index.html)：另一种可替代 `launch_testing` 的启动集成测试包。

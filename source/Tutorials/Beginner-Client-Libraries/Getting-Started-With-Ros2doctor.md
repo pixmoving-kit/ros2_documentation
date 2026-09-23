@@ -1,148 +1,132 @@
----
-translation_status: machine_translated
-source: Tutorials/Beginner-Client-Libraries/Getting-Started-With-Ros2doctor.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="using-ros2doctor-to-identify-issues"></span> <span id="ros2doctor"></span>
+# 使用 ros2doctor 发现问题
 
-# 使用( E) `ros2doctor` 确定问题
+**目标：** 使用 `ros2doctor` 工具发现 ROS 2 配置中的问题。
 
-**目标：** 使用 `ros2doctor` 工具。
+**教程级别：** 初学者
 
-**教程级别：** 入门
-
-**用时：** 10分钟
+**预计用时：** 10 分钟
 
 <span id="background"></span>
-
 ## 背景
 
-当您的 ROS 2 设置未按预期运行时, 您可以使用 `ros2doctor` 工具。
+ROS 2 未按预期运行时，可以使用 `ros2doctor` 检查配置。
 
-`ros2doctor` 请检查ROS 2的方方面面,包括平台,版本,网络,环境,运行系统等等,并警告您可能的错误和问题的原因.
+`ros2doctor` 会检查 ROS 2 的各个方面，包括平台、版本、网络、环境、正在运行的系统等，提示潜在错误和问题原因。
 
 <span id="prerequisites"></span>
-
 ## 前提条件
 
-`ros2doctor` 属于 `ros2cli` 包,只要你还有 `ros2cli` 安装(任何正常安装都应该安装),您将能够使用 `ros2doctor`.
+`ros2doctor` 属于 `ros2cli` 软件包。只要已经安装 `ros2cli`，就可以使用它；正常安装 ROS 2 时都会包含该软件包。
 
-此教程用途 [乌龟](../Beginner-CLI-Tools/Introducing-Turtlesim/Introducing-Turtlesim.md) 以说明其中的一些例子。
+本教程使用 [turtlesim](../Beginner-CLI-Tools/Introducing-Turtlesim/Introducing-Turtlesim.md)演示部分示例。
 
 <span id="tasks"></span>
-
 ## 操作步骤
 
 <span id="check-your-setup"></span>
+### 1 检查配置
 
-### 1 检查您的设置
+先使用 `ros2doctor` 整体检查 ROS 2 配置。在新终端加载 ROS 2 环境，然后输入：
 
-让我们来检查一下你的常规ROS 2 整体设置 `ros2doctor`。首先,在新的终端中输入源ROS 2,然后输入命令:
-
-``` console
+```console
 $ ros2 doctor
 All <n> checks passed
 ```
 
-这将检查您的所有设置模块, 并返回警告和错误。 如果您的 ROS 2 设置处于完美的状态, 您将会看到类似上面的信息 。
+它会检查各个配置模块，返回警告和错误。如果配置没有问题，就会看到类似上面的消息。
 
-但是,一些警告被退回并非不寻常。 A `UserWarning` 这并非意味着你的设置是无法使用的; 这更可能只是表明某些事物的配置方式并不理想。
+出现几条警告并不罕见。`UserWarning` 不代表配置不可用，更可能只是说明某些设置不够理想。
 
-如果你确实收到警告,它会看起来像这样:
+警告形式如下：
 
-``` console
+```console
 <path>: <line>: UserWarning: <message>
 ```
 
-举例来说, `ros2doctor` 如果您使用不稳定的ROS 2 分布, 将会找到此警告 :
+例如，使用不稳定的 ROS 2 发行版时，`ros2doctor` 会发出以下警告：
 
-``` console
+```console
 UserWarning: Distribution <distro> is not fully supported or tested. To get more consistent features, download a stable version at https://index.ros.org/doc/ros2/Installation/
 ```
 
-若为: `ros2doctor` 只要在系统里找到警告,你就会收到 `All <n> checks passed` 留言。
+如果只发现警告，仍会显示 `All <n> checks passed`。
 
-大多数检查被归类为警告而非错误。 主要由您, 用户决定反馈的重要性 `ros2doctor` 返回。如果它确实在您的设置中发现了一个罕见的错误,则以 `UserWarning: ERROR:`,该检查被视为失败。
+大多数检查结果归类为警告，而非错误。用户需要自行判断这些反馈的重要程度。如果发现较少见的配置错误，消息以 `UserWarning: ERROR:` 标识，对应检查就会判定失败。
 
-您将看到类似于以下问题反馈列表的信息 :
+此时会看到类似的结果：
 
-``` console
+```console
 1/3 checks failed
 
 Failed modules:  network
 ```
 
-错误显示系统缺少对ROS 2. 至关重要的重要设置或功能. 应处理错误以确保系统功能适当.
+错误表示系统缺少对 ROS 2 至关重要的设置或功能，需要解决这些错误，以确保系统正常运行。
 
 <span id="check-a-system"></span>
+### 2 检查运行中的系统
 
-### 2 检查系统
+也可以检查正在运行的 ROS 2 系统，寻找问题的潜在原因。运行 turtlesim，让节点开始通信，以观察 `ros2doctor` 如何检查运行中的系统。
 
-您也可以检查运行中的 ROS 2 系统,以确定问题可能的原因。 `ros2doctor` 运行一个运行中的系统, 让我们运行龟兹姆, 它的节点相互积极沟通。
+打开新终端，加载 ROS 2 环境，并运行：
 
-启动系统的方式是打开一个新的终端,提供ROS 2,并进入命令:
-
-``` console
+```console
 $ ros2 run turtlesim turtlesim_node
 ```
 
-打开另一个终端和源 ROS 2 来运行远程控制 :
+打开另一个终端，加载 ROS 2 环境，运行遥控节点：
 
-``` console
+```console
 $ ros2 run turtlesim turtle_teleop_key
 ```
 
-现在快跑 `ros2doctor` 您将看到上次运行时的警告和错误 `ros2doctor` 如果有的话,你们将用新的警告来警告你们。
+现在回到专门运行 `ros2doctor` 的终端，再执行一次。如果上次有配置警告或错误，它们仍会显示；随后还会看到与当前系统有关的新警告：
 
-``` console
+```console
 $ ros2 doctor
 UserWarning: Publisher without subscriber detected on /turtle1/color_sensor.
 UserWarning: Publisher without subscriber detected on /turtle1/pose.
 ```
 
-看来... `/turtlesim` 节点将数据发布到两个没有被订阅的话题,以及 `ros2doctor` 认为这可能导致问题。
+这表明 `/turtlesim` 向两个无人订阅的话题发布数据，`ros2doctor` 认为这可能带来问题。
 
-如果你运行命令回声 `/color_sensor` 财务报告和财务报告 `/pose` 这些警告将会消失 因为出版商会有订户
+如果对 `/color_sensor` 和 `/pose` 话题运行 echo 命令，发布者就会有订阅者，相应警告也会消失。
 
-您可以在龟兹姆仍在运行时打开两个新的终端, 获取 ROS 2, 并在自己的终端中运行以下命令 。
+保持 turtlesim 运行，再打开两个新终端，各自加载 ROS 2 环境，然后分别运行：
 
-``` console
+```console
 $ ros2 topic echo /turtle1/color_sensor
 ```
 
-``` console
+```console
 $ ros2 topic echo /turtle1/pose
 ```
 
-那快跑开! `ros2doctor` 在它的终端上。 `publisher without subscriber` 警告将消失 。 (确保输入) `Ctrl+C` 在运行的终端中 `echo`).
+再次运行 `ros2doctor`，`publisher without subscriber` 警告便会消失。试验后，记得在运行 `echo` 的终端中按 `Ctrl+C`。
 
-现在尝试退出龟兹窗口 或退出Teleop并运行 `ros2doctor` 。您将看到更多警告 `publisher without subscriber` 或 时 间 `subscriber without publisher` 不同主题的节点,
+现在尝试关闭 turtlesim 窗口，或退出遥控节点，再运行 `ros2doctor`。由于系统中的一个节点已不可用，会看到针对不同话题的 `publisher without subscriber` 或 `subscriber without publisher` 警告。
 
-在一个有很多节点的复杂系统中, `ros2doctor` 对于查明通信问题的可能原因而言,将十分宝贵。
+对于包含许多节点的复杂系统，`ros2doctor` 很有助于查找通信问题的潜在原因。
 
 <span id="get-a-full-report"></span>
+### 3 获取完整报告
 
-### 3 获得完整报告
+`ros2doctor` 会提示网络、系统等方面的问题；添加 `--report` 参数后，还可以获取更多细节，帮助分析问题。
 
-虽然 `ros2doctor` 将会让您知道关于您的网络、系统等的警告,并使用 `--report` 参数会给你更多细节 帮助你分析问题。
+例如，收到网络配置警告后，可以使用 `--report` 确定究竟哪部分配置触发了警告。
 
-你也许想用 `--report` 如果您得到关于您的网络设置的警告, 并想知道您的配置中究竟哪个部分引起警告 。
+向他人提交 ROS 2 支持请求时，这份报告也很有用。将相关部分复制到请求中，可以帮助他人更好地了解你的环境，并提供更准确的帮助。
 
-当您需要开张支持票以获得二号卫星的帮助时, 您也可以将报告的相关部分复制并粘贴在票中, 以便帮助您更好地了解环境并提供更好的帮助。
+在终端输入以下命令，获取完整报告：
 
-要获得完整报告,请在终端中输入以下命令:
-
-``` console
+```console
 $ ros2 doctor --report
 ```
 
-将返回分为五组的资料清单:
+输出信息分为五组：
 
-``` console
+```console
 NETWORK CONFIGURATION
 ...
 
@@ -159,33 +143,30 @@ TOPIC LIST
 ...
 ```
 
-您可以对照运行时得到的警告核对这里的信息 `ros2 doctor`。例如,如果 `ros2doctor` 返回警告(前面提到的),即您的发行量“没有得到充分支持或测试”,您可以查看 `ROS 2 INFORMATION` 本报告各节:
+可以将报告内容与 `ros2 doctor` 的警告对应起来。例如，若出现前文所述的发行版“未得到完整支持或测试”警告，可以查看报告的 `ROS 2 INFORMATION` 部分：
 
-``` console
+```console
 distribution name      : <distro>
 distribution type      : ros2
 distribution status    : prerelease
 release platforms      : {'<platform>': ['<version>']}
 ```
 
-在这里,你可以看到 `distribution status` 是,这是 `prerelease`这解释了为什么它没有得到充分的支持。
+其中 `distribution status` 为 `prerelease`，说明它是预发布版本，这就解释了为何尚未得到完整支持。
 
 <span id="summary"></span>
-
 ## 小结
 
-`ros2doctor` 将通知您 ROS 2 设置和运行系统中的问题。您可以通过使用 `--report` 参数。
+`ros2doctor` 可以提示 ROS 2 配置和运行中系统的问题。通过 `--report` 参数，可以进一步查看警告背后的详细信息。
 
-记住, `ros2doctor` 这不是调试工具; 它不会帮助处理您的代码或您的系统执行方面的错误 。
+请记住，`ros2doctor` 不是代码调试工具，无法诊断代码错误或系统实现层面的问题。
 
 <span id="related-content"></span>
-
 ## 相关内容
 
-[ROS2 博士的读取器](https://github.com/ros2/ros2cli/tree/rolling/ros2doctor) 将会告诉你更多关于不同论点。你也许想看看周围 `ros2doctor` 也重新投入, 因为它是相当的初学者友好的,
+[ros2doctor 的 README](https://github.com/ros2/ros2cli/tree/rolling/ros2doctor)介绍了更多参数。也可以浏览 `ros2doctor` 的代码：它对初学者比较友好，是开始参与贡献的不错选择。
 
 <span id="next-steps"></span>
-
 ## 后续步骤
 
-你完成了初学者的辅导课程!
+你已经完成初学者级别的教程！

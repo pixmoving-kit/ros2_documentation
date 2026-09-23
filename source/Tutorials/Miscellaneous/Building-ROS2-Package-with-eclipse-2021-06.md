@@ -3,10 +3,6 @@ translation_status: machine_translated
 source: Tutorials/Miscellaneous/Building-ROS2-Package-with-eclipse-2021-06.rst
 ---
 
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="building-a-package-with-eclipse-2021-06"></span>
 
 # 使用 Eclipse 2021-06 构建软件包

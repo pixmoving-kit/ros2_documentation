@@ -1,75 +1,62 @@
----
-translation_status: machine_translated
-source: Tutorials/Intermediate/Tf2/Writing-A-Tf2-Listener-Py.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="writing-a-listener-python"></span>
 
 # 编写监听器（Python）
 
-**目标：** 学习如何使用 tf2 来获取帧变换的存取.
+**目标：** 学习通过 tf2 获取坐标系变换。
 
 **教程级别：** 中级
 
-**用时：** 10分钟
+**预计耗时：** 10 分钟
 
 <span id="background"></span>
 
 ## 背景
 
-在之前的教程中,我们创建了tf2广播机,以发布龟到tf2的姿势.
-
-在此教程中, 我们将创建一个 tf2 的听众开始使用 tf2 。
+此前已经创建 tf2 广播器来发布海龟位姿。本教程创建监听器，开始使用这些变换。
 
 <span id="prerequisites"></span>
 
 ## 前提条件
 
-此教程假设您已完成 [tf2 静态播音员辅导( Python)](Writing-A-Tf2-Static-Broadcaster-Py.md) 财务报告和财务报告 [tf2 播音员辅导( Python)](Writing-A-Tf2-Broadcaster-Py.md)。在之前的教程中,我们创建了一个 `learning_tf2_py` 我们将继续从这个角度开展工作。
+应已完成[静态广播器](Writing-A-Tf2-Static-Broadcaster-Py.md)和[广播器](Writing-A-Tf2-Broadcaster-Py.md)教程。本篇继续在此前的 `learning_tf2_py` 包中开发。
 
 <span id="tasks"></span>
 
-## 操作步骤
+## 任务
 
 <span id="write-the-listener-node"></span>
 
-### 1 写入收听器节点
+### 1 编写监听器节点
 
-让我们首先创建源文件。请到 `learning_tf2_py` 我们在上一个教程中创建的软件包。 `src/learning_tf2_py/learning_tf2_py` 目录通过输入以下命令下载示例听器代码 :
+进入 `src/learning_tf2_py/learning_tf2_py`，下载监听器源码。
 
-##### Linux
+Linux：
 
-``` console
+```console
 $ wget https://raw.githubusercontent.com/ros/geometry_tutorials/rolling/turtle_tf2_py/turtle_tf2_py/turtle_tf2_listener.py
 ```
 
-##### macOS
+macOS：
 
-``` console
+```console
 $ wget https://raw.githubusercontent.com/ros/geometry_tutorials/rolling/turtle_tf2_py/turtle_tf2_py/turtle_tf2_listener.py
 ```
 
-##### Windows
+Windows 命令提示符：
 
-在 Windows 命令行提示中 :
-
-``` console
+```console
 $ curl -sk https://raw.githubusercontent.com/ros/geometry_tutorials/rolling/turtle_tf2_py/turtle_tf2_py/turtle_tf2_listener.py -o turtle_tf2_listener.py
 ```
 
-或于权壳中:
+或 PowerShell：
 
-``` console
+```console
 $ curl https://raw.githubusercontent.com/ros/geometry_tutorials/rolling/turtle_tf2_py/turtle_tf2_py/turtle_tf2_listener.py -o turtle_tf2_listener.py
 ```
 
-现在打开名为 `turtle_tf2_listener.py` 使用您首选的文本编辑器。
+用编辑器打开 `turtle_tf2_listener.py`：
 
-``` python
+```python
 import math
 
 from geometry_msgs.msg import Twist
@@ -177,236 +164,126 @@ def main():
     rclpy.shutdown()
 ```
 
+
+
 <span id="examine-the-code"></span>
 
-#### 1.1 审查守则
+#### 1.1 分析代码
 
-为了了解产卵海龟背后的服务如何运作,请参见: [写入简单的服务和客户端( Python)](../../Beginner-Client-Libraries/Writing-A-Simple-Py-Service-And-Client.md) 教学。
+生成海龟所用服务的工作原理见[编写简单服务端和客户端](../../Beginner-Client-Libraries/Writing-A-Simple-Py-Service-And-Client.md)。
 
-现在,让我们看看与获取帧转换相关的代码。 `tf2_ros` 软件包提供一种执行 `TransformListener` 帮助完成接受改造的任务。
+下面重点介绍获取坐标系变换的代码。`tf2_ros` 提供 `TransformListener`，简化接收变换的操作：
 
-``` python
+```python
 from tf2_ros.transform_listener import TransformListener
 ```
 
-在这里,我们创建一个 `TransformListener` 对象。一旦创建了监听器,它就会开始接收Tf2在电线上的变换,并缓冲它们长达10秒。
+创建监听器后，它就会开始接收网络中的 tf2 变换，缓存最长 10 秒的数据：
 
-``` python
+```python
 self.tf_listener = TransformListener(self.tf_buffer, self)
 ```
 
-最后,我们向听众询问一个具体的转变。 `lookup_transform` 使用下列参数的方法:
 
-1.  目标框架
 
-2.  来源框架
+查询特定变换时，向 `lookup_transform` 传入目标坐标系、源坐标系和所需时间。传入 `rclpy.time.Time()` 即获取最新可用变换。用异常处理块包裹查询，以处理可能发生的异常：
 
-3.  我们想要改变的时刻
-
-提供 `rclpy.time.Time()` 将会让我们得到最新的变换。所有这一切都被包在一个例外的尝试区块中,以便处理可能的例外。
-
-``` python
+```python
 t = self.tf_buffer.lookup_transform(
     to_frame_rel,
     from_frame_rel,
     rclpy.time.Time())
 ```
 
+
+
 <span id="add-an-entry-point"></span>
 
-#### 1.2 添加一个切入点
+#### 1.2 添加入口点
 
-允许 `ros2 run` 命令来运行您的节点,您必须添加切入点到 `setup.py` 页:1 `src/learning_tf2_py` 目录).
+为了让 `ros2 run` 能运行节点，在 `src/learning_tf2_py/setup.py` 的 `'console_scripts':` 方括号内加入：
 
-将下行添加到 `'console_scripts':` 括号 :
-
-``` python
+```python
 'turtle_tf2_listener = learning_tf2_py.turtle_tf2_listener:main',
 ```
 
 <span id="update-the-launch-file"></span>
 
-### 2 更新发射文件
+### 2 更新启动文件
 
-打开所谓的发射文件 `turtle_tf2_demo_launch` 带有扩展的 `.py`, `.xml`,或 `.yaml` 输入 `src/learning_tf2_py/launch` 带有文本编辑器的目录, 在发射描述中添加两个新的节点, 添加发射参数, 并添加导入。 由此生成的文件应该看起来像 :
-
-##### XML 数据
+打开 `src/learning_tf2_py/launch` 中的 `turtle_tf2_demo_launch.xml`、`.yaml` 或 `.py`，加入两个新节点、一个启动参数，以及所需导入。更新后的完整示例：
 
 <span id="turtle-tf2-demo-launch-xml"></span>
 
-``` xml
-<?xml version="1.0" encoding="UTF-8"?>
-<launch>
-  <node pkg="turtlesim" exec="turtlesim_node" name="sim" />
-  <node pkg="learning_tf2_py" exec="turtle_tf2_broadcaster" name="broadcaster1">
-    <param name="turtlename" value="turtle1" />
-  </node>
-  <arg name="target_frame" default="turtle1" description="Target frame name." />
-  <node pkg="learning_tf2_py" exec="turtle_tf2_broadcaster" name="broadcaster2">
-    <param name="turtlename" value="turtle2" />
-  </node>
-  <node pkg="learning_tf2_py" exec="turtle_tf2_listener" name="listener">
-    <param name="target_frame" value="$(var target_frame)" />
-  </node>
-</launch>
-```
-
-##### 也门
+- [XML](launch/listener_py_launch.xml)
 
 <span id="turtle-tf2-demo-launch-yaml"></span>
 
-``` yaml
-%YAML 1.2
----
-launch:
-  - node:
-      pkg: "turtlesim"
-      exec: "turtlesim_node"
-      name: "sim"
-  - node:
-      pkg: "learning_tf2_py"
-      exec: "turtle_tf2_broadcaster"
-      name: "broadcaster1"
-      param:
-      - name: "turtlename"
-        value: "turtle1"
-  - arg:
-      name: "target_frame"
-      default: "turtle1"
-      description: "Target frame name."
-  - node:
-      pkg: "learning_tf2_py"
-      exec: "turtle_tf2_broadcaster"
-      name: "broadcaster2"
-      param:
-      - name: "turtlename"
-        value: "turtle2"
-  - node:
-      pkg: "learning_tf2_py"
-      exec: "turtle_tf2_listener"
-      name: "listener"
-      param:
-      - name: "target_frame"
-        value: "$(var target_frame)"
-```
-
-##### Python
+- [YAML](launch/listener_py_launch.yaml)
 
 <span id="turtle-tf2-demo-launch-py"></span>
 
-``` python
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
+- [Python](launch/listener_py_launch.py)
 
-from launch_ros.actions import Node
-
-
-def generate_launch_description():
-    return LaunchDescription([
-        Node(
-            package='turtlesim',
-            executable='turtlesim_node',
-            name='sim'
-        ),
-        Node(
-            package='learning_tf2_py',
-            executable='turtle_tf2_broadcaster',
-            name='broadcaster1',
-            parameters=[
-                {'turtlename': 'turtle1'}
-            ]
-        ),
-        DeclareLaunchArgument(
-            'target_frame', default_value='turtle1',
-            description='Target frame name.'
-        ),
-        Node(
-            package='learning_tf2_py',
-            executable='turtle_tf2_broadcaster',
-            name='broadcaster2',
-            parameters=[
-                {'turtlename': 'turtle2'}
-            ]
-        ),
-        Node(
-            package='learning_tf2_py',
-            executable='turtle_tf2_listener',
-            name='listener',
-            parameters=[
-                {'target_frame': LaunchConfiguration('target_frame')}
-            ]
-        ),
-    ])
-```
-
-这个将宣布 `target_frame` 启动辩论,启动第二只乌龟的播音员, 我们将产卵和听众, 同意这些转变。
+这会声明 `target_frame` 启动参数，为即将生成的第二只海龟启动广播器，并启动订阅这些变换的监听器。
 
 <span id="build"></span>
 
 ### 3 构建
 
-运行 `rosdep` 在工作空间的根中检查缺失的依赖性。
+在工作空间根目录运行 `rosdep` 检查依赖。
 
-##### Linux
+Linux：
 
-``` console
+```console
 $ rosdep install -i --from-path src --rosdistro rolling -y
 ```
 
-##### macOS
+本教程的 macOS 和 Windows 流程需自行安装 `geometry_msgs`、`turtlesim`，因为此处的 rosdep 步骤仅用于 Linux。
 
-rosdep 只运行在 Linux 上, 因此您需要安装 `geometry_msgs` 财务报告和财务报告 `turtlesim` 依附关系
+仍在工作空间根目录构建。
 
-##### Windows
+Linux：
 
-rosdep 只运行在 Linux 上, 因此您需要安装 `geometry_msgs` 财务报告和财务报告 `turtlesim` 依附关系
-
-仍然在工作区根部,构建您的软件包:
-
-##### Linux
-
-``` console
+```console
 $ colcon build --packages-select learning_tf2_py
 ```
 
-##### macOS
+macOS：
 
-``` console
+```console
 $ colcon build --packages-select learning_tf2_py
 ```
 
-##### Windows
+Windows：
 
-``` console
+```console
 $ colcon build --merge-install --packages-select learning_tf2_py
 ```
 
-打开新终端, 导航到您工作空间的根, 并源代码设置文件 :
+打开新终端，进入工作空间根目录并加载环境。
 
-##### Linux
+Linux：
 
-``` console
+```console
 $ . install/setup.bash
 ```
 
-##### macOS
+macOS：
 
-``` console
+```console
 $ . install/setup.bash
 ```
 
-##### Windows
+Windows 命令提示符：
 
-在 Windows 命令行提示中 :
-
-``` console
+```console
 $ call install\setup.bat
 ```
 
-或于权壳中:
+或 PowerShell：
 
-``` console
+```console
 $ .\install\setup.ps1
 ```
 
@@ -414,36 +291,36 @@ $ .\install\setup.ps1
 
 ### 4 运行
 
-现在,你准备开始你的全龟演示:
+启动完整海龟示例。
 
-##### XML 数据
+XML：
 
-``` console
+```console
 $ ros2 launch learning_tf2_py turtle_tf2_demo_launch.xml
 ```
 
-##### 也门
+YAML：
 
-``` console
+```console
 $ ros2 launch learning_tf2_py turtle_tf2_demo_launch.yaml
 ```
 
-##### Python
+Python：
 
-``` console
+```console
 $ ros2 launch learning_tf2_py turtle_tf2_demo_launch.py
 ```
 
-您应该看到两只龟的图案。 在第二个终端窗口中, 命令如下 :
+仿真中应出现两只海龟。在第二个终端运行：
 
-``` console
+```console
 $ ros2 run turtlesim turtle_teleop_key
 ```
 
-看事情是否可行, 请用箭头键在第一只龟周围开车( 确定您的终端窗口是活动的, 而不是模拟窗口) , 而您会看到第二只龟在第一只龟之后!
+让终端而非仿真窗口处于焦点，用方向键控制第一只海龟，应看到第二只跟随它。
 
 <span id="summary"></span>
 
 ## 小结
 
-在此教程中, 您学会了如何使用 tf2 来访问框架转换 。 您也已完成了您自己首次尝试的龟兹演示文件的编写工作 。 [tf2 介绍](Introduction-To-Tf2.md) 教学。
+本教程介绍了通过 tf2 获取坐标系变换的方法，并完成了你在 [tf2 入门](Introduction-To-Tf2.md)中体验过的海龟仿真示例。

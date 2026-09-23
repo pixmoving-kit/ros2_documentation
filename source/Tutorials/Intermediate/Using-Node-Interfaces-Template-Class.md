@@ -1,37 +1,28 @@
----
-translation_status: machine_translated
-source: Tutorials/Intermediate/Using-Node-Interfaces-Template-Class.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="using-the-node-interfaces-template-class-c"></span>
 
 # 使用节点接口模板类（C++）
 
-**目标：** 学习如何进入 `Node` 信息使用情况 `rclcpp::NodeInterfaces<>`
+**目标：** 学习通过 `rclcpp::NodeInterfaces<>` 访问节点信息。
 
 **教程级别：** 中级
 
-**用时：** 10分钟
+**预计耗时：** 10 分钟
 
 <span id="overview"></span>
 
 ## 概述
 
-并不是所有的ROS节点都是平等地创建的! `rclcpp::Node` 财务报告和财务报告 `rclcpp_lifecycle::LifecycleNode` 类不共享继承树,这意味着 ROS 开发者在想要写入一个以 ROS 节点指针为参数的函数时可以运行到编译时间类型问题。要解决这个问题, `rclcpp` 包括 `rclcpp::NodeInterfaces<>` 模板类型,应用作常规和生命周期节点通过函数的首选公约。 [ROSCON 2023闪电谈话](https://vimeo.com/879001243#t=16m0s) 简洁地总结问题和补救。以下教程将演示您如何使用 `rclcpp::NodeInterfaces<>` 作为所有ROS节点类型的可靠而紧凑的接口.
+并非所有 ROS 节点都具有相同的类型层次。`rclcpp::Node` 与 `rclcpp_lifecycle::LifecycleNode` 不在同一继承树中，因此编写接收 ROS 节点指针的函数时，可能遇到编译期类型问题。为解决这一问题，`rclcpp` 提供了 `rclcpp::NodeInterfaces<>` 模板类型，推荐用它向函数传递普通节点和生命周期节点。[ROSCon 2023 闪电演讲](https://vimeo.com/879001243#t=16m0s)简要概述了问题及解决办法。本教程展示如何将其作为适用于各种 ROS 节点的可靠、简洁接口。
 
-那个... `rclcpp::NodeInterfaces<>` 模板类提供了一种紧凑而高效的方法,用于管理ROS 2中的节点接口。 `Nodes`,例如, `rclcpp::Node` 财务报告和财务报告 `rclcpp_lifecycle::LifecycleNode`,它们不能共享相同的继承树。
+`rclcpp::NodeInterfaces<>` 提供紧凑、高效的节点接口管理方式，特别适用于处理不共享继承树的多种节点类型。
 
 <span id="accessing-node-information-with-a-sharedptr"></span>
 
-## 1 访问节点信息 `SharedPtr`
+## 1 通过 SharedPtr 访问节点信息
 
-在下面的例子中,我们创建了一个简单的 `Node` 调用 `Simple_Node` 并定义函数 `node_info` 接受一个 `SharedPtr` 页:1 `Node`。函数检索并打印 `Node`.
+下面创建名为 `Simple_Node` 的简单节点，并定义接收该节点 `SharedPtr` 的 `node_info` 函数，获取并打印节点名。
 
-``` c++
+```c++
 #include <memory>
 #include "rclcpp/rclcpp.hpp"
 
@@ -57,27 +48,23 @@ int main(int argc, char * argv[])
 }
 ```
 
-输出 :
+输出：
 
-``` console
+```console
 [INFO] [Simple_Node]: Node name: Simple_Node
 ```
 
-> **说明**
->
-> `rclcpp/rclcpp.hpp` 是一个 *便利性* 头部 整个都拉着 `rclcpp` API同时——节点,出版商,订阅,服务,定时器,参数,执行器,速率,等位集,等等——所以每个包含它的翻译单元都是根据它从未使用过的特性编译的.
->
-> 在教程之外, 偏爱只包含您实际使用的 API 特定调用时的页眉 。 例如, `rclcpp::Node` 已声明为 `rclcpp/node.hpp`, `rclcpp::spin` 输入 `rclcpp/executors.hpp`,以及 `rclcpp::init` 财务报告和财务报告 `rclcpp::shutdown` 输入 `rclcpp/utilities.hpp`。保存量最大的是从未创建或旋转节点的翻译单位——标题、插件和辅助工具库,它们只需要像 `rclcpp/qos.hpp` 或 时 间 `rclcpp/time.hpp` - 因为... `rclcpp/node.hpp` 财务报告和财务报告 `rclcpp/executors.hpp` 他们本身就很大。 `rclcpp/rclcpp.hpp` 只不过是这些信头的列表,所以在研究你需要哪个信头的时候,这是一个很好的开始。
+参阅 [rclcpp 便捷头文件说明](../../_internal/Rclcpp-Convenience-Header-Note.md)。
 
-虽然这种方法对类型论据很有效 `rclcpp::Node`,它不适用于其他节点类型,例如: `rclcpp_lifecycle::LifecycleNode`.
+这种方法适用于 `rclcpp::Node`，但不适用于 `rclcpp_lifecycle::LifecycleNode` 等其他节点类型。
 
 <span id="explicitly-pass-rclcpp-node-interfaces"></span>
 
-## 2 明确通过 `rclcpp::node_interfaces`
+## 2 显式传递 rclcpp::node_interfaces
 
-适用于所有节点类型的更强有力的办法是明确通过 `rclcpp::node_interfaces` 作为函数参数,如下文示例所示。在下文示例中,我们创建名为 `node_info` 以二为论据 `rclcpp::node_interfaces`, `NodeBaseInterface` 财务报告和财务报告 `NodeLoggingInterface` 并打印 `Node` 名称。然后我们创建两个类型节点 `rclcpp_lifecycle::LifecycleNode` 财务报告和财务报告 `rclcpp::Node` 并传出它们的界面 `node_info`.
+更稳健且适用于所有节点类型的方式，是显式传递 `rclcpp::node_interfaces`。下面的 `node_info` 接收 `NodeBaseInterface` 和 `NodeLoggingInterface` 两个接口，并打印节点名。随后创建生命周期节点和普通节点，分别将其接口传入该函数。
 
-``` c++
+```c++
 void node_info(std::shared_ptr<rclcpp::node_interfaces::NodeBaseInterface> base_interface,
                std::shared_ptr<rclcpp::node_interfaces::NodeLoggingInterface> logging_interface)
 {
@@ -113,24 +100,22 @@ int main(int argc, char * argv[])
 }
 ```
 
-输出 :
+输出：
 
-``` console
+```console
 [INFO] [Simple_Node]: Node name: Simple_Node
 [INFO] [Simple_LifeCycle_Node]: Node name: Simple_LifeCycle_Node
 ```
 
-随着各种功能的复杂程度的增加, `rclcpp::node_interfaces` 参数也会增加,导致可读性和紧凑性问题。为了使代码更加灵活,与不同的节点类型兼容,我们使用 `rclcpp::NodeInterfaces<>`.
+函数变复杂时，接口参数数量也会增加，影响可读性和简洁性。为了让代码更灵活并兼容不同节点类型，可使用 `rclcpp::NodeInterfaces<>`。
 
 <span id="using-rclcpp-nodeinterfaces"></span>
 
-## 3 使用 `rclcpp::NodeInterfaces<>`
+## 3 使用 rclcpp::NodeInterfaces<>
 
-建议使用的方法 `Node` 类型信息通过 `Node Interfaces`.
+推荐通过节点接口访问节点信息。与前一个示例相同，下面创建一个生命周期节点和一个普通节点：
 
-下面,与前一个例子类似,a `rclcpp_lifecycle::LifecycleNode` 备注a `rclcpp::Node` 被创建。
-
-``` c++
+```c++
 #include <memory>
 #include <string>
 #include <thread>
@@ -179,18 +164,18 @@ int main(int argc, char * argv[])
 }
 ```
 
-输出 :
+输出：
 
-``` console
+```console
 [INFO] [Simple_Node]: Node name: Simple_Node
 [INFO] [Simple_LifeCycle_Node]: Node name: Simple_LifeCycle_Node
 ```
 
 <span id="examine-the-code"></span>
 
-### 3.1 审查守则
+### 3.1 分析代码
 
-``` c++
+```c++
 using MyNodeInterfaces =
   rclcpp::node_interfaces::NodeInterfaces<rclcpp::node_interfaces::NodeBaseInterface, rclcpp::node_interfaces::NodeLoggingInterface>;
 
@@ -202,17 +187,16 @@ void node_info(MyNodeInterfaces interfaces)
 }
 ```
 
-而不是接受 `SharedPtr` 或节点接口,此函数引用一个 `rclcpp::node_interfaces::NodeInterfaces` 对象。使用此方法的另一个优点是支持将类似节点的物体暗中转换。这意味着可以直接将任何类似节点的物体传递给期望一个函数。 `rclcpp::node_interfaces::NodeInterfaces` 对象。
+函数接收 `rclcpp::node_interfaces::NodeInterfaces` 对象的引用，而不是 `SharedPtr` 或单独的节点接口。这种方法还支持类节点对象的隐式转换，因此可以直接将类节点对象传给期望接收该接口对象的函数。
 
-它提取到:
+函数提取：
 
-- `NodeBaseInterface` 提供基本节点功能。
+- `NodeBaseInterface`：提供基本节点功能。
+- `NodeLoggingInterface`：提供日志功能。
 
-- `NodeLoggingInterface` 启用日志 。
+随后获取并打印节点名称。
 
-然后,它检索并打印出节点名称.
-
-``` c++
+```c++
 class SimpleNode : public rclcpp::Node
 {
 public:
@@ -232,9 +216,9 @@ public:
 };
 ```
 
-接下来,我们创建一个 `rclcpp::Node` 页:1 `rclcpp_lifecycle::LifecycleNode` 班级。 `rclcpp_lifecycle::LifecycleNode` 类往往包括状态过渡的功能 `Unconfigured`, `Inactive`, `Active`,以及 `Finalized`然而,它们不包括在示威活动中。
+接下来创建 `rclcpp::Node` 和 `rclcpp_lifecycle::LifecycleNode` 派生类。生命周期节点通常包含处理 `Unconfigured`、`Inactive`、`Active`、`Finalized` 等状态转换的函数，本示例为简洁起见省略。
 
-``` c++
+```c++
 int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
@@ -246,8 +230,6 @@ int main(int argc, char * argv[])
 }
 ```
 
-A. 主要职能 `SharedPtr` 两者 `rclcpp_lifecycle::LifecycleNode` 财务报告和财务报告 `rclcpp::Node` 。上面声明的函数称为一次,每个节点类型作为参数。
+在主函数中，为两类节点创建 `SharedPtr`，分别将节点作为参数调用上述函数。
 
-> **说明**
->
-> 那个... `SharedPtr` 由于模板接受提及 `NodeT` 对象。
+> 模板接收的是 `NodeT` 对象的引用，因此需要先解引用 `SharedPtr`。

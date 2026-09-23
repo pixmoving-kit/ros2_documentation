@@ -1,158 +1,136 @@
----
-translation_status: machine_translated
-source: How-To-Guides/Core-maintainer-guide.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="ros-2-core-maintainer-guide"></span>
+# ROS 2 核心软件包维护者指南
 
-# ROS 2 核心维护者指南
-
-ROS 2 核心中的每个软件包都有一个或多个维护者,负责软件包的一般健康,本指南给出一些关于ROS 2 核心软件包维护者责任的信息.
+ROS 2 核心中的每个软件包都有一名或多名维护者，负责保持软件包的整体健康状态。本指南介绍核心软件包维护者的职责。
 
 <span id="continuous-integration"></span>
+## 持续集成
 
-## 持续整合
-
-所有输入到ROS 2核心寄存器的代码都必须通过连续集成运行. ROS 2目前有两个独立的CI系统,需要PR在合并之前先通过这两个系统.
+所有提交到 ROS 2 核心仓库的代码都必须经过持续集成检查。ROS 2 目前有两个独立的 CI 系统，PR 必须在两者中均通过检查才能合并。
 
 <span id="pr-builds-https-build-ros2-org-view-rpr"></span>
+### PR 构建（https://build.ros2.org/view/Rpr）
 
-### 公关大楼(<https://build.ros2.org/view/Rpr>)
+每次创建拉取请求时，ROS 2 PR 构建会自动运行。这类构建只构建并测试当前仓库，不构建它的依赖，也不构建依赖当前仓库软件包的其他仓库。因此，它能快速反馈改动是否通过代码风格检查、单元测试等，但存在两个主要限制：
 
-ROS 2 PR( Pull Request) 每次打开拉动请求都会自动构建运行。 这些构建运行此寄存器的构建和测试, 并且只运行此寄存器 。 这意味着它不会构建任何依赖性, 也不会构建任何依赖于此寄存器包的寄存器 。 这些构建有利于快速反馈以查看更改是否通过 linters , 单位测试等。 存在两大问题 :
+- 不支持跨仓库改动，因此不能充分验证新增或修改 API 等情况。
+- 只在 Linux 上运行，不在 macOS 或 Windows 上运行。
 
-- 这些构件在多个寄存器之间没有作用( 因此无法添加或更改 API 等) 。
-
-- 这些测试只运行在 Linux 上( 它们不会运行在 macOS 或 Windows 上 )
-
-为了解决这两个问题,还有CI建筑.
+CI 构建用于弥补这两个限制。
 
 <span id="ci-builds-https-ci-ros2-org"></span>
+### CI 构建（https://ci.ros2.org）
 
-### CI 构建( E)<https://ci.ros2.org>)
+创建 PR 时，CI 构建不会自动运行。仓库维护者必须前往 <https://ci.ros2.org/job/ci_launcher/> 手动发起。
 
-CI 构建在打开拉动请求时不会自动运行。 寄存器的维护者之一必须手动请求 CI 构建完成 <https://ci.ros2.org/job/ci_launcher/> .
+默认情况下，这种任务会在所有平台（Linux、macOS 和 Windows）上构建并测试全部软件包（目前超过 300 个）。完整运行可能耗时数小时并占用 CI 机器，因此建议限制每次构建和测试的软件包数量。
 
-默认情况下, 以这种方式运行一个任务将会在所有平台( Linux, macOS, 和 Windows) 上构建和运行所有软件包的测试( \> 300 个当前) 。 由于全程需要很多小时才能将 CI 机器捆绑起来, 建议所有运行在此会限制构建和测试的软件包的数量 。 可以通过使用 colcon 参数来实现 。 `--packages-up-to`, `--packages-select`, `--packages-above-and-dependencies`, `--packages-above`,除其他外,见《大会正式记录,第五十七届会议,补编第5号》(A/C.4/56/6),第28段。 [折叠文档](https://colcon.readthedocs.io/en/released/user/how-to.html#build-only-a-single-package-or-selected-packages) 关于如何使用 CI 机制的进一步文件,请访问 <https://github.com/ros2/ci/blob/master/CI_BUILDERS.md>.
+可使用 colcon 的 `--packages-up-to`、`--packages-select`、`--packages-above-and-dependencies`、`--packages-above` 等参数。更多示例见 [colcon 文档](https://colcon.readthedocs.io/en/released/user/how-to.html#build-only-a-single-package-or-selected-packages)。CI 系统的详细使用说明见 <https://github.com/ros2/ci/blob/master/CI_BUILDERS.md>。
 
 <span id="merging-pull-requests"></span>
+## 合并拉取请求
 
-## 合并拉动请求
+只有同时满足以下条件，才能合并 PR：
 
-如果下列所有情况都属实,则拉动请求可以合并:
+- DCO 机器人检查通过。
+- PR 构建通过。
+- 所有平台的 CI 构建通过。
+- 至少一名维护者完成审查并批准。
 
-- DCO机器人报告一个传来的结果
+关于 PR 审查的更多信息，请参阅[审查 PR](../The-ROS2-Project/Contributing/Contributing-to-code/Reviewing-a-PR.md)。
 
-- 公关建设报告是偶然的结果
-
-- CI在所有平台上建立互换结果的报告
-
-- 至少有一个维护者审查并批准了公关
-
-关于审查公关时会发生什么的更多信息,参见: [审查拉取请求（PR）](../The-ROS2-Project/Contributing/Contributing-to-code/Reviewing-a-PR.md).
-
-公关合并后,会自动与下一个公关一起建造 [夜莺](https://ci.ros2.org/view/nightly)。强烈建议在合并拉动请求后检查夜窗,以确保没有出现倒退。
+合并后，改动会自动进入下一次[夜间构建](https://ci.ros2.org/view/nightly)。强烈建议在合并后检查夜间构建，确认没有引入回归问题。
 
 <span id="keeping-ci-green"></span>
+## 保持 CI 通过
 
-## 保持 CI 绿色
-
-进行测试的夜间工作通常比为个人拉动请求所做的工作要全面得多。为此原因,在夜幕中可能会出现在CI任务中看不到的回归。在以下地点检查其包中的回归是维护者的责任:
+夜间测试任务通常比单个 PR 的测试全面得多，因此可能发现 PR 的 CI 未暴露的回归问题。维护者有责任在以下位置检查其软件包是否出现回归：
 
 - <https://ci.ros2.org/view/nightly>
-
 - <https://ci.ros2.org/view/packaging>
-
 - <https://build.ros2.org/view/Rci>
-
 - <https://build.ros2.org/view/Rdev>
 
-对于发现的任何问题,应打开新问题和(或)向有关储存库提出请求。
+发现问题后，应在相关仓库创建 issue 和／或拉取请求。
 
 <span id="making-releases"></span>
+## 发布版本
 
-## 释放
+为将新功能和问题修复交付给最终用户，维护者必须定期发布仓库的新版本，其他维护者也可能按需提出发布请求。
 
-为了让终端用户获得新的功能和bugfixs,维护者必须定期进行寄存器的发布(还可以要求其他维护者点播发布).
+如[开发者指南](../The-ROS2-Project/Contributing/Developer-Guide.md#semver)所述，ROS 2 软件包的版本号遵循语义化版本规范。
 
-如本报告所述, [开发者指南](../The-ROS2-Project/Contributing/Developer-Guide.md#semver),ROS 2软件包跟随semver为版本编号.
-
-用ROS术语来说,发布包含两个不同的步骤:制作源发布,然后制作二进制发布.
+在 ROS 中，一次发布包含两个独立步骤：先发布源码版本，再发布二进制版本。
 
 <span id="source-release"></span>
+### 发布源码版本
 
-### 来源发布
+源码发布会在相关仓库创建变更日志和标签。
 
-一个源发布在相关的寄存器中创建了更改日志和一个标记.
+首先，生成或更新 CHANGELOG.rst：
 
-进程从生成或更新changeGELOG.rst文件开始,其命令如下:
-
-``` console
+```console
 $ catkin_generate_changelog
 ```
 
-如果寄存器中的一个或多个软件包没有包含 ChangeGELOG.rst,请添加 `--all` 选项来填充每个软件包上所有先前的承诺。 `catkin_generate_changelog` 命令会简单地将文件与寄存器的输入日志一起填充。由于这些输入日志并不总是适合更改日志,建议编辑 CHANGELOG.rst 并编辑,使其更便于阅读。编辑完成后,必须将更新的 CHANGELOG.rst 文件输入寄存器。
+如果仓库中有软件包还没有 CHANGELOG.rst，添加 `--all` 选项，可将各软件包以往的提交全部写入日志。`catkin_generate_changelog` 只是将仓库的提交日志填入文件；提交说明不一定适合作为变更日志，因此建议编辑 CHANGELOG.rst，提高可读性。编辑后，务必将更新的文件提交到仓库。
 
-下一步是用以下命令在软件包.xml和更改log文件中碰上版本:
+接着，提高 package.xml 和变更日志中的版本号：
 
-``` console
+```console
 $ catkin_prepare_release
 ```
 
-此命令将在寄存器中找到所有软件包, 检查更改日志是否存在, 检查没有未承诺的本地更改, 在 package. xml 文件内递增版本, 并使用一个与开花兼容的标签来承诺/ 标注更改 。 使用此命令是保证发行版本与开花一致和兼容的最佳方式 。 默认情况下, `catkin_prepare_release` 但是,它也可以撞到小数字或主要数字,甚至有精确的版本集。请参见帮助输出。 `catkin_prepare_release` 以获取更多信息。
+该命令会查找仓库中的全部软件包，检查变更日志是否存在、是否有未提交的本地改动，更新 package.xml 版本号，随后提交改动并创建与 bloom 兼容的标签。使用该命令是确保发布版本一致且兼容 bloom 的最佳方式。
 
-假设以上成功,则已发布来源。
+默认情况下，`catkin_prepare_release` 增加补丁版本号，例如从 0.1.1 变为 0.1.2。它也可以增加次版本号、主版本号，或指定精确版本。详情见命令帮助。
+
+如果上述步骤成功，源码版本就已发布。
 
 <span id="binary-release"></span>
+### 发布二进制版本
 
-### 二进制释放
+下一步使用 `bloom-release` 创建二进制发布。完整说明见 <http://wiki.ros.org/bloom>。发布仓库二进制版本的命令为：
 
-下一个步骤是使用 `bloom-release` 命令创建二进制版本。关于如何使用开花的完整指令,请参见 <http://wiki.ros.org/bloom>。要对寄存器进行二进制发布,请运行:
-
-``` console
+```console
 $ bloom-release --track <rosdistro> --rosdistro <rosdistro> <repository_name>
 ```
 
-例如,释放 `rclcpp` 运行到 Rolling 分发器的存储器,命令是:
+例如，将 `rclcpp` 仓库发布到 Rolling：
 
-``` console
+```console
 $ bloom-release --track rolling --rosdistro rolling rclcpp
 ```
 
-此命令将获取发布寄存器, 作出必要的修改以进行发布, 将修改推向发布寄存器, 最后打开一个拉请求到 <https://github.com/ros/rosdistro> .
+该命令会获取发布仓库，进行发布所需的修改，将改动推送到发布仓库，最后向 <https://github.com/ros/rosdistro> 创建拉取请求。
 
 <span id="backporting-to-released-distributions"></span>
+## 向已发布的发行版回移改动
 
-## 返回已发行的发行区
+所有新改动应先进入开发分支。合并到开发分支后，再考虑回移到已发布的发行版。回移代码不得破坏已发布发行版的 [API](https://en.wikipedia.org/wiki/API) 或 [ABI](https://en.wikipedia.org/wiki/Application_binary_interface)。
 
-所有即将到来的更改应首先登陆开发分支。 一旦某项更改被合并到开发分支, 就可以考虑将此项更改重新传送到已发行的发行中。 然而, 任何返回代码都不得破解 。 [API](https://en.wikipedia.org/wiki/API) 或 时 间 [ABI 缩写](https://en.wikipedia.org/wiki/Application_binary_interface) 如果可以在不中断 API 或 ABI 的情况下将更改导入回放,那么应当创建针对相应分支的新的拉动请求。新的拉动请求应当添加到适当的分布式工程板上。 <https://github.com/orgs/ros2/projects>。新的拉动请求应该像以前一样运行所有步骤,但要确保针对CI等的分发。
+如果改动可以在不破坏 API 和 ABI 的情况下回移，就创建一个面向对应分支的新 PR，并将其加入 <https://github.com/orgs/ros2/projects> 上对应发行版的项目看板。新 PR 需要执行与之前相同的全部检查步骤，同时确保 CI 等检查针对正确的发行版。
 
 <span id="responding-to-issues"></span>
+## 处理 issue
 
-## 答复问题
+软件包维护者还应查看仓库中新建的 issue，并对用户遇到的问题进行分类处理。
 
-软件包维护者还应研究存储库中即将出现的问题,并对用户所面临的问题进行分类。
+如果 issue 实际上是提问，应关闭它，并引导用户前往 [Robotics Stack Exchange](https://robotics.stackexchange.com/)。
 
-对于看上去像问题的问题,问题应结束,用户应重新定向到 [机器人堆栈交换](https://robotics.stackexchange.com/) .
+如果报告的确是问题，但与当前仓库无关，应使用 GitHub 的 “Transfer issue” 将其转移到正确仓库。
 
-如果一个问题看起来是一个问题,但与这个特定的存储库无关,则应用GitHub“传输问题”按钮将其移到适当的存储库。
+如果报告者提供的信息不足以判断原因，应请求补充信息。
 
-如果记者没有提供足够的信息来确定问题的原因,应当向记者索取更多信息.
+如果是新功能请求，为 issue 添加 “help-wanted” 标签。
 
-如果这是一个新特点,请用“希望得到帮助”来标注这个问题。
-
-任何遗留的问题都应该复制,如果它们真的是一个错误的话,就确定它们。如果是一个错误,那么修正会受到高度的赞赏。
+其余问题应尝试复现，确认是否确实是缺陷；如果是，欢迎提交修复。
 
 <span id="getting-help"></span>
+## 获取帮助
 
-## 获得帮助
+维护软件包时，可能会遇到有关通用流程或具体问题的疑问。
 
-在维持一揽子计划的同时,可能会出现关于一般程序或个别问题的问题。
+一般性问题请遵循[贡献指南](../The-ROS2-Project/Contributing.md)。
 
-关于一般性问题,请遵照 [提供指南](../The-ROS2-Project/Contributing.md).
-
-关于个别问题,请给ROS 2 GitHub团队(@ros/team)贴上标签,团队中有人会查看.
+针对具体 issue 的问题，请提及 ROS 2 GitHub 团队（@ros/team），团队成员会查看。

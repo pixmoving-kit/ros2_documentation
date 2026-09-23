@@ -1,23 +1,14 @@
----
-translation_status: machine_translated
-source: Installation/Alternatives/Fedora-Development-Setup.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="fedora-source"></span>
 
 # Fedora（源码安装）
 
 <span id="how-to-setup-the-development-environment"></span>
 
-## 如何搭建开发环境?
+## 如何设置开发环境？
 
-在 Fedora 上构建 ROS 2 需要下列系统依赖性。它们可以安装在 `dnf` 现将有关事项通知如下:
+在 Fedora 上构建 ROS 2 需要以下系统依赖。可以通过 `dnf` 安装：
 
-``` bash
+```bash
 sudo dnf install \
   cmake \
   cppcheck \
@@ -53,4 +44,4 @@ sudo dnf install \
   wget
 ```
 
-有了这个,你可以跟随其余的 [指令](RHEL-Development-Setup.md#rhel-dev-get-ros2-code) 以获取和构建 ROS 2 。
+完成后，按照[后续说明](RHEL-Development-Setup.md#rhel-dev-get-ros2-code)获取并构建 ROS 2。

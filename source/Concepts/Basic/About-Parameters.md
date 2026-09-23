@@ -1,102 +1,76 @@
----
-translation_status: machine_translated
-source: Concepts/Basic/About-Parameters.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="parameters"></span>
-
 # 参数
 
 <span id="overview"></span>
-
 ## 概述
 
-ROS 2 中的参数与单个节点相关。 参数用于在启动时( 运行期间) 配置节点, 而不会改变代码。 参数的寿命与节点的寿命挂钩( 尽管节点可以执行某种持久性, 以便在重新启动后重新加载值 ) 。
+ROS 2 中的参数属于各个节点。参数用于在节点启动时或运行过程中配置节点，无需修改代码。参数的生命周期与所属节点一致，不过节点可以自行实现持久化机制，在重启后重新加载参数值。
 
-参数通过节点名称、节点名称空间、参数名称和参数名称空间处理。提供参数名称空间是可选的。
+参数通过节点名称、节点命名空间、参数名称和参数命名空间来定位，其中参数命名空间是可选的。
 
-每个参数由一个键、一个值和一个描述符组成。键是字符串,值是以下类型之一: `bool`, `int64`, `float64`, `string`, `byte[]`, `bool[]`, `int64[]`, `float64[]` 或 时 间 `string[]`。默认情况下,所有描述符都是空的,但可以包含参数描述,值范围,类型信息,以及额外的限制.
+每个参数由键、值和描述符组成。键是字符串，值可以是以下类型之一：`bool`、`int64`、`float64`、`string`、`byte[]`、`bool[]`、`int64[]`、`float64[]` 或 `string[]`。描述符默认为空，也可以包含参数说明、取值范围、类型信息和其他约束。
 
-包含 ROS 参数的实践教程请参见 [理解参数](../../Tutorials/Beginner-CLI-Tools/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md).
+参数的动手实践教程见[理解 ROS 2 参数](../../Tutorials/Beginner-CLI-Tools/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md)。
 
 <span id="parameters-background"></span>
-
-## 参数背景
+## 参数基础
 
 <span id="declaring-parameters"></span>
+### 声明参数
 
-### 宣告参数
+默认情况下，节点需要**声明**其生命周期内可以接受的所有参数。这样，参数的类型和名称在节点启动时就已明确，有助于减少后续配置错误。有关在节点中声明和使用参数的教程，请参阅[在 C++ 类中使用参数](../../Tutorials/Beginner-Client-Libraries/Using-Parameters-In-A-Class-CPP.md)或[在 Python 类中使用参数](../../Tutorials/Beginner-Client-Libraries/Using-Parameters-In-A-Class-Python.md)。
 
-默认情况下,节点需要 *声明* 它在生命期内会接受的所有参数。 这使得参数的类型和名称在节点启动时间得到很好的定义, 从而减少以后错误配置的可能性 。 见 : [在类中使用参数（C++）](../../Tutorials/Beginner-Client-Libraries/Using-Parameters-In-A-Class-CPP.md) 或 时 间 [在类中使用参数（Python）](../../Tutorials/Beginner-Client-Libraries/Using-Parameters-In-A-Class-Python.md) 用于关于从节点声明和使用参数的教程。
-
-对于某些类型的节点,并非所有的参数都会被提前知道。在这种情况下,节点可以被即时的 `allow_undeclared_parameters` 设置为 `true`,这样可以让参数在节点上得到和设定,即使它们还没有被宣布。
+某些节点无法预先确定所有参数。这种情况下，可以在创建节点实例时将 `allow_undeclared_parameters` 设为 `true`，允许获取和设置尚未声明的参数。
 
 <span id="parameter-types"></span>
-
 ### 参数类型
 
-ROS 2 节点上的每个参数都有一个在 Overview 中提及的预定义的参数类型。默认情况下,在运行时更改已声明参数类型的尝试将失败。这可以防止常见的错误,比如将布尔值放入整数参数中。
+ROS 2 节点中的每个参数都属于概述中列出的预定义类型。默认情况下，尝试在运行时改变已声明参数的类型会失败。这可以防止常见错误，例如把布尔值赋给整数参数。
 
-如果一个参数需要多个不同类型,而使用该参数的代码可以处理它,则这种默认行为可以改变。当参数被宣布时,应当使用一个参数来宣布它。 `ParameterDescriptor` 与 `dynamic_typing` 成员变量设置为 `true`.
+如果某个参数需要支持多种类型，并且使用该参数的代码能够处理这些类型，就可以修改默认行为：声明参数时，使用一个将 `dynamic_typing` 成员变量设为 `true` 的 `ParameterDescriptor`。
 
 <span id="parameter-callbacks"></span>
+### 参数回调
 
-### 参数召回
+ROS 2 节点可以注册两种回调，以便在参数发生变化时获得通知。这两种回调都是可选的。
 
-一个ROS 2节点可以注册两种不同类型的回调,以便在参数发生变化时被告知. 两个回调都是可选的.
+第一种称为“设置参数”回调，通过节点 API 的 `add_on_set_parameters_callback` 注册。回调接收一个由不可变 `Parameter` 对象组成的列表，并返回 `rcl_interfaces/msg/SetParametersResult`。它的主要用途是让用户检查即将发生的参数变更，并能够明确拒绝这次变更。
 
-第一种称为“设定参数”召回,可以通过调用设置 `add_on_set_parameters_callback` 从节点 API 中。 调用通过不可更改的列表 `Parameter` 对象,并返回 `rcl_interfaces/msg/SetParametersResult`。这种回调的主要目的是让用户能够检查即将到来的参数更改,并明确拒绝更改。
+!!! note "注意"
+    “设置参数”回调不应产生副作用。多个此类回调可以串联执行，单个回调无法知道后续回调是否会拒绝更新。例如，如果某个回调修改了其所属类的状态，这个状态就可能与实际参数值不一致。若要在参数成功修改**之后**执行回调，请使用下面介绍的另一种回调。
 
-> **说明**
->
-> 重要的是“设置参数”召回没有副作用。 由于多个“设置参数”召回可以连锁, 单个召回者无法知道后一位召回者是否会拒绝更新。 如果单个召回者要修改它所在的类别, 例如, 它可能会与实际的参数同步。 要获得召回, 将无法调回 。 *之后* a 参数已成功更改,请见下文下一类调用。
-
-第二类回调被称为“在参数上的事件”回调,可以通过调用设置 `on_parameter_event` 从参数客户端 APIs 中调用。 `rcl_interfaces/msg/ParameterEvent` 对象,则不返回任何内容。在输入事件的所有参数被宣布、更改或删除后,将调用此调用。此调用的主要目的是使用户能够对已成功接受的参数的更改作出反应。
+第二种称为“参数事件”回调，通过参数客户端 API 的 `on_parameter_event` 注册。回调接收一个 `rcl_interfaces/msg/ParameterEvent` 对象，不返回任何值。输入事件中的所有参数完成声明、修改或删除后，才会调用此回调。它的主要用途是让用户对已经成功接受的参数变更作出响应。
 
 <span id="interacting-with-parameters"></span>
+## 与参数交互
 
-## 与参数的交互
+ROS 2 节点可以通过节点 API 操作参数，具体见[在 C++ 类中使用参数](../../Tutorials/Beginner-Client-Libraries/Using-Parameters-In-A-Class-CPP.md)或[在 Python 类中使用参数](../../Tutorials/Beginner-Client-Libraries/Using-Parameters-In-A-Class-Python.md)。外部进程可以通过参数服务操作参数；这些服务默认在创建节点实例时创建，包括：
 
-ROS 2节点可以通过节点API来进行参数操作,如上所述. [在类中使用参数（C++）](../../Tutorials/Beginner-Client-Libraries/Using-Parameters-In-A-Class-CPP.md) 或 时 间 [在类中使用参数（Python）](../../Tutorials/Beginner-Client-Libraries/Using-Parameters-In-A-Class-Python.md)。外部进程可以通过一个节点被即时设定时默认创建的参数服务执行参数操作。默认创建的服务是:
-
-- `/node_name/describe_parameters`: 使用服务类型: `rcl_interfaces/srv/DescribeParameters`。在参数名称列表中,返回与参数相关的描述符列表。
-
-- `/node_name/get_parameter_types`: 使用服务类型: `rcl_interfaces/srv/GetParameterTypes`。如果给出参数名称列表,则返回与参数相关的参数类型列表。
-
-- `/node_name/get_parameters`: 使用服务类型: `rcl_interfaces/srv/GetParameters`。在参数名称列表中,返回与参数相关的参数值列表。
-
-- `/node_name/list_parameters`: 使用服务类型: `rcl_interfaces/srv/ListParameters`。考虑到参数前缀的可选列表,返回带有该前缀的现有参数列表。如果前缀是空的,则返回所有参数。
-
-- `/node_name/set_parameters`: 使用服务类型: `rcl_interfaces/srv/SetParameters`。鉴于参数名称和值的列表,试图在节点上设置参数。返回一个试图设置每个参数的结果列表;其中一些可能已经成功,有些可能已经失败。
-
-- `/node_name/set_parameters_atomically`: 使用服务类型: `rcl_interfaces/srv/SetParametersAtomically`。鉴于参数名称和值的列表,试图在节点上设置参数。尝试设置所有参数后返回一个单一结果,因此如果一个参数失败,所有参数都失败。
+- `/node_name/describe_parameters`：服务类型为 `rcl_interfaces/srv/DescribeParameters`。给定参数名称列表，返回对应的参数描述符列表。
+- `/node_name/get_parameter_types`：服务类型为 `rcl_interfaces/srv/GetParameterTypes`。给定参数名称列表，返回对应的参数类型列表。
+- `/node_name/get_parameters`：服务类型为 `rcl_interfaces/srv/GetParameters`。给定参数名称列表，返回对应的参数值列表。
+- `/node_name/list_parameters`：服务类型为 `rcl_interfaces/srv/ListParameters`。可选择提供参数前缀列表，返回具有这些前缀的可用参数列表；前缀为空时，返回所有参数。
+- `/node_name/set_parameters`：服务类型为 `rcl_interfaces/srv/SetParameters`。给定参数名称和值的列表，尝试设置节点上的这些参数，并返回每个参数的设置结果。部分参数可能设置成功，其他参数可能失败。
+- `/node_name/set_parameters_atomically`：服务类型为 `rcl_interfaces/srv/SetParametersAtomically`。给定参数名称和值的列表，尝试设置节点上的这些参数，并返回一个表示整体设置结果的值。只要有一个参数设置失败，所有参数的设置都会失败。
 
 <span id="setting-initial-parameter-values-when-running-a-node"></span>
+## 运行节点时设置参数初始值
 
-## 运行节点时设置初始参数值
-
-在运行节点时,可以通过单个命令行参数或YAML文件设定初始参数值。见 [直接从命令行设置参数](../../How-To-Guides/Node-arguments.md#nodeargsparameters) 用于示例,说明如何设置初始参数值。
+运行节点时，可以通过单独的命令行参数或 YAML 文件设置参数初始值。示例见[从命令行直接设置参数](../../How-To-Guides/Node-arguments.md#nodeargsparameters)。
 
 <span id="setting-initial-parameter-values-when-launching-nodes"></span>
+## 通过 launch 启动节点时设置参数初始值
 
-## 启动节点时设置初始参数值
-
-在通过ROS 2发射设施运行节点时也可以设定初始参数值. See. [本文](../../Tutorials/Intermediate/Launch/Using-ROS2-Launch-For-Large-Projects.md) 关于如何通过发射指定参数的信息。
+使用 ROS 2 的 launch 功能运行节点时，也可以设置参数初始值。如何通过 launch 指定参数，请参阅[在大型项目中使用 ROS 2 launch](../../Tutorials/Intermediate/Launch/Using-ROS2-Launch-For-Large-Projects.md)。
 
 <span id="manipulating-parameter-values-at-runtime"></span>
+## 在运行时操作参数值
 
-## 运行时操纵参数值
-
-那个... `ros2 param` 命令是和已经运行的节点参数进行交互的一般方式。 `ros2 param` 使用上述参数服务 API 来进行各种操作。参见 [此向导](../../How-To-Guides/Using-ros2-param.md) 关于如何使用的详细信息 `ros2 param`.
+`ros2 param` 命令是与运行中节点的参数交互的通用方式。它通过上述参数服务 API 执行各种操作。用法详见[使用 ros2 param](../../How-To-Guides/Using-ros2-param.md)。
 
 <span id="migrating-from-ros-1"></span>
+## 从 ROS 1 迁移
 
-## 从ROS 1 移走
+[Launch 文件迁移指南](../../How-To-Guides/Migrating-from-ROS1/Migrating-Launch-Files.md)介绍了如何将 ROS 1 launch 文件中的 `param` 和 `rosparam` 标签迁移到 ROS 2。
 
-那个... [启动文件迁移指南](../../How-To-Guides/Migrating-from-ROS1/Migrating-Launch-Files.md) 解释如何迁移 `param` 财务报告和财务报告 `rosparam` 从ROS 1到ROS 2的发射标记.
-
-那个... [移徙指南](../../How-To-Guides/Migrating-from-ROS1/Migrating-Parameters.md) 解释如何将参数从ROS 1迁移到ROS 2.
+[参数迁移指南](../../How-To-Guides/Migrating-from-ROS1/Migrating-Parameters.md)介绍了如何将参数从 ROS 1 迁移到 ROS 2。

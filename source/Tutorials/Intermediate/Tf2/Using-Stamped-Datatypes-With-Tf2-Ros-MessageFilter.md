@@ -3,10 +3,6 @@ translation_status: machine_translated
 source: Tutorials/Intermediate/Tf2/Using-Stamped-Datatypes-With-Tf2-Ros-MessageFilter.rst
 ---
 
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="using-stamped-datatypes-with-tf2-ros-messagefilter"></span> <span id="usingstampeddatatypeswithtf2rosmessagefilter"></span>
 
 # 使用印有标记的数据类型 `tf2_ros::MessageFilter`

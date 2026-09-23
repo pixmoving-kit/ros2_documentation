@@ -1,29 +1,18 @@
----
-translation_status: machine_translated
-source: How-To-Guides/Using-ros1_bridge-Jammy-upstream.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="using-ros1-bridge-with-upstream-ros-on-ubuntu-22-04"></span>
+# 在 Ubuntu 22.04 上将 ros1_bridge 与系统仓库中的 ROS 配合使用
 
-# 使用( E) `ros1_bridge` 在Ubuntu 22.04上加上上游ROS
+ROS 2 Humble（以及 Rolling）在 Ubuntu 22.04 Jammy Jellyfish 上发布，标志着 ROS 2 首次支持一个没有官方 ROS 1 发行版的平台。ROS 1 Noetic 会在其[长期支持周期](https://reps.openrobotics.org/rep-0003/#noetic-ninjemys-may-2020---may-2025)内继续获得支持，但仅面向 Ubuntu 20.04。另一种选择是 Debian 和 Ubuntu 提供的 [ROS 1 软件包变体](https://packages.ubuntu.com/jammy/ros-desktop)，这些软件包并非由 ROS 维护者作为官方发行版维护。
 
-在Ubuntu 22.04上发布的ROS 2 Humble(和滚动)标志着第一个ROS 2在平台上发布,没有正式的ROS 1发布. ROS 1 Noetic将在其持续期间继续得到支持. [长期支持窗口](https://reps.openrobotics.org/rep-0003/#noetic-ninjemys-may-2020---may-2025),它只针对Ubuntu 20.04。 [ROS 1包的上游变体](https://packages.ubuntu.com/jammy/ros-desktop) 在Debian和Ubuntu中,由ROS维护者不作为官方发行。
-
-本指南概述了目前在Ubuntu 22.04 Jammy Jellyfish上用这些上游软件包连接ROS 2发行机的机制。 这为仍然依赖ROS 1但渴望移动到较新的ROS 2和Ubuntu发行机的用户提供了一个迁移路径。
+本指南介绍在 Ubuntu 22.04 Jammy Jellyfish 上，将 ROS 2 发行版与这些系统仓库软件包桥接的方法。这为仍依赖 ROS 1、但希望迁移到较新 ROS 2 和 Ubuntu 版本的用户提供了一条迁移路径。
 
 <span id="ros-2-via-deb-packages"></span>
+## 通过 deb 软件包安装 ROS 2
 
-## ROS 2 通过Deb 包
+在 Ubuntu Jammy 上，当前无法通过[安装 ROS 2 deb 软件包](../Installation/Ubuntu-Install-Debs.md)来实现上述配置。Ubuntu 仓库提供的 `catkin-pkg-modules` 版本与 ROS 2 软件包仓库中的版本存在冲突。
 
-安装 [Deb 软件包中的 ROS 2](../Installation/Ubuntu-Install-Debs.md) 目前对 Ubuntu Jammy 的 ROS 2 不工作。 `catkin-pkg-modules` 可用 Ubuntu 寄存器与ROS 2 软件包寄存器中的相冲突 。
+如果可用的 apt 仓库列表（`/etc/apt/sources.list.d`）中包含 ROS 2 apt 仓库，就无法安装 ROS 1 软件包。错误如下：
 
-如果 ROS 2 pt 存储器位于可用的 apt 存储器中 (`/etc/apt/sources.list.d`),没有 ROS 1 软件包可以安装。错误是:
-
-``` console
+```console
 $ apt install ros-core-dev
 Reading package lists... Done
 Building dependency tree... Done
@@ -39,25 +28,23 @@ The following packages have unmet dependencies:
 E: Unable to correct problems, you have held broken packages.
 ```
 
-要纠正这一点,请从您的软件包中移除 packages.ros.org `sources.list`。如果您遵循 ROS 2 安装指南,则只需删除 `/etc/apt/sources.list.d/ros2.list`
+要解决此问题，需要从 `sources.list` 中移除 packages.ros.org。如果此前遵循 ROS 2 安装指南进行配置，只需删除 `/etc/apt/sources.list.d/ros2.list`。
 
-现在,要支持 `ros1_bridge`,遵循以下指令从源头构建ROS 2。
+目前，要支持 `ros1_bridge`，请按照下文从源码构建 ROS 2。
 
 <span id="ros-2-from-source"></span>
+## 从源码构建 ROS 2
 
-## 来源:ROS 2
+在 Ubuntu Jammy 上，[从源码安装 ROS 2](../Installation/Alternatives/Ubuntu-Development-Setup.md) 是唯一可以实现上述配置的方式。
 
-安装 [资料来源:ROS 2](../Installation/Alternatives/Ubuntu-Development-Setup.md) 是在Ubuntu Jammy上工作的唯一配置。
-
-下面是源代码构建指令的必要指令摘要。 实质性的偏差是, 我们跳过使用 ROS 2 的 pt 寄存器, 因为软件包相互冲突 。
+下面概括了源码构建指南中的必要步骤。主要区别是：为避免软件包冲突，不使用 ROS 2 apt 仓库。
 
 <span id="install-development-tools-and-ros-tools"></span>
+### 安装开发工具和 ROS 工具
 
-### 安装开发工具和ROS工具
+由于不使用 ROS 2 apt 仓库，必须通过 `pip` 安装 `colcon`。
 
-因为我们没有使用 ROS 2 的储物箱, `colcon` 必须通过 `pip`.
-
-``` console
+```console
 $ sudo apt update && sudo apt install -y \
   build-essential \
   cmake \
@@ -84,21 +71,19 @@ $ sudo apt update && sudo apt install -y \
 python3 -m pip install -U colcon-common-extensions vcstool
 ```
 
-从这里开始,继续 [源安装指南](../Installation/Alternatives/Ubuntu-Development-Setup.md) 以建造 ROS 2 。
+从这里开始，继续按照[源码安装指南](../Installation/Alternatives/Ubuntu-Development-Setup.md)构建 ROS 2。
 
 <span id="install-ros-1-from-ubuntu-packages"></span>
-
 ### 从 Ubuntu 软件包安装 ROS 1
 
-``` console
+```console
 $ sudo apt update && sudo apt install -y ros-core-dev
 ```
 
 <span id="build-ros1-bridge"></span>
+### 构建 ros1_bridge
 
-### 构建 `ros1_bridge`
-
-``` console
+```console
 $ mkdir -p ~/ros1_bridge/src # Create a workspace for the ros1_bridge
 $ cd ~/ros1_bridge/src
 $ git clone https://github.com/ros2/ros1_bridge
@@ -107,4 +92,4 @@ $. ~/ros2_humble/install/local_setup.bash # Source the ROS 2 workspace
 $ colcon build # Build
 ```
 
-盖完所有房子后 `ros1_bridge`,剩余部分 [ros1\_ 桥式示例](https://github.com/ros2/ros1_bridge#example-1-run-the-bridge-and-the-example-talker-and-listener) 应当与您的新安装工作
+完成 `ros1_bridge` 的构建后，其余 [ros1_bridge 示例](https://github.com/ros2/ros1_bridge#example-1-run-the-bridge-and-the-example-talker-and-listener)应可在新安装的环境中运行。

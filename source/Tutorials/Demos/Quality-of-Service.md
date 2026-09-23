@@ -3,10 +3,6 @@ translation_status: machine_translated
 source: Tutorials/Demos/Quality-of-Service.rst
 ---
 
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="using-quality-of-service-settings-for-lossy-networks"></span>
 
 # 在丢包网络中配置服务质量

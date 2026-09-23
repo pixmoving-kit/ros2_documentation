@@ -1,57 +1,45 @@
----
-translation_status: machine_translated
-source: How-To-Guides/Migrating-from-ROS1/Migrating-Python-Package-Example.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="migrating-a-python-package-example"></span>
-
 # Python 软件包迁移示例
 
-本指南显示如何将一个实例 Python 包从 ROS 1 迁移到 ROS 2 。
+本指南介绍如何将一个 Python 软件包从 ROS 1 迁移到 ROS 2。
 
 <span id="prerequisites"></span>
-
 ## 前提条件
 
-你需要一个工作 ROS 2 安装,例如 [ROS 滚动](../../Installation.md).
+需要一个可正常工作的 ROS 2 环境，例如 [ROS Rolling](../../Installation.md)。
 
 <span id="the-ros-1-code"></span>
-
 ## ROS 1 代码
 
-您不会使用 [猫金](https://index.ros.org/p/catkin/) 在此指南中, 您不需要工作 ROS 1 安装。 您将使用 ROS 2 的构建工具 [科尔康](https://colcon.readthedocs.io/) 换句话说。
+本指南不会使用 [catkin](https://index.ros.org/p/catkin/)，因此不需要安装 ROS 1，而是使用 ROS 2 的构建工具 [Colcon](https://colcon.readthedocs.io/)。
 
-本节为您提供ROS 1 Python 包的代码。该包叫做 `talker_py`,它有一个节点叫做 `talker_py_node`。为了方便以后运行 Colcon ,这些指令使您可以在 a 内创建软件包 [Colcon 工作空间](https://colcon.readthedocs.io/en/released/user/what-is-a-workspace.html),
+本节提供一个 ROS 1 Python 软件包的代码。包名为 `talker_py`，包含一个名为 `talker_py_node` 的节点。为了方便后续运行 Colcon，将在 [Colcon 工作空间](https://colcon.readthedocs.io/en/released/user/what-is-a-workspace.html)内创建该包。
 
-首先,在 `~/ros2_talker_py` 成为Colcon工作空间的根.
+首先，创建 `~/ros2_talker_py` 文件夹，作为工作空间的根目录。
 
-##### Linux
+**Linux：**
 
-``` console
+```console
 $ mkdir -p ~/ros2_talker_py/src
 ```
 
-##### macOS
+**macOS：**
 
-``` console
+```console
 $ mkdir -p ~/ros2_talker_py/src
 ```
 
-##### Windows
+**Windows：**
 
-``` console
+```console
 $ md \ros2_talker_py\src
 ```
 
-下一步,为ROS 1 软件包创建文件.
+接下来创建 ROS 1 软件包的文件。
 
-##### Linux
+**Linux：**
 
-``` console
+```console
 $ cd ~/ros2_talker_py
 $ mkdir -p src/talker_py/src/talker_py
 $ mkdir -p src/talker_py/scripts
@@ -62,9 +50,9 @@ $ touch src/talker_py/scripts/talker_py_node
 $ touch src/talker_py/setup.py
 ```
 
-##### macOS
+**macOS：**
 
-``` console
+```console
 $ cd ~/ros2_talker_py
 $ mkdir -p src/talker_py/src/talker_py
 $ mkdir -p src/talker_py/scripts
@@ -75,9 +63,9 @@ $ touch src/talker_py/scripts/talker_py_node
 $ touch src/talker_py/setup.py
 ```
 
-##### Windows
+**Windows：**
 
-``` console
+```console
 $ cd \ros2_talker_py
 $ md src\talker_py\src\talker_py
 $ md src\talker_py\scripts
@@ -88,11 +76,11 @@ $ type nul > src\talker_py\scripts/talker_py_node
 $ type nul > src\talker_py\setup.py
 ```
 
-将以下内容放入每个文件 。
+将以下内容填入对应文件。
 
-`src/talker_py/package.xml`:
+`src/talker_py/package.xml`：
 
-``` xml
+```xml
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
@@ -109,9 +97,9 @@ $ type nul > src\talker_py\setup.py
 </package>
 ```
 
-`src/talker_py/CMakeLists.txt`:
+`src/talker_py/CMakeLists.txt`：
 
-``` cmake
+```cmake
 cmake_minimum_required(VERSION 3.0.2)
 project(talker_py)
 
@@ -127,9 +115,9 @@ catkin_install_python(PROGRAMS
 )
 ```
 
-`src/talker/src/talker_py/__init__.py`:
+`src/talker/src/talker_py/__init__.py`：
 
-``` Python
+```python
 import rospy
 from std_msgs.msg import String
 
@@ -144,9 +132,9 @@ def main():
         rate.sleep()
 ```
 
-`src/talker_py/scripts/talker_py_node`:
+`src/talker_py/scripts/talker_py_node`：
 
-``` Python
+```python
 #!/usr/bin/env python
 
 import talker_py
@@ -155,9 +143,9 @@ if __name__ == '__main__':
     talker_py.main()
 ```
 
-`src/talker_py/setup.py`:
+`src/talker_py/setup.py`：
 
-``` Python
+```python
 from setuptools import setup
 from catkin_pkg.python_setup import generate_distutils_setup
 
@@ -169,45 +157,44 @@ setup_args = generate_distutils_setup(
 setup(**setup_args)
 ```
 
-这是完整的ROS 1 Python包.
+以上构成了完整的 ROS 1 Python 软件包。
 
 <span id="migrate-the-package-xml"></span>
+## 迁移 package.xml
 
-## 迁入 `package.xml`
+向 ROS 2 迁移时，应先迁移构建系统文件，便于在修改过程中通过构建和运行代码验证结果。始终从 `package.xml` 开始。
 
-当将软件包迁移到 ROS 2 时, 首先将构建系统文件迁移到您手中, 这样您就可以通过构建和运行代码来检查您的工作。 总是从迁移开始 。 `package.xml`.
+ROS 2 不使用 `catkin`，因此删除对应的 `<buildtool_depend>`：
 
-首先,ROS 2 不使用 `catkin`删除 `<buildtool_depend>` 来 来 来
-
-``` default
+```
 <!-- delete this -->
 <buildtool_depend>catkin</buildtool_depend>
 ```
 
-下一步, ROS 2 用途 `rclpy` 改为 `rospy`删除对以下的依赖: `rospy`.
+ROS 2 使用 `rclpy` 替代 `rospy`。删除 `rospy` 依赖：
 
-``` default
+```
 <!-- Delete this -->
 <depend>rospy</depend>
 ```
 
-替换为新依赖 `rclpy`.
+替换为 `rclpy` 依赖：
 
-``` xml
+```xml
 <depend>rclpy</depend>
 ```
 
-添加一个 `<export>` 显示 ROS 2 的构建工具的段落 [科尔康](https://colcon.readthedocs.io/) 这是... `ament_python` 包而不是一个 `catkin` 软件包。
+添加 `<export>` 部分，告诉 ROS 2 构建工具 [Colcon](https://colcon.readthedocs.io/) 这是 `ament_python` 包，而不是 `catkin` 包：
 
-``` xml
+```xml
 <export>
   <build_type>ament_python</build_type>
 </export>
 ```
 
- `package.xml` 完全迁移,现在应该这样:
+`package.xml` 迁移完成，现在应如下所示：
 
-``` xml
+```xml
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="2">
@@ -227,27 +214,25 @@ setup(**setup_args)
 ```
 
 <span id="delete-the-cmakelists-txt"></span>
+## 删除 CMakeLists.txt
 
-## 删除 `CMakeLists.txt`
-
-ROS 2 中的 Python 包不使用 CMake, 所以删除 `CMakeLists.txt`.
+ROS 2 的 Python 软件包不使用 CMake，因此删除 `CMakeLists.txt`。
 
 <span id="migrate-the-setup-py"></span>
+## 迁移 setup.py
 
-## 迁入 `setup.py`
+`setup.py` 中 `setup()` 的参数不能再通过 `catkin_pkg` 自动生成，必须手动传入。因此，部分信息会与 `package.xml` 重复。
 
-论点 `setup()` 输入 `setup.py` 无法再自动生成 `catkin_pkg`。您必须手动通过这些参数,这意味着您将遇到一些重复。 `package.xml`.
+先删除从 `catkin_pkg` 导入的语句：
 
-从删除导入开始 `catkin_pkg`.
-
-``` default
+```
 # Delete this
 from catkin_pkg.python_setup import generate_distutils_setup
 ```
 
-将所有参数移动到 `generate_distutils_setup()` 致电: `setup()`,然后添加 `install_requires` 财务报告和财务报告 `zip_safe` 参数。您拨打到 `setup()` 应该是这样的:
+将传给 `generate_distutils_setup()` 的所有参数移到 `setup()` 调用中，再添加 `install_requires` 和 `zip_safe`。调用应如下所示：
 
-``` Python
+```python
 setup(
     packages=['talker_py'],
     package_dir={'': 'src'},
@@ -256,9 +241,9 @@ setup(
 )
 ```
 
-删除呼叫到 `generate_distutils_setup()`.
+删除 `generate_distutils_setup()` 调用：
 
-``` default
+```
 # Delete this
 setup_args = generate_distutils_setup(
     packages=['talker_py'],
@@ -266,27 +251,23 @@ setup_args = generate_distutils_setup(
 )
 ```
 
-呼唤 `setup()` 需要一点 [额外元数据](https://docs.python.org/3.11/distutils/setupscript.html#additional-meta-data) 复制自 `package.xml`:
+`setup()` 还需要从 `package.xml` 复制一些[额外元数据](https://docs.python.org/3.11/distutils/setupscript.html#additional-meta-data)：
 
-- 通过软件包名称 `name` 参数
+- `name`：包名。
+- `version`：软件包版本。
+- `maintainer` 和 `maintainer_email`：维护者信息。
+- `description`：描述。
+- `license`：许可证。
 
-- 通过软件包版本 `version` 参数
+包名会使用多次，因此在 `setup()` 调用之前创建 `package_name` 变量：
 
-- 维护者通过 `maintainer` 财务报告和财务报告 `maintainer_email` 参数
-
-- 说明,通过 `description` 参数
-
-- 许可证通过 `license` 参数
-
-软件包名称会被多次使用。创建一个名为 `package_name` 在呼吁之上 `setup()`.
-
-``` Python
+```python
 package_name = 'talker_py'
 ```
 
-将所有剩余信息复制到 `setup()` 输入 `setup.py`。您的决定 `setup()` 应该是这样的:
+将其余信息复制到 `setup.py` 的 `setup()` 参数中。现在调用应如下所示：
 
-``` Python
+```python
 setup(
     name=package_name,
     version='1.0.0',
@@ -301,40 +282,36 @@ setup(
 )
 ```
 
-ROS 2 软件包必须安装两个数据文件:
+ROS 2 软件包必须安装两个数据文件：`package.xml` 和软件包标记文件。
 
-- a `package.xml`
+现有的 `package.xml` 描述软件包的依赖项。标记文件则告诉 `ros2 run` 等工具到哪里找到软件包。
 
-- 软件包标记文件
+在 `package.xml` 旁创建 `resource` 目录，然后在其中创建一个与软件包同名的空文件。
 
-你的包裹已经有一个 `package.xml`。它描述了您的软件包的依赖性。一个软件包标记文件告诉工具,比如 `ros2 run` 在哪里找到你的包裹。
+**Linux：**
 
-创建一个位于 `package.xml` 调用 `resource`中创建空文件 `resource` 与软件包同名的目录。
-
-##### Linux
-
-``` console
+```console
 $ mkdir resource
 $ touch resource/talker_py
 ```
 
-##### macOS
+**macOS：**
 
-``` console
+```console
 $ mkdir resource
 $ touch resource/talker_py
 ```
 
-##### Windows
+**Windows：**
 
-``` console
+```console
 $ md resource
 $ type nul > resource\talker_py
 ```
 
-那个... `setup()` 呼叫进来 `setup.py` 一定要告诉 `setuptools` 如何安装这些文件。添加以下内容 `data_files` 调用参数 `setup()`.
+`setup.py` 中的 `setup()` 必须告诉 `setuptools` 如何安装这些文件。添加以下 `data_files` 参数：
 
-``` Python
+```python
 data_files=[
     ('share/ament_index/resource_index/packages',
         ['resource/' + package_name]),
@@ -342,44 +319,47 @@ data_files=[
 ],
 ```
 
- `setup.py` 已经差不多完成了。
+此时 `setup.py` 已接近完成。
 
 <span id="migrate-python-scripts-and-create-setup-cfg"></span>
+## 迁移 Python 脚本并创建 setup.cfg
 
-## 移动 Python 脚本并创建 `setup.cfg`
+ROS 2 Python 软件包通过 `console_scripts` [入口点](https://python-packaging.readthedocs.io/en/latest/command-line-scripts.html#the-console-scripts-entry-point)，将 Python 脚本安装为可执行程序。[配置文件](https://setuptools.pypa.io/en/latest/userguide/declarative_config.html) `setup.cfg` 告诉 `setuptools` 将这些程序安装到软件包专用目录，供 `ros2 run` 等工具查找。
 
-ROS 2 Python 软件包的使用 `console_scripts` [入境点](https://python-packaging.readthedocs.io/en/latest/command-line-scripts.html#the-console-scripts-entry-point) 将 Python 脚本安装为可执行文件。 [配置文件](https://setuptools.pypa.io/en/latest/userguide/declarative_config.html) `setup.cfg` 告诉 `setuptools` 在软件包特定目录中安装这些可执行文件,使工具像 `ros2 run` 可以找到它们。创建 `setup.cfg` 文档旁边 `package.xml`.
+在 `package.xml` 旁创建 `setup.cfg`。
 
-##### Linux
+**Linux：**
 
-``` console
+```console
 $ touch setup.cfg
 ```
 
-##### macOS
+**macOS：**
 
-``` console
+```console
 $ touch setup.cfg
 ```
 
-##### Windows
+**Windows：**
 
-``` console
+```console
 $ type nul > touch setup.cfg
 ```
 
-将以下内容放入其中:
+填入以下内容：
 
-``` ini
+```ini
 [develop]
 script_dir=$base/lib/talker_py
 [install]
 install_scripts=$base/lib/talker_py
 ```
 
-您需要使用此工具 `console_scripts` 定义要安装的可执行文件的条目点。每个条目都有格式 `executable_name = some.module:function`。第一部分指定要创建的可执行文件的名称。第二部分指定了在可执行文件启动时要运行的函数。此软件包需要创建名为可执行文件的可执行文件 `talker_py_node`,而可执行文件需要调用函数 `main` 输入 `talker_py` 模块。添加以下的切入点规格作为另一个参数 `setup()` 在您的帐号中 `setup.py`.
+使用 `console_scripts` 入口点定义要安装的可执行程序。每个条目格式为 `executable_name = some.module:function`：前半部分是可执行程序名称，后半部分是启动时调用的函数。
 
-``` Python
+本软件包需要创建 `talker_py_node` 可执行程序，并调用 `talker_py` 模块中的 `main` 函数。将以下入口点定义作为另一个参数，添加到 `setup.py` 的 `setup()` 调用中：
+
+```python
 entry_points={
     'console_scripts': [
         'talker_py_node = talker_py:main',
@@ -387,32 +367,32 @@ entry_points={
 },
 ```
 
-那个... `talker_py_node` 文件已不再需要。 删除文件 `talker_py_node` 删除 `scripts/` 目录。
+不再需要原来的 `talker_py_node` 文件，删除该文件和 `scripts/` 目录。
 
-##### Linux
+**Linux：**
 
-``` console
+```console
 $ rm scripts/talker_py_node
 $ rmdir scripts
 ```
 
-##### macOS
+**macOS：**
 
-``` console
+```console
 $ rm scripts/talker_py_node
 $ rmdir scripts
 ```
 
-##### Windows
+**Windows：**
 
-``` console
+```console
 $ del scripts/talker_py_node
 $ rd scripts
 ```
 
-增设: `console_scripts` 是您最后的改变 `setup.py`。 。 您的最后一个 `setup.py` 应该是这样的:
+添加 `console_scripts` 是对 `setup.py` 的最后一处修改。最终文件应如下所示：
 
-``` Python
+```python
 from setuptools import setup
 
 package_name = 'talker_py'
@@ -442,59 +422,54 @@ setup(
 ```
 
 <span id="migrate-python-code-in-src-talker-py-init-py"></span>
+## 迁移 src/talker_py/__init__.py 中的 Python 代码
 
-## 移动 Python 代码于 `src/talker_py/__init__.py`
-
-ROS 2 更改了许多 Python 代码的最佳做法。 开始将代码迁移为- is 。 在工作完成后, 代码会更容易重构 。
+ROS 2 改变了许多 Python 代码的推荐写法。先按照现有结构迁移，得到可运行的结果后，再重构会更容易。
 
 <span id="use-rclpy-instead-of-rospy"></span>
+### 使用 rclpy 替代 rospy
 
-### 使用 `rclpy` 改为 `rospy`
+ROS 2 软件包使用 [rclpy](https://index.ros.org/p/rclpy) 替代 `rospy`。使用 `rclpy` 需要两个步骤：导入它，然后初始化它。
 
-ROS 2 套件的使用 [rclpy](https://index.ros.org/p/rclpy) 改为 `rospy`。您必须做两件事才能使用 `rclpy`:
+删除导入 `rospy` 的语句：
 
-> 1.  导入 `rclpy`
->
-> 2.  初始化 `rclpy`
-
-删除导入的语句 `rospy`.
-
-``` Python
+```python
 # Remove this
 import rospy
 ```
 
-改为进口说明 `rclpy`.
+改为导入 `rclpy`：
 
-``` Python
+```python
 import rclpy
 ```
 
-添加一个呼叫到 `rclpy.init()` 作为第一篇声明 `main()` 函数。
+在 `main()` 中，将 `rclpy.init()` 作为第一条语句：
 
-``` Python
+```python
 def main():
     # Add this line
     rclpy.init()
 ```
 
 <span id="execute-callbacks-in-the-background"></span>
+### 在后台执行回调
 
-### 在背景中执行召回
+ROS 1 和 ROS 2 都使用[回调](https://en.wikipedia.org/wiki/Callback_(computer_programming))。ROS 1 总是在后台线程中执行回调，因此用户可以通过 `rate.sleep()` 等调用阻塞主线程。ROS 2 的 `rclpy` 使用[执行器](../../Concepts/Intermediate/About-Executors.md)，让用户更精确地控制回调的执行位置。
 
-使用 ROS 1 和 ROS 2 [调用](https://en.wikipedia.org/wiki/Callback_(computer_programming))。在ROS 1中,回调总是在背景线程中执行,用户可以自由地用类似调用来屏蔽主线程. `rate.sleep()`在ROS 2中, `rclpy` 用途 [执行器](../../Concepts/Intermediate/About-Executors.md) 以让用户对调用回调的位置有更大的控制。当移植使用诸如阻断调用之类的代码时, `rate.sleep()`,您必须确保这些电话不会干扰执行者。这样做的一个方法是为执行者创建一条专用线程。
+移植使用 `rate.sleep()` 等阻塞调用的代码时，必须确保这些调用不妨碍执行器。可以为执行器创建一个专用线程。
 
-首先,添加这两个导入语句.
+先添加以下两个导入语句：
 
-``` Python
+```python
 import threading
 
 from rclpy.executors import ExternalShutdownException
 ```
 
-下,添加名为顶级的函数 `spin_in_background()`。此函数要求默认执行器执行回调,直到某事关闭。
+再添加顶层函数 `spin_in_background()`，让默认执行器持续执行回调，直到被关闭：
 
-``` Python
+```python
 def spin_in_background():
     executor = rclpy.get_global_executor()
     try:
@@ -503,149 +478,141 @@ def spin_in_background():
         pass
 ```
 
-添加以下代码 `main()` 函数在调用到 `rclpy.init()` 以启动一个调用线程 `spin_in_background()`.
+在 `main()` 中的 `rclpy.init()` 之后添加以下代码，启动调用 `spin_in_background()` 的线程：
 
-``` Python
+```python
 # In rospy callbacks are always called in background threads.
 # Spin the executor in another thread for similar behavior in ROS 2.
 t = threading.Thread(target=spin_in_background)
 t.start()
 ```
 
-最后,当程序结束时,加入线程,将此语句放在下方 `main()` 函数。
+最后，在 `main()` 底部加入以下语句，在程序结束时等待线程退出：
 
-``` Python
+```python
 t.join()
 ```
 
 <span id="create-a-node"></span>
+### 创建节点
 
-### 创建一个节点
+ROS 1 的 Python 脚本每个进程只能创建一个节点，使用 `init_node()` API 创建。ROS 2 的单个 Python 脚本可以创建多个节点，创建节点的 API 名为 `create_node`。
 
-在ROS 1 中, Python 脚本只能每个进程创建一个单一的节点, 而 API `init_node()` 创建它。在 ROS 2 中,一个 Python 脚本可以创建多个节点,创建节点的 API 被命名为 `create_node`.
+删除 `rospy.init_node()` 调用：
 
-删除调用到 `rospy.init_node()`:
-
-``` default
+```
 rospy.init_node('talker')
 ```
 
-添加新调用到 `rclpy.create_node()` 并存储结果到一个名为 `node`:
+改用 `rclpy.create_node()`，并将结果保存到 `node` 变量：
 
-``` Python
+```python
 node = rclpy.create_node('talker')
 ```
 
-我们必须告诉执行者这个节点。 在节点的创建下面添加以下一行:
+还必须将此节点告知执行器。在创建节点的语句后添加：
 
-``` Python
+```python
 rclpy.get_global_executor().add_node(node)
 ```
 
 <span id="create-a-publisher"></span>
+### 创建发布者
 
-### 创建出版社
+ROS 1 通过实例化 `Publisher` 类创建发布者。ROS 2 通过节点的 `create_publisher()` API 创建发布者。需要注意，话题名称和话题类型参数的顺序与 ROS 1 相反。
 
-在ROS 1中,用户通过即时发布创建出版社 `Publisher` 在 ROS 2 中,用户通过节点创建出版商 `create_publisher()` API. 那个 `create_publisher()` API与ROS 1有一个不幸的区别:主题名称和主题类型参数互换.
+删除 `rospy.Publisher` 实例的创建语句：
 
-删除创建 `rospy.Publisher` 举个例子
-
-``` default
+```
 pub = rospy.Publisher('chatter', String, queue_size=10)
 ```
 
-换成呼叫 `node.create_publisher()`.
+替换为 `node.create_publisher()`：
 
-``` Python
+```python
 pub = node.create_publisher(String, 'chatter', 10)
 ```
 
 <span id="create-a-rate"></span>
+### 创建频率对象
 
-### 创建比率
+ROS 1 直接创建 `Rate` 实例，ROS 2 则通过节点的 `create_rate()` API 创建。
 
-在 ROS 1 中,用户创建 `Rate` 实例直接,而ROS 2 中的用户通过节点创建它们 `create_rate()` API. (英语).
+删除 `rospy.Rate` 的创建语句：
 
-删除创建 `rospy.Rate` 举个例子
-
-``` default
+```
 rate = rospy.Rate(10)  # 10hz
 ```
 
-换成呼叫 `node.create_rate()`.
+替换为 `node.create_rate()`：
 
-``` Python
+```python
 rate = node.create_rate(10)  # 10hz
 ```
 
 <span id="loop-on-rclpy-ok"></span>
+### 使用 rclpy.ok() 作为循环条件
 
-### 循环 `rclpy.ok()`
+ROS 1 使用 `rospy.is_shutdown()` 判断进程是否收到关闭请求。ROS 2 对应使用 `rclpy.ok()` 判断是否继续运行。
 
-在ROS 1中, `rospy.is_shutdown()` API表示是否要求该程序关闭。 `rclpy.ok()` API这样做。
+删除 `not rospy.is_shutdown()` 条件：
 
-删除语句 `not rospy.is_shutdown()`
-
-``` default
+```
 while not rospy.is_shutdown():
 ```
 
-换成呼叫 `rclpy.ok()`.
+替换为 `rclpy.ok()`：
 
-``` Python
+```python
 while rclpy.ok():
 ```
 
 <span id="create-a-string-message-with-the-current-time"></span>
+### 创建包含当前时间的 String 消息
 
-### 创建一个 `String` 以当前时间发送信件
+以下语句需要几处修改：
 
-您必须在此行中做一些修改
-
-``` default
+```
 hello_str = "hello world %s" % rospy.get_time()
 ```
 
-在ROS2中,你:
+在 ROS 2 中：
 
-- 一定要从一个时间 `Clock` 实例
+- 必须从 `Clock` 实例获取时间。
+- 应使用 [f-string](https://docs.python.org/3/reference/lexical_analysis.html#f-strings) 格式化字符串，因为[当前 Python 版本不推荐使用百分号格式化](https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting)。
+- 必须创建 `std_msgs.msg.String` 实例。
 
-- 格式化为 `str` 数据使用 [f 字符串](https://docs.python.org/3/reference/lexical_analysis.html#f-strings) 自此以来 [% 在活跃的 Python 版本中被抑制](https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting)
+先处理时间。ROS 2 节点具有 `Clock` 实例，将 `rospy.get_time()` 替换为 `node.get_clock().now()`，从节点时钟获取当前时间。
 
-- 必须即兴演奏 `std_msgs.msg.String` 实例
+然后将百分号格式化替换为 f-string：`f'hello world {node.get_clock().now()}'`。
 
-从时间开始,ROS 2节点有一个 `Clock` 实例。将调用改为 `rospy.get_time()` 与 `node.get_clock().now()` 从节点的时钟获取当前时间。
+最后创建 `std_msgs.msg.String()` 实例，并将上述字符串赋给它的 `data` 属性：
 
-下,替换使用 `%` 带有 f 字符串 : `f'hello world {node.get_clock().now()}'`.
-
-最后,即兴演奏a `std_msgs.msg.String()` 实例,并指定上列 `data` 属性。您的最终代码应该像这样 :
-
-``` Python
+```python
 hello_str = String()
 hello_str.data = f'hello world {node.get_clock().now()}'
 ```
 
 <span id="log-an-informational-message"></span>
+### 输出信息级别日志
 
-### 登录信息消息
+ROS 2 必须通过 `Logger` 实例发送日志消息，节点自身就带有这样的实例。
 
-在 ROS 2 中,您必须通过 `Logger` 举例来说,节点有一个。
+删除 `rospy.loginfo()` 调用：
 
-删除调用到 `rospy.loginfo()`.
-
-``` default
+```
 rospy.loginfo(hello_str)
 ```
 
-换成呼叫 `info()` 在节点上 `Logger` 举个例子
+替换为节点 `Logger` 的 `info()` 调用：
 
-``` Python
+```python
 node.get_logger().info(hello_str.data)
 ```
 
-这是最后一次更改到 `src/talker_py/__init__.py`。您的文件应该看起来像 :
+至此，`src/talker_py/__init__.py` 修改完成。完整文件应如下所示：
 
-``` Python
+```python
 import threading
 
 import rclpy
@@ -684,109 +651,100 @@ def main():
 ```
 
 <span id="build-and-run-talker-py-node"></span>
+### 构建并运行 talker_py_node
 
-### 构建和运行 `talker_py_node`
+打开三个终端，分别用于构建 `talker_py`、运行 `talker_py_node`，以及显示该节点发布的消息。
 
-创建三个终端:
+在第一个终端构建工作空间。
 
-1.  一个要建 `talker_py`
+**Linux：**
 
-2.  跑一个 `talker_py_node`
-
-3.  一个来回呼应 消息由发表 `talker_py_node`
-
-在第一个终端建立工作空间。
-
-##### Linux
-
-``` console
+```console
 $ cd ~/ros2_talker_py
 $ . /opt/ros/rolling/setup.bash
 $ colcon build
 ```
 
-##### macOS
+**macOS：**
 
-``` console
+```console
 $ cd ~/ros2_talker_py
 $ . /opt/ros/rolling/setup.bash
 $ colcon build
 ```
 
-##### Windows
+**Windows：**
 
-``` console
+```console
 $ cd \ros2_talker_py
 $ call C:\dev\ros2\local_setup.bat
 $ colcon build
 ```
 
-源代码到第二终端的工作空间,并运行 `talker_py_node`.
+在第二个终端加载工作空间环境，并运行 `talker_py_node`。
 
-##### Linux
+**Linux：**
 
-``` console
+```console
 $ cd ~/ros2_talker_py
 $ . install/setup.bash
 $ ros2 run talker_py talker_py_node
 ```
 
-##### macOS
+**macOS：**
 
-``` console
+```console
 $ cd ~/ros2_talker_py
 $ . install/setup.bash
 $ ros2 run talker_py talker_py_node
 ```
 
-##### Windows
+**Windows：**
 
-``` console
+```console
 $ cd \ros2_talker_py
 $ call install\setup.bat
 $ ros2 run talker_py talker_py_node
 ```
 
-回声第三个终端中节点发布的消息 :
+在第三个终端显示节点发布的消息。
 
-##### Linux
+**Linux：**
 
-``` console
+```console
 $ . /opt/ros/rolling/setup.bash
 $ ros2 topic echo /chatter
 ```
 
-##### macOS
+**macOS：**
 
-``` console
+```console
 $ . /opt/ros/rolling/setup.bash
 $ ros2 topic echo /chatter
 ```
 
-##### Windows
+**Windows：**
 
-``` console
+```console
 $ call C:\dev\ros2\local_setup.bat
 $ ros2 topic echo /chatter
 ```
 
-您应该看到当前时间在第二个终端上发布的信息, 以及第三个终端上收到的同样信息 。
+第二个终端应显示正在发布的、包含当前时间的消息，第三个终端应显示接收到的相同消息。
 
 <span id="refactor-code-to-use-ros-2-conventions"></span>
+## 按 ROS 2 惯例重构代码
 
-## 重构使用 ROS 2 公约的代码
+现在已经成功将 ROS 1 Python 软件包迁移到 ROS 2。得到可运行的结果后，可以考虑重构，使其更符合 ROS 2 Python API 的使用习惯。遵循以下原则：
 
-您已成功将 ROS 1 Python 软件包迁移到 ROS 2 。 既然您有工作, 请考虑重新设计它, 使其更好地与 ROS 2 的 Python API 保持一致。 遵循这两项原则 。
+- 创建继承自 `Node` 的类。
+- 在回调中完成所有工作，并且不要阻塞回调。
 
-- 创建继承从 `Node`.
+例如，创建继承自 `Node` 的 `Talker` 类。使用带回调的 `Timer` 替代 `rate.sleep()`，让定时器回调发布消息后立即返回。将 `main()` 改为创建 `Talker` 实例，而不是调用 `rclpy.create_node()`，并让执行器在主线程中运行。
 
-- 做回调工作 永远不要阻止回调
+重构后的代码可以如下所示：
 
-例如,创建一个 `Talker` 继承从 `Node`至于回调工作,请使用 `Timer` 以回调代替 `rate.sleep()`。让计时器调回消息并返回。 `main()` 创建一个 `Talker` 实例,而不是使用 `rclpy.create_node()`,并给予执行者要执行的主线程。
-
-你重构的代码可能是这样的:
-
-``` Python
+```python
 import rclpy
 from rclpy.node import Node
 from rclpy.executors import ExternalShutdownException
@@ -819,7 +777,6 @@ def main():
 ```
 
 <span id="conclusion"></span>
+## 小结
 
-## 结论
-
-您已经学会了如何将一个例 Python ROS 1 软件包迁移到 ROS 2 , 从现在开始, 请参考 [移动 Python 套件参考页面](Migrating-Python-Packages.md) 移动自己的 Python 包。
+你已了解如何将一个 ROS 1 Python 软件包迁移到 ROS 2。迁移自己的软件包时，可以查阅 [Python 软件包迁移参考](Migrating-Python-Packages.md)。

@@ -1,43 +1,34 @@
----
-translation_status: machine_translated
-source: Tutorials/Intermediate/URDF/Building-a-Movable-Robot-Model-with-URDF.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="building-a-movable-robot-model"></span> <span id="moveableurdf"></span>
 
 # 构建可运动的机器人模型
 
-**目标：** 学习如何定义URDF中的可移动关节.
+**目标：** 学习在 URDF 中定义可动关节。
 
 **教程级别：** 中级
 
-**用时：** 10分钟
+**预计耗时：** 10 分钟
 
-校对:Portnoy 校对:Soup [上一个教程](Building-a-Visual-Robot-Model-with-URDF-from-Scratch.md) 在前一种模式中,所有关节都已经固定。 现在我们将探索另外三种重要的关节类型:连续的、转动的和棱角的。
+本教程将修改[上一篇教程](Building-a-Visual-Robot-Model-with-URDF-from-Scratch.md)中的 R2D2 模型，为它加入可动关节。此前所有关节都是固定的，现在将介绍另外三种重要关节：连续旋转关节（continuous）、转动关节（revolute）和平移关节（prismatic）。
 
-在继续之前,请确定您已经安装了所有先决条件。 [上一个教程](Building-a-Visual-Robot-Model-with-URDF-from-Scratch.md) (d) 提供所需信息。
+继续之前，请确认已安装全部必需组件，具体要求见[上一篇教程](Building-a-Visual-Robot-Model-with-URDF-from-Scratch.md)。本教程涉及的所有模型同样位于 [urdf_tutorial](https://index.ros.org/p/urdf_tutorial) 包中。
 
-同样,本教程中提到的所有机器人模型都可以在 [urdf_tutorial](https://index.ros.org/p/urdf_tutorial) 软件包。
+[新的 URDF](https://github.com/ros/urdf_tutorial/blob/ros2/urdf/06-flexible.urdf)包含可动关节。可与上一版本对比以查看全部改动；这里重点介绍三个关节示例。
 
-[这儿是新来的urdf](https://github.com/ros/urdf_tutorial/blob/ros2/urdf/06-flexible.urdf) 与前一个版本相比,我们可以看到所有的变化,但我们只关注三个实例。
+使用与上篇教程相同形式的命令来显示和控制模型：
 
-要可视化并控制此模型, 运行与上一个教程相同的命令 :
-
-``` console
+```console
 $ ros2 launch urdf_tutorial display.launch.py model:=urdf/06-flexible.urdf
 ```
 
-然而,现在这也将出现一个图形界面,允许您控制所有非固定关节的值。 播放一些模型,看看它是如何移动的。 然后,我们可以看看我们是如何完成的 。
+这次还会弹出一个 GUI，用于控制所有非固定关节的数值。先操作模型观察其运动，再看看实现方法。
 
-[![灵活模型的截图](https://raw.githubusercontent.com/ros/urdf_tutorial/ros2/images/flexible.png)](https://raw.githubusercontent.com/ros/urdf_tutorial/ros2/images/flexible.png) <span id="the-head"></span>
+![可运动模型截图](https://raw.githubusercontent.com/ros/urdf_tutorial/ros2/images/flexible.png)
 
-## 团长
+<span id="the-head"></span>
 
-``` xml
+## 头部
+
+```xml
 <joint name="head_swivel" type="continuous">
   <parent link="base_link"/>
   <child link="head"/>
@@ -46,15 +37,15 @@ $ ros2 launch urdf_tutorial display.launch.py model:=urdf/06-flexible.urdf
 </joint>
 ```
 
-机身与头部的连接是一个连续的关节,意思是它可以从负无穷到正无穷的任意角度上进行,轮子也是像这样的模型,这样它们就可以永远地向两个方向滚动.
+身体与头部之间采用连续旋转关节，它可以取从负无穷到正无穷的任意角度。车轮也采用这种关节，因此能够向两个方向无限旋转。
 
-我们必须增加的唯一额外信息是旋转轴,这里由xyz三进制指定,它指定了头围绕旋转的向量。既然我们希望它绕到z轴上,我们就指定了向量“0 0 1”。
+唯一需要补充的信息是旋转轴，通过 xyz 三元组指定头部绕其旋转的向量。这里希望绕 z 轴旋转，因此指定 `0 0 1`。
 
 <span id="the-gripper"></span>
 
-## 灰熊队
+## 夹爪
 
-``` xml
+```xml
 <joint name="left_gripper_joint" type="revolute">
   <axis xyz="0 0 1"/>
   <limit effort="1000.0" lower="0.0" upper="0.548" velocity="0.5"/>
@@ -64,13 +55,13 @@ $ ros2 launch urdf_tutorial display.launch.py model:=urdf/06-flexible.urdf
 </joint>
 ```
 
-左右抓动关节的模型是转动关节。这意味着它们与连续关节的旋转方式相同,但有严格的限制。 因此,我们必须包括指定关节的上下限(弧度)的极限标记。 我们还必须为这个关节指定一个最大速度和努力,但实际值对我们这里的目的来说并不重要。
+左右夹爪都采用转动关节。它们像连续旋转关节一样旋转，但具有严格的范围限制。因此必须包含 `limit` 标签，指定关节角度的上下限，单位为弧度。还必须指定最大速度和力矩，不过本教程暂不关心这些数值的实际大小。
 
 <span id="the-gripper-arm"></span>
 
-## 猛兽臂
+## 夹爪臂
 
-``` xml
+```xml
 <joint name="gripper_extension" type="prismatic">
   <parent link="base_link"/>
   <child link="gripper_pole"/>
@@ -79,24 +70,24 @@ $ ros2 launch urdf_tutorial display.launch.py model:=urdf/06-flexible.urdf
 </joint>
 ```
 
-握手臂是另一种关节,即棱柱关节。这意味着它沿着轴线移动,而不是绕着它移动。这种翻译运动使我们的机器人模型能够伸展和收回握手臂。
+夹爪臂采用平移关节，沿着一条轴移动，而非绕轴旋转。这种平移运动使机器人可以伸出和收回夹爪臂。
 
-棱臂的限度与折叠关节相同,但单位为米,而非弧度.
+平移关节的限制与转动关节的指定方式相同，只是单位为米而不是弧度。
 
 <span id="other-types-of-joints"></span>
 
-## 其他类型的联合企业
+## 其他关节类型
 
-还有另外两种关节在空间中移动。 棱关节只能沿着一个维度移动,而一个平面或两个维度则可以移动。 此外,一个浮关节不受约束,可以在三个维度中任意移动。 这些关节不能只用一个数字来指定,因此不包含在这个教程中。
+还有两种能在空间中运动的关节。平移关节只能沿一个维度移动，平面关节（planar）则可以在二维平面内运动；浮动关节（floating）不受约束，可在三维空间中运动。这些关节无法仅用一个数值描述，因此不在本教程范围内。
 
 <span id="specifying-the-pose"></span>
 
-## 指定 pose 中
+## 指定位姿
 
-当您在图形界面中移动滑动器时, 模型会在 Rviz 中移动。 如何完成 ? [图形界面](https://index.ros.org/p/joint_state_publisher_gui) 解析 URDF 并找到所有非固定关节及其限制。然后,它使用滑动器的值来发布 [sensor_msgs/msg/JointState](https://github.com/ros2/common_interfaces/blob/eloquent/sensor_msgs/msg/JointState.msg) 消息。然后这些信息被 [robot_state_publisher](https://index.ros.org/p/robot_state_publisher) 用于计算不同部分之间的所有变换。然后使用所产生的变换树来显示Rviz中的所有形状。
+拖动 GUI 中的滑块时，RViz 中的模型会随之运动。首先，[GUI](https://index.ros.org/p/joint_state_publisher_gui) 解析 URDF，找出全部非固定关节及其限制，再根据滑块数值发布 [sensor_msgs/msg/JointState](https://github.com/ros2/common_interfaces/blob/eloquent/sensor_msgs/msg/JointState.msg) 消息。[robot_state_publisher](https://index.ros.org/p/robot_state_publisher) 使用这些消息计算各部件之间的变换，最终得到的变换树用于在 RViz 中显示所有形状。
 
 <span id="next-steps"></span>
 
 ## 后续步骤
 
-现在你有了明显的功能模型,你可以 [在一些物理属性中添加](Adding-Physical-and-Collision-Properties-to-a-URDF-Model.md),或 [开始使用xacro来简化代码](Using-Xacro-to-Clean-Up-a-URDF-File.md).
+现在已有一个可以显示和运动的模型，接下来可以[添加物理属性](Adding-Physical-and-Collision-Properties-to-a-URDF-Model.md)，或[使用 Xacro 简化代码](Using-Xacro-to-Clean-Up-a-URDF-File.md)。

@@ -1,192 +1,133 @@
----
-translation_status: machine_translated
-source: The-ROS2-Project/Feature-Ideas.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
-<span id="feature-ideas"></span> <span id="featureideas"></span>
+<span id="feature-ideas"></span><span id="featureideas"></span>
 
 # 功能建议
 
-以下是没有具体顺序的特征构想,该列表包含我们认为重要的特征,可以为ROS 2做出良好贡献. [请联系我们](../Contact.md) 在挖掘新功能之前,我们可以提供指南,并与其他开发者连接。
+以下建议不分先后。这些功能被认为很重要，也适合作为对 ROS 2 的贡献。开始开发新功能之前，请先[联系我们](../Contact.md)，我们可以提供指导，并帮助你联系其他开发者。
 
 <span id="design-concept"></span>
 
-## 设计/概念
+## 设计与概念
 
-- IDL 格式
-
-  - 利用新特性, 如将常数组合成元件
-
-  - 扩展使用范围至 `.idl` 仅包含常数和/或有区域声明参数的文件
-
-  - 重访IDL 界面命名的限制,参见 [ros2/design#220](https://github.com/ros2/design/pull/220)
-
-- 为 ROS 1 - \> ROS 2 过渡创建迁移计划
-
-- 节点名称的独特性,参见 [ros2/design#187](https://github.com/ros2/design/issues/187)
-
-- 以描述性格式说明某一节点的主题/服务/等的具体“API”,见 [ros2/design#266](https://github.com/ros2/design/pull/266)
+- IDL 格式：利用将常量归入枚举等新特性；扩展对仅包含常量的 `.idl` 文件以及带取值范围的参数声明的支持；重新审视 IDL 接口命名限制，参见 [ros2/design#220](https://github.com/ros2/design/pull/220)。
+- 制定 ROS 1 → ROS 2 迁移计划。
+- 节点名称的唯一性，参见 [ros2/design#187](https://github.com/ros2/design/issues/187)。
+- 使用描述性格式定义节点的话题、服务等具体“API”，参见 [ros2/design#266](https://github.com/ros2/design/pull/266)。
 
 <span id="infrastructure-and-tools"></span>
 
-## 基础设施和工具
+## 基础设施与工具
 
-- 大楼
+### 构建
 
-  - 合并 <https://build.ros2.org> 财务报告和财务报告 <https://ci.ros2.org>
+- 整合 <https://build.ros2.org> 和 <https://ci.ros2.org>。
+- 配置 macOS 构建环境。
+- 提供 Windows 和 macOS 软件包。
+- 在 `colcon` 中支持配置档案（profile）。
 
-  - 提供 macOS
+### 文档
 
-  - 窗口和macOS 软件包
-
-  - 支持配置图 `colcon`
-
-- 文档
-
-  - 折旧 <https://design.ros2.org>内容应移动到环境方案,以便 <https://github.com/ros2/ros2_documentation>,或被删除。
-
-  - 整治每件文件的建设者,能够记录建设文物,即信息,服务,行动等.
-
-  - 制作( M) <https://docs.ros.org/en/ros2_documentation> 更改后自动重建到 <https://github.com/ros2/ros2_documentation>.
-
-  - `ament` 文档
-
-  - 添加使用 ROS 2 的文档示例,并配有 Jupyter 笔记本.
-
-  - 增加执行新的《保护所有移徙工人及其家庭成员权利国际公约》的文件。
-
-  - 提供三种不同的内容:
-
-    - 显示特征并用测试遮盖的“演示”
-
-    - “实例”以显示一种简单/最低限度的用途,这种用途可能有多种方法来做一些事情
-
-    - 包含更多评论和维基语录的“教程”(教学推荐的方法)
+- 停用 <https://design.ros2.org>，将内容迁移至 REP 或 <https://github.com/ros2/ros2_documentation>，或予以移除。
+- 修复软件包文档构建器，使其能够为消息、服务、动作等构建产物生成文档。
+- 当 <https://github.com/ros2/ros2_documentation> 发生变化时，自动重新构建 <https://docs.ros.org/en/ros2_documentation>。
+- 编写 `ament` 文档。
+- 增加在 Jupyter notebook 中使用 ROS 2 的文档示例。
+- 增加实现新 RMW 的文档。
+- 提供三类不同内容：演示（demos）用于展示功能并用测试覆盖它们；示例（examples）用于展示简单或最小用法，同一任务可能有多种实现；教程（tutorials）提供更多注释和供 Wiki 引用的锚点，教授一种推荐做法。
 
 <span id="new-features"></span>
 
-## 新特性
+## 新功能
 
-后方的恒星表示粗糙的功率:1星为小星,2星为中星,3星为大星.
+星号表示大致工作量：一颗星为小，两颗星为中，三颗星为大。
 
-- 伐木改进 \[\* / \*\*\]
+### 日志改进（★ / ★★）
 
-  - 文件指定的配置
+- 通过文件指定配置。
+- 按日志记录器分别配置，例如支持 `rqt_logger_level`。
 
-  - 偶机配置(例如辅助配置). `rqt_logger_level`)
+### 时间相关功能
 
-- 时间关系
+- 支持基于时钟的频率控制和休眠。
 
-  - 基于时钟的支持率和睡眠率
+### 更多计算图 API 功能（★★ / ★★★）
 
-- 附加图 API 特性 \[\*\* / \*\*\*\]
+- 内省所有话题（尤其是远端话题）的 QoS 设置。
+- 提供类似 [ROS 1 Master API](https://wiki.ros.org/ROS/Master_API) 的功能。
+- 基于事件的通知。
+- 需要了解并扩展 rmw 接口。
 
-  - 面向所有(特别是远程)主题的 QoS 设置
+### 执行器
 
-  - a la ROS 1 主 API: <https://wiki.ros.org/ROS/Master_API>
+- 改进性能，重点是等待集。
+- 确定性的执行顺序，即公平调度。
+- 解耦 waitable 对象。
 
-  - 基于事件的通知
+### 消息生成
 
-  - 需要了解需要扩展的 Rmw 接口
+- 为尚未开箱支持的语言补充消息生成支持。
+- 对消息字段名进行改写，避免与特定语言的关键字冲突。
+- 在同一个 Python 解释器中运行生成器以改善性能。
 
-- 执行器
+### 启动系统
 
-  - 改进性能(主要是在等待器周围)
+- 支持启动包含多个节点的可执行程序，即手动组合。
+- 扩展 launch 的 XML/YAML 支持，包括事件、事件处理器、标签命名空间和别名。
 
-  - 定时命令( 公平排程)
+### Rosbag
 
-  - 二进制等待器
+- 支持录制服务和动作。
 
-- 信件生成
+### ros1_bridge
 
-  - 不支持外框语言的快取信件生成
+- 支持桥接动作。
 
-  - 信件中的字段名称以避开语言特定关键字
+### RMW 配置
 
-  - 通过在同一 Python 解释器中运行来提高生成器的性能
+- 以统一的标准方式配置中间件。
 
-- 启动
+### 重映射（★★ / ★★★）
 
-  - 支持启动多节点可执行文件(即手工构成)
+- 通过服务接口实现动态重映射和别名。
 
-  - 扩展启动 XML/ YAML 支持:事件和事件处理器,标签命名空间和别名
+### 类型伪装（★★★）
 
-- 罗斯巴格
+- 提供类似 [ROS 1 消息特征（message traits）](https://wiki.ros.org/roscpp/Overview/MessagesSerializationAndAdaptingTypes)的机制。
+- 需要了解类型支持系统。
 
-  - 支助记录服务(和行动)
+### 扩展实时安全性（★★★）
 
-- ros1_bridge
+- 覆盖服务、客户端和参数。
+- 暴露更多与实时性能有关的服务质量参数。
+- 提供实时安全的进程内消息传递。
 
-  - 支持过渡行动
+### 多机器人支持功能及演示（★★★）
 
-- RMW 配置
+- 所有机器人的全部节点共享同一个域并互相发现，并不理想。
+- 设计如何对系统进行分区。
 
-  - 配置中间软件的统一标准方式
+### 支持更多 DDS / RTPS 实现
 
-- 重新绘图 \[\*\* / \*\*\*\]
+- RTI Connext DDS Micro：已经实现，但默认未启用，也未获得官方支持。
 
-  - 通过服务接口进行动态重映和化名
+### 安全性改进
 
-- 装模作样 \[\*\*\*\]
-
-  - 一个ROS 1的信息特征: <https://wiki.ros.org/roscpp/Overview/MessagesSerializationAndAdaptingTypes>
-
-  - 需要了解类型支持系统
-
-- 实时安全扩展 \[\*\*\*\]
-
-  - 服务、客户和参数
-
-  - 展示与实时性能有关的服务质量参数
-
-  - 实时安全流程内信息
-
-- 多机器人支持功能和演示 \[\*\*\*\]
-
-  - 不希望所有机器人上的所有节点都共享同一个域(并互相发现)
-
-  - 设计如何将系统“分割”
-
-- 支持更多的DDS/RTPS执行:
-
-  - RTI Connext DDS Micro(已执行,默认无法启用或正式支持).
-
-- 安全改进:
-
-  - 安全配置的颗粒性更强(仅允许认证、认证和加密等) \[\*\]
-
-  - 整合 DDS- Security 日志插件(将安全事件汇总并通过ROS 接口向用户报告的统一方式) \[\*\*\]
-
-  - 密钥存储安全(现在,密钥只是存储在文件系统中) \[\*\*\]
-
-  - 更方便用户的界面( 使指定安全配置更加容易) 。 也许是 Qt 图形用户界面 ? 此图形用户界面也可以帮助以某种方式分配密钥 \[\*\*\*\]
-
-  - 一种“请确保这个运行系统的安全”的表达方式,使用一些可以自动生成当前运行的所有密钥和政策的用户界面\[\*\*\*\]
-
-  - 如果有硬件特定功能来保护密钥或加速加密/签名消息,那么在DDS/RTPS执行中添加已经不用的功能可能很有趣 \[\*\*\*\]
+- 提供更细粒度的安全配置，例如仅认证、认证加加密等。（★）
+- 集成 DDS-Security 日志插件，以统一方式汇总安全事件，并通过 ROS 接口向用户报告。（★★）
+- 提高密钥存储安全性，目前密钥只是保存在文件系统中。（★★）
+- 提供更友好的界面，使安全配置更容易指定；例如 Qt 图形界面，也可协助分发密钥。（★★★）
+- 提供界面，让用户为当前运行的系统启用安全机制，自动为运行中的全部实体生成密钥和策略。（★★★）
+- 如果硬件提供密钥保护或加速消息加密、签名的功能，可以考虑将其加入尚未使用这些功能的 DDS/RTPS 实现。（★★★）
 
 <span id="reducing-technical-debt"></span>
 
 ## 减少技术债务
 
-- 修复片状试验 <https://ci.ros2.org/view/nightly>.
-
-- 能够使用工具进行(所有)单元测试,例如:Valgrind、cang-tidy、cang静态分析(scan-building)、ASAN、TSAN、UBSAN等。
-
-- API 评论,具体为 Rclcpp 和 rclpy 的用户化 API
-
-- 将 rclcpp API 重置为侧重于单个方面的单独软件包, rclcpp 之后仍应提供合并的 user-facing API
-
-- 重访信件分配器, 考虑使用 std:: polymorphic\_ 分配器来解决问题
-
-- 同步/ 对齐 [设计文件](https://design.ros2.org) 与执行有关。
-
-- 地址/待售票分类
-
-- 代码/文件中的地址待办事宜
-
-- 删除小xml作为依赖
+- 修复 <https://ci.ros2.org/view/nightly> 中不稳定的测试。
+- 支持使用 valgrind、clang-tidy、Clang 静态分析（scan-build）、ASAN、TSAN、UBSAN 等工具运行全部单元测试。
+- 审查 API，尤其是 rclcpp 和 rclpy 面向用户的 API。
+- 将 rclcpp API 重构为各自专注单一方面的软件包，同时仍由 rclcpp 提供完整的用户层 API。
+- 重新审视消息分配器，考虑使用 `std::polymorphic_allocator` 解决问题。
+- 使[设计文档](https://design.ros2.org)与实现保持同步、一致。
+- 处理或分类待解决的 issue。
+- 处理代码和文档中的 TODO。
+- 移除对 tinyxml 的依赖。

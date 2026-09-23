@@ -3,10 +3,6 @@ translation_status: machine_translated
 source: Releases/Jazzy-Jalisco-Complete-Changelog.rst
 ---
 
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="jazzy-jalisco-changelog"></span>
 
 # Jazzy Jalisco 完整变更日志

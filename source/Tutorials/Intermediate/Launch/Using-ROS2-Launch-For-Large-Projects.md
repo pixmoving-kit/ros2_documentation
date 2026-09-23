@@ -1,150 +1,62 @@
----
-translation_status: machine_translated
-source: Tutorials/Intermediate/Launch/Using-ROS2-Launch-For-Large-Projects.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="managing-large-projects"></span> <span id="usingros2launchforlargeprojects"></span>
 
 # 管理大型项目
 
-**目标：** 学习使用ROS 2发射文件管理大型项目的最佳做法.
+**目标：** 学习使用 ROS 2 启动文件管理大型项目的最佳实践。
 
 **教程级别：** 中级
 
-**用时：** 20分钟
+**预计耗时：** 20 分钟
 
 <span id="background"></span>
 
 ## 背景
 
-此教程描述一些为大型项目编写发射文件的提示。 重点是如何构建发射文件, 以便在不同情况下尽可能多地重新使用它们。 此外, 它涵盖了不同的ROS 2 发射工具的用法实例, 如参数、 YAML 文件、 重映射、 命名空间、 默认参数和 RViz 配置 。
+本教程介绍为大型项目编写启动文件的一些技巧，重点是如何组织文件，尽可能在不同情境中复用。还会展示参数、YAML 文件、重映射、命名空间、默认参数及 RViz 配置等 ROS 2 启动工具的用法。
 
 <span id="prerequisites"></span>
 
 ## 前提条件
 
-此教程使用 [乌龟](../../Beginner-CLI-Tools/Introducing-Turtlesim/Introducing-Turtlesim.md) 财务报告和财务报告 [turtle_tf2_py](../Tf2/Introduction-To-Tf2.md) 软件包。此教程还假定您有 [创建新软件包](../../Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.md) 结构类型 `ament_python` 调用 `launch_tutorial`.
+本教程使用 [turtlesim](../../Beginner-CLI-Tools/Introducing-Turtlesim/Introducing-Turtlesim.md) 和 [turtle_tf2_py](../Tf2/Introduction-To-Tf2.md) 包，并假设你已[创建](../../Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.md)名为 `launch_tutorial`、构建类型为 `ament_python` 的包。
 
 <span id="introduction"></span>
 
-## 导言
+## 简介
 
-机器人上的大型应用通常涉及几个互相连接的节点,每个节点可以有许多参数. 模拟龟模中的多只龟可以作为一个很好的例子. 龟模模拟由多个龟标节点,世界配置,以及TF播音器和收听器节点组成. 在所有节点中,有大量的ROS参数影响这些节点的行为和外观. ROS 2发射文件允许我们开始所有节点,并在一个地方设置相应的参数. 在一个教程结束时,你将构建这个参数. `launch_turtlesim_launch` 发射文件 `launch_tutorial` 。这个发射文件将提出不同的节点,负责模拟两个龟兹模拟,启动TF广播员和听众,加载参数,并启动一个 RViz 配置。在这个教程中,我们将查看这个发射文件和所使用的所有相关特性。
+大型机器人应用通常包含多个相互关联的节点，每个节点都可能具有许多参数。海龟仿真器中的多海龟仿真就是很好的例子：系统包含多个海龟节点、世界配置，以及 TF 广播和监听节点。各节点的大量 ROS 参数会影响它们的行为和外观。ROS 2 启动文件可在一个地方启动所有节点并设置相应参数。
 
-> **注意**
->
-> 启动文件可以以 XML 、 YAML 或 Python 格式编写 。 在整个教程中, 启动文件都用所有三种格式使用制表符显示 。 您可以选择您喜欢的格式 - 它们是功能上等同的 。 任何您看到文件名的地方 `launch_turtlesim_launch` 确定您的发射文件类型(即: `launch_turtlesim_launch.py` 以蟒蛇盟誓, `launch_turtlesim_launch.xml` 用于 XML,以及 `launch_turtlesim_launch.yaml` 为YAML.
+本教程将完成 `launch_tutorial` 包中的 `launch_turtlesim_launch` 启动文件，启动两个 turtlesim 仿真、TF 广播器和监听器，加载参数并启动带有配置的 RViz。下面逐一介绍该启动文件及其用到的功能。
+
+> 启动文件可以采用 XML、YAML 或 Python，三者功能等价，可按喜好选择。下面出现 `launch_turtlesim_launch` 等文件名时，请使用所选格式对应的扩展名 `.xml`、`.yaml` 或 `.py`。
 
 <span id="writing-launch-files"></span>
 
-## 写入启动文件
+## 编写启动文件
 
 <span id="top-level-organization"></span>
 
-### 1个最高级别组织
+### 1 顶层组织
 
-写入发射文件过程中的目标之一应该是尽可能地使其可重复使用。 可以通过将相关的节点和配置组合成单独的发射文件来完成。 之后, 可以写入一个专门用于特定配置的顶级发射文件。 这样就可以在完全不改变发射文件的情况下在相同的机器人之间移动。 即使是从真正的机器人移动到模拟的机器人这样的改变, 也只能做几处修改 。
+编写启动文件时，应尽量提高可复用性。可以将相关节点和配置归入独立启动文件，再为具体系统配置编写顶层启动文件。这样在相同机器人之间切换时无须修改启动文件，从真实机器人切换到仿真机器人时也只需少量修改。
 
-现在,我们将翻阅能够做到这一点的顶级发射文件结构。 首先,我们将创建一个发射文件,调用单独的发射文件。为此,让我们创建一个 `launch_turtlesim_launch` 文档中 `/launch` 我们的文件夹 `launch_tutorial` 软件包。
+先在 `launch_tutorial` 包的 `launch` 目录中创建一个调用其他启动文件的 `launch_turtlesim_launch` 文件。
 
-> **注意**
->
-> 较早的发射系统版本可能不支持 `let` 内部 `include` 报表和要求 `arg` 相反,语法是相同的: `name` 财务报告和财务报告 `value` 属性保持不变(例如, `<arg name="target_frame" value="carrot1" />`).
+> 较旧版本的启动系统可能不支持在 `include` 中使用 `let`，需要改用 `arg`。语法相同，`name` 和 `value` 属性不变，例如 `<arg name="target_frame" value="carrot1" />`。
 
-##### XML 数据
+根据所选格式，将完整示例复制到对应文件：
 
-复制并粘贴完整的代码到 `launch/launch_turtlesim_launch.xml` 文件 :
+- [launch/launch_turtlesim_launch.xml](launch/launch_turtlesim_launch.xml)
+- [launch/launch_turtlesim_launch.yaml](launch/launch_turtlesim_launch.yaml)
+- [launch/launch_turtlesim_launch.py](launch/launch_turtlesim_launch.py)
 
-``` xml
-<?xml version="1.0" encoding="UTF-8"?>
-<launch>
-  <include file="$(find-pkg-share launch_tutorial)/launch/turtlesim_world_1_launch.xml" />
-  <include file="$(find-pkg-share launch_tutorial)/launch/turtlesim_world_2_launch.xml" />
-  <include file="$(find-pkg-share launch_tutorial)/launch/broadcaster_listener_launch.xml">
-    <let name="target_frame" value="carrot1" />
-  </include>
-  <include file="$(find-pkg-share launch_tutorial)/launch/mimic_launch.xml" />
-  <include file="$(find-pkg-share launch_tutorial)/launch/fixed_broadcaster_launch.xml" />
-  <include file="$(find-pkg-share launch_tutorial)/launch/turtlesim_rviz_launch.xml" />
-</launch>
-```
+顶层文件包含多个启动文件，每个文件封装系统一部分的节点、参数，以及可能嵌套包含的其他启动文件。具体包括两个 turtlesim 世界、TF 广播器、TF 监听器、mimic、固定坐标系广播器和 RViz 节点。
 
-##### 也门
+> 设计建议：顶层启动文件应保持简短，主要包含对应应用子组件的启动文件，以及经常修改的参数。
 
-复制并粘贴完整的代码到 `launch/launch_turtlesim_launch.yaml` 文件 :
+这种组织方式便于替换系统的某个部分，后面会看到示例。不过，由于性能和使用方式的要求，有些节点或启动文件可能需要单独启动。
 
-``` yaml
-%YAML 1.2
----
-launch:
-  - include:
-      file: "$(find-pkg-share launch_tutorial)/launch/turtlesim_world_1_launch.yaml"
-  - include:
-      file: "$(find-pkg-share launch_tutorial)/launch/turtlesim_world_2_launch.yaml"
-  - include:
-      file: "$(find-pkg-share launch_tutorial)/launch/broadcaster_listener_launch.yaml"
-      let:
-        - name: "target_frame"
-          value: "carrot1"
-  - include:
-      file: "$(find-pkg-share launch_tutorial)/launch/mimic_launch.yaml"
-  - include:
-      file: "$(find-pkg-share launch_tutorial)/launch/fixed_broadcaster_launch.yaml"
-  - include:
-      file: "$(find-pkg-share launch_tutorial)/launch/turtlesim_rviz_launch.yaml"
-```
-
-##### Python
-
-复制并粘贴完整的代码到 `launch/launch_turtlesim_launch.py` 文件 :
-
-``` python
-from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
-from launch.substitutions import PathJoinSubstitution
-from launch_ros.substitutions import FindPackageShare
-
-
-def generate_launch_description():
-    launch_dir = PathJoinSubstitution([FindPackageShare('launch_tutorial'), 'launch'])
-    return LaunchDescription([
-        IncludeLaunchDescription(
-            PathJoinSubstitution([launch_dir, 'turtlesim_world_1.launch.py'])
-        ),
-        IncludeLaunchDescription(
-            PathJoinSubstitution([launch_dir, 'turtlesim_world_2.launch.py'])
-        ),
-        IncludeLaunchDescription(
-            PathJoinSubstitution([launch_dir, 'broadcaster_listener.launch.py']),
-            launch_arguments={'target_frame': 'carrot1'}.items()
-        ),
-        IncludeLaunchDescription(
-            PathJoinSubstitution([launch_dir, 'mimic.launch.py'])
-        ),
-        IncludeLaunchDescription(
-            PathJoinSubstitution([launch_dir, 'fixed_broadcaster.launch.py'])
-        ),
-        IncludeLaunchDescription(
-            PathJoinSubstitution([launch_dir, 'turtlesim_rviz.launch.py'])
-        ),
-    ])
-```
-
-这个发射文件包括一组其他发射文件,每个文件包括发射文件包含节点、参数,也可能包括嵌入式文件,它们与系统的一个部分有关。精确地说,我们发射了两个龟象模拟世界、TF广播机、TF听众、模拟器、固定帧广播机和RViz节点。
-
-> **说明**
->
-> Design Tip:顶级发射文件应当简短,包含与应用程序子组件对应的其他文件,以及通常更改的参数.
-
-以下列方式撰写发射文件使得我们很容易将系统的一个部件互换出来,我们以后会看到这一点。 但是,有时由于性能和使用原因,有些节点或发射文件必须单独发射。
-
-> **说明**
->
-> 设计提示(Design tip):在决定您应用程序需要多少顶级发射文件时,要注意权衡.
+> 设计建议：决定应用需要多少个顶层启动文件时，应权衡这些因素。
 
 <span id="parameters"></span>
 
@@ -152,155 +64,31 @@ def generate_launch_description():
 
 <span id="setting-parameters-in-the-launch-file"></span>
 
-#### 2.1 在发射文件中设置参数
+#### 2.1 在启动文件中设置参数
 
-我们将首先写一个启动文件,开始我们第一次龟兹模拟。 `turtlesim_world_1_launch`.
+先创建 `turtlesim_world_1_launch`，启动第一个海龟仿真。根据所选格式复制相应完整示例：
 
-##### XML 数据
+- [launch/turtlesim_world_1_launch.xml](launch/turtlesim_world_1_launch.xml)
+- [launch/turtlesim_world_1_launch.yaml](launch/turtlesim_world_1_launch.yaml)
+- [launch/turtlesim_world_1_launch.py](launch/turtlesim_world_1_launch.py)
 
-复制并粘贴完整的代码到 `launch/turtlesim_world_1_launch.xml` 文件 :
-
-``` xml
-<?xml version="1.0" encoding="UTF-8"?>
-<launch>
-  <arg name="background_r" default="0" />
-  <arg name="background_g" default="84" />
-  <arg name="background_b" default="122" />
-  <node pkg="turtlesim" exec="turtlesim_node" name="sim">
-    <param name="background_r" value="$(var background_r)" />
-    <param name="background_g" value="$(var background_g)" />
-    <param name="background_b" value="$(var background_b)" />
-  </node>
-</launch>
-```
-
-##### 也门
-
-复制并粘贴完整的代码到 `launch/turtlesim_world_1_launch.yaml` 文件 :
-
-``` yaml
-%YAML 1.2
----
-launch:
-  - arg:
-      name: "background_r"
-      default: "0"
-  - arg:
-      name: "background_g"
-      default: "84"
-  - arg:
-      name: "background_b"
-      default: "122"
-  - node:
-      pkg: "turtlesim"
-      exec: "turtlesim_node"
-      name: "sim"
-      param:
-        - name: "background_r"
-          value: "$(var background_r)"
-        - name: "background_g"
-          value: "$(var background_g)"
-        - name: "background_b"
-          value: "$(var background_b)"
-```
-
-##### Python
-
-复制并粘贴完整的代码到 `launch/turtlesim_world_1_launch.py` 文件 :
-
-``` python
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import Node
-
-
-def generate_launch_description():
-    return LaunchDescription([
-        DeclareLaunchArgument('background_r', default_value='0'),
-        DeclareLaunchArgument('background_g', default_value='84'),
-        DeclareLaunchArgument('background_b', default_value='122'),
-        Node(
-            package='turtlesim',
-            executable='turtlesim_node',
-            name='sim',
-            parameters=[{
-                'background_r': LaunchConfiguration('background_r'),
-                'background_g': LaunchConfiguration('background_g'),
-                'background_b': LaunchConfiguration('background_b'),
-            }]
-        ),
-    ])
-```
-
-此发射文件启动 `turtlesim_node` 节点,它开始龟兹模拟,其模拟配置参数被定义并传递到节点.
+文件启动 `turtlesim_node`，并定义、传递仿真配置参数。
 
 <span id="loading-parameters-from-yaml-file"></span>
 
-#### 2.2 从 YAML 文件装入参数
+#### 2.2 从 YAML 文件加载参数
 
-在第二次发射时,我们将用不同的配置开始第二次龟兹模拟。 `turtlesim_world_2_launch` 文档。
+第二个启动文件使用不同配置启动另一个海龟仿真。创建 `turtlesim_world_2_launch`，复制对应示例：
 
-##### XML 数据
+- [launch/turtlesim_world_2_launch.xml](launch/turtlesim_world_2_launch.xml)
+- [launch/turtlesim_world_2_launch.yaml](launch/turtlesim_world_2_launch.yaml)
+- [launch/turtlesim_world_2_launch.py](launch/turtlesim_world_2_launch.py)
 
-复制并粘贴完整的代码到 `launch/turtlesim_world_2_launch.xml` 文件 :
+它同样启动 `turtlesim_node`，但参数值直接从 YAML 配置文件加载。YAML 便于保存和加载大量变量。这里的 YAML 是节点参数配置文件，并非另一个启动文件。还可以通过 `ros2 param` 将当前参数导出为 YAML，操作方法见[理解参数](../../Beginner-CLI-Tools/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md)教程。
 
-``` xml
-<?xml version="1.0" encoding="UTF-8"?>
-<launch>
-  <node pkg="turtlesim" exec="turtlesim_node" namespace="turtlesim2" name="sim">
-    <param from="$(find-pkg-share launch_tutorial)/config/turtlesim.yaml" />
-  </node>
-</launch>
-```
+在软件包的 `config` 目录中创建供启动文件加载的 `turtlesim.yaml`：
 
-##### 也门
-
-复制并粘贴完整的代码到 `launch/turtlesim_world_2_launch.yaml` 文件 :
-
-``` yaml
-%YAML 1.2
----
-launch:
-  - node:
-      pkg: "turtlesim"
-      exec: "turtlesim_node"
-      namespace: "turtlesim2"
-      name: "sim"
-      param:
-        - from: "$(find-pkg-share launch_tutorial)/config/turtlesim.yaml"
-```
-
-##### Python
-
-复制并粘贴完整的代码到 `launch/turtlesim_world_2_launch.py` 文件 :
-
-``` python
-from launch import LaunchDescription
-from launch.substitutions import PathJoinSubstitution
-from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
-
-
-def generate_launch_description():
-    return LaunchDescription([
-        Node(
-            package='turtlesim',
-            executable='turtlesim_node',
-            namespace='turtlesim2',
-            name='sim',
-            parameters=[PathJoinSubstitution([
-                FindPackageShare('launch_tutorial'), 'config', 'turtlesim.yaml'])
-            ],
-        ),
-    ])
-```
-
-此发射文件将同样发射 `turtlesim_node` 含有直接从 YAML 配置文件加载的参数值。定义 YAML 文件中的参数和参数可以方便地存储和加载大量变量。同样值得注意的是,这个 YAML 文件不是另一个启动文件,而是用于此的配置文件 。 `turtlesim_node` 设置节点的参数。此外,YAML文件很容易从当前导出 `ros2 param` 列表。为了学习如何做到这一点,请参考 [理解参数](../../Beginner-CLI-Tools/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md) 教学。
-
-让我们现在创建一个配置文件, `turtlesim.yaml`时, `/config` 我们包的文件夹, 将会被我们的发射文件加载。
-
-``` YAML
+```YAML
 /turtlesim2/sim:
    ros__parameters:
       background_b: 255
@@ -308,86 +96,32 @@ def generate_launch_description():
       background_r: 150
 ```
 
-为了更多地了解使用参数和使用YAML文件,请查看 [理解参数](../../Beginner-CLI-Tools/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md) 教学。
+有关参数和 YAML 文件的更多用法，同样可参阅[理解参数](../../Beginner-CLI-Tools/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md)。
 
 <span id="using-wildcards-in-yaml-files"></span>
 
 #### 2.3 在 YAML 文件中使用通配符
 
-当我们想要在一个多个节点设置相同的参数时,有这样的情况。这些节点可能有不同的命名空间或名称,但仍有相同的参数。定义单独的YAML文件,明确定义命名空间和节点名称是无效的。一个解决方案是使用通配符字符,在文本值中作为未知字符的替代,将参数应用到几个不同的节点。
+有时希望为多个名称或命名空间不同的节点设置相同参数。如果分别建立 YAML 文件并明确写出每个节点名和命名空间，效率很低。可以使用通配符代替文本中的未知字符，将同一组参数应用到多个节点。
 
-现在让我们创造一个新的 `turtlesim_world_3_launch` 类似文件 `turtlesim_world_2_launch` 包括一个 `turtlesim_node` 新命名空间中的节点 `turtlesim3`:
+创建与第二个文件类似的 `turtlesim_world_3_launch`，在新命名空间 `turtlesim3` 中再启动一个 `turtlesim_node`：
 
-##### XML 数据
+- [XML 示例](launch/turtlesim_world_3_launch.xml)，重点看第 3 行。
+- [YAML 示例](launch/turtlesim_world_3_launch.yaml)，重点看第 7 行。
+- [Python 示例](launch/turtlesim_world_3_launch.py)，重点看第 12 行。
 
-复制并粘贴完整的代码到 `launch/turtlesim_world_3_launch.xml` 文件 :
+但直接加载同一个 YAML 文件不会改变第三个仿真的外观，因为参数保存在另一个命名空间下：
 
-``` xml
-<?xml version="1.0" encoding="UTF-8"?>
-<launch>
-  <node pkg="turtlesim" exec="turtlesim_node" namespace="turtlesim3" name="sim">
-    <param from="$(find-pkg-share launch_tutorial)/config/turtlesim.yaml" />
-  </node>
-</launch>
-```
-
-##### 也门
-
-复制并粘贴完整的代码到 `launch/turtlesim_world_3_launch.yaml` 文件 :
-
-``` yaml
-%YAML 1.2
----
-launch:
-  - node:
-      pkg: "turtlesim"
-      exec: "turtlesim_node"
-      namespace: "turtlesim3"
-      name: "sim"
-      param:
-        - from: "$(find-pkg-share launch_tutorial)/config/turtlesim.yaml"
-```
-
-##### Python
-
-复制并粘贴完整的代码到 `launch/turtlesim_world_3_launch.py` 文件 :
-
-``` python
-from launch import LaunchDescription
-from launch.substitutions import PathJoinSubstitution
-from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
-
-
-def generate_launch_description():
-    return LaunchDescription([
-        Node(
-            package='turtlesim',
-            executable='turtlesim_node',
-            namespace='turtlesim3',
-            name='sim',
-            parameters=[
-                PathJoinSubstitution([
-                    FindPackageShare('launch_tutorial'), 'config', 'turtlesim.yaml']),
-            ],
-        ),
-    ])
-```
-
-然而,装入相同的YAML文件不会影响第三个龟兹世界的外观,其原因是其参数被存储在下面显示的另外一个命名空间中:
-
-``` console
+```console
 /turtlesim3/sim:
    background_b
    background_g
    background_r
 ```
 
-因此,我们不用为使用相同参数的同一节点创建新的配置,而可以使用通配符语法. `/**` 将指定每个节点中的所有参数,尽管节点名称和命名空间有差异。
+无须为同类节点再建配置，可以使用通配符 `/**`，将参数应用到所有节点，而不受名称或命名空间差异影响。将 `config/turtlesim.yaml` 修改为：
 
-我们现在将更新 `turtlesim.yaml`时, `/config` 以下列方式编写的文件夹 :
-
-``` YAML
+```YAML
 /**:
    ros__parameters:
       background_b: 255
@@ -395,38 +129,36 @@ def generate_launch_description():
       background_r: 150
 ```
 
-现在包括 `turtlesim_world_3_launch` 发射说明在发射主文件中,使用发射说明中的配置文件将指定 `background_b`, `background_g`,以及 `background_r` 参数到指定值 `turtlesim3/sim` 财务报告和财务报告 `turtlesim2/sim` 节点。
+再把 `turtlesim_world_3_launch` 加入主启动文件。使用这个配置后，`turtlesim3/sim` 和 `turtlesim2/sim` 的 `background_b`、`background_g`、`background_r` 都会取指定值。
 
 <span id="namespaces"></span>
 
-### 3 个命名空间
+### 3 命名空间
 
-正如你可能注意到的,我们已经定义了乌龟世界的名称空间 `turtlesim_world_2_launch` 文件。独特的命名空间允许系统启动两个类似的节点,而无需节点名称或主题名称冲突。
+在 `turtlesim_world_2_launch` 中已经定义命名空间。不同命名空间允许启动相似节点，而不会发生节点名或话题名冲突：
 
-``` Python
+```Python
 namespace='turtlesim2',
 ```
 
-然而,如果发射文件包含大量节点,那么为每个节点定义命名空间可能会变得乏味。 `PushRosNamespace` 动作可以用来定义每个发射文件描述的全局命名空间。每个嵌套节点将自动继承该命名空间。
+节点较多时，逐个指定命名空间很繁琐。可用 `PushRosNamespace` 为整个启动描述设置命名空间，所有嵌套节点会自动继承。
 
-> **注意**
->
-> `PushRosNamespace` 必须是列表中用于应用命名空间的下列动作的第一个动作.
+> `PushRosNamespace` 必须是动作列表中的第一个动作，后续动作才会应用该命名空间。
 
-要做到这一点,首先,我们需要去除 `namespace='turtlesim2'` 从线条 `turtlesim_world_2_launch` 文件。之后,我们需要更新 `launch_turtlesim_launch` 将加入语句改为:
+先删除 `turtlesim_world_2_launch` 中的 `namespace='turtlesim2'`，再修改顶层文件中的包含语句。
 
-##### XML 数据
+XML：
 
-``` xml
+```xml
 <group>
   <push_ros_namespace namespace="turtlesim2" />
   <include file="$(find-pkg-share launch_tutorial)/launch/turtlesim_world_2_launch.xml" />
 </group>
 ```
 
-##### 也门
+YAML：
 
-``` yaml
+```yaml
 - group:
     - push_ros_namespace:
         namespace: "turtlesim2"
@@ -434,9 +166,9 @@ namespace='turtlesim2',
         file: "$(find-pkg-share launch_tutorial)/launch/turtlesim_world_2_launch.yaml"
 ```
 
-##### Python
+Python：
 
-``` python
+```python
 from launch.actions import GroupAction
 from launch_ros.actions import PushRosNamespace
 
@@ -449,344 +181,67 @@ from launch_ros.actions import PushRosNamespace
    ),
 ```
 
-因此,每个节点在 `turtlesim_world_2_launch` 发射描述将有一个 `turtlesim2` 名称空间。
+这样，`turtlesim_world_2_launch` 中的所有节点都会使用 `turtlesim2` 命名空间。
 
 <span id="reusing-nodes"></span>
 
-### 4 重用节点
+### 4 复用节点
 
-现在创建一个 `broadcaster_listener_launch` 文档。
+创建 `broadcaster_listener_launch`，复制对应的完整示例：
 
-##### XML 数据
+- [launch/broadcaster_listener_launch.xml](launch/broadcaster_listener_launch.xml)
+- [launch/broadcaster_listener_launch.yaml](launch/broadcaster_listener_launch.yaml)
+- [launch/broadcaster_listener_launch.py](launch/broadcaster_listener_launch.py)
 
-复制并粘贴完整的代码到 `launch/broadcaster_listener_launch.xml` 文件 :
+文件声明默认值为 `turtle1` 的 `target_frame` 启动参数。启动时若传入参数，就将该值传给节点；否则使用默认值。
 
-``` xml
-<?xml version="1.0" encoding="UTF-8"?>
-<launch>
-  <arg name="target_frame" default="turtle1" description="Target frame name." />
-  <node pkg="turtle_tf2_py" exec="turtle_tf2_broadcaster" name="broadcaster1">
-    <param name="turtlename" value="turtle1" />
-  </node>
-  <node pkg="turtle_tf2_py" exec="turtle_tf2_broadcaster" name="broadcaster2">
-    <param name="turtlename" value="turtle2" />
-  </node>
-  <node pkg="turtle_tf2_py" exec="turtle_tf2_listener" name="listener">
-    <param name="target_frame" value="$(var target_frame)" />
-  </node>
-</launch>
-```
-
-##### 也门
-
-复制并粘贴完整的代码到 `launch/broadcaster_listener_launch.yaml` 文件 :
-
-``` yaml
-%YAML 1.2
----
-launch:
-  - arg:
-      name: "target_frame"
-      default: "turtle1"
-      description: "Target frame name."
-  - node:
-      pkg: "turtle_tf2_py"
-      exec: "turtle_tf2_broadcaster"
-      name: "broadcaster1"
-      param:
-        - name: "turtlename"
-          value: "turtle1"
-  - node:
-      pkg: "turtle_tf2_py"
-      exec: "turtle_tf2_broadcaster"
-      name: "broadcaster2"
-      param:
-        - name: "turtlename"
-          value: "turtle2"
-  - node:
-      pkg: "turtle_tf2_py"
-      exec: "turtle_tf2_listener"
-      name: "listener"
-      param:
-        - name: "target_frame"
-          value: "$(var target_frame)"
-```
-
-##### Python
-
-复制并粘贴完整的代码到 `launch/broadcaster_listener_launch.py` 文件 :
-
-``` python
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
-
-from launch_ros.actions import Node
-
-
-def generate_launch_description():
-    return LaunchDescription([
-        DeclareLaunchArgument(
-            'target_frame', default_value='turtle1',
-            description='Target frame name.',
-        ),
-        Node(
-            package='turtle_tf2_py',
-            executable='turtle_tf2_broadcaster',
-            name='broadcaster1',
-            parameters=[
-                {'turtlename': 'turtle1'}
-            ],
-        ),
-        Node(
-            package='turtle_tf2_py',
-            executable='turtle_tf2_broadcaster',
-            name='broadcaster2',
-            parameters=[
-                {'turtlename': 'turtle2'}
-            ],
-        ),
-        Node(
-            package='turtle_tf2_py',
-            executable='turtle_tf2_listener',
-            name='listener',
-            parameters=[
-                {'target_frame': LaunchConfiguration('target_frame')}
-            ],
-        ),
-    ])
-```
-
-在这份档案中,我们声明 `target_frame` 发射参数,默认值为 `turtle1`。默认值意味着发射文件可以收到一个向它的节点转发的参数,或者如果没有提供该参数,它会将默认值传递到它的节点.
-
-之后,我们用 `turtle_tf2_broadcaster` 发射时使用不同名称和参数的节点两次。 这样我们就可以在不发生冲突的情况下复制相同的节点 。
-
-我们还开始一个 `turtle_tf2_listener` 节点和设置其 `target_frame` 我们在上面宣布并获得的参数。
+随后，以不同名称和参数启动两次 `turtle_tf2_broadcaster`，从而复用同一节点而不发生冲突。还会启动 `turtle_tf2_listener`，将其 `target_frame` 设置为前面声明并获取的参数值。
 
 <span id="parameter-overrides"></span>
 
-### 5 参数覆盖
+### 5 覆盖参数
 
-记得我们曾称 `broadcaster_listener_launch` 我们的顶级发射文件中的文件。除此之外,我们已经通过了它。 `target_frame` 发射理由如下:
+顶层文件包含 `broadcaster_listener_launch` 时，还传入了 `target_frame`：参见 [XML 第 5–7 行](launch/launch_turtlesim_launch.xml)、[YAML 第 8–12 行](launch/launch_turtlesim_launch.yaml)或 [Python 第 16–19 行](launch/launch_turtlesim_launch.py)。
 
-##### XML 数据
-
-``` xml
-  <include file="$(find-pkg-share launch_tutorial)/launch/broadcaster_listener_launch.xml">
-    <let name="target_frame" value="carrot1" />
-  </include>
-```
-
-##### 也门
-
-``` yaml
-  - include:
-      file: "$(find-pkg-share launch_tutorial)/launch/broadcaster_listener_launch.yaml"
-      let:
-        - name: "target_frame"
-          value: "carrot1"
-```
-
-##### Python
-
-``` python
-        IncludeLaunchDescription(
-            PathJoinSubstitution([launch_dir, 'broadcaster_listener.launch.py']),
-            launch_arguments={'target_frame': 'carrot1'}.items()
-        ),
-```
-
-此语法允许我们更改默认目标框架为 `carrot1`。如果您愿意的话 `turtle2` 接下来 `turtle1` 代替 `carrot1`,只要去掉通过 `target_frame` 参数。此选项将指定 `target_frame` 默认值,即 `turtle1`.
+这会将目标坐标系改为 `carrot1`。如果希望 `turtle2` 跟随 `turtle1` 而非 `carrot1`，删除传递 `target_frame` 的那一行即可，此时使用默认值 `turtle1`。
 
 <span id="remapping"></span>
 
-### 6 重新绘图
+### 6 重映射
 
-现在创建一个 `mimic_launch` 文档。
+创建 `mimic_launch`，复制对应的完整示例：
 
-##### XML 数据
+- [launch/mimic_launch.xml](launch/mimic_launch.xml)
+- [launch/mimic_launch.yaml](launch/mimic_launch.yaml)
+- [launch/mimic_launch.py](launch/mimic_launch.py)
 
-复制并粘贴完整的代码到 `launch/mimic_launch.xml` 文件 :
-
-``` xml
-<?xml version="1.0" encoding="UTF-8"?>
-<launch>
-  <node pkg="turtlesim" exec="mimic" name="mimic">
-    <remap from="/input/pose" to="/turtle2/pose" />
-    <remap from="/output/cmd_vel" to="/turtlesim2/turtle1/cmd_vel" />
-  </node>
-</launch>
-```
-
-##### 也门
-
-复制并粘贴完整的代码到 `launch/mimic_launch.yaml` 文件 :
-
-``` yaml
-%YAML 1.2
----
-launch:
-  - node:
-      pkg: "turtlesim"
-      exec: "mimic"
-      name: "mimic"
-      remap:
-        - from: "/input/pose"
-          to: "/turtle2/pose"
-        - from: "/output/cmd_vel"
-          to: "/turtlesim2/turtle1/cmd_vel"
-```
-
-##### Python
-
-复制并粘贴完整的代码到 `launch/mimic_launch.py` 文件 :
-
-``` python
-from launch import LaunchDescription
-from launch_ros.actions import Node
-
-
-def generate_launch_description():
-    return LaunchDescription([
-        Node(
-            package='turtlesim',
-            executable='mimic',
-            name='mimic',
-            remappings=[
-                ('/input/pose', '/turtle2/pose'),
-                ('/output/cmd_vel', '/turtlesim2/turtle1/cmd_vel'),
-            ]
-        )
-    ])
-```
-
-此发射文件将启动 `mimic` 节点,它会给一个龟兹姆命令跟随另一个龟兹。节点旨在接收主题上的目标姿势 `/input/pose`就我们而言,我们想重新绘制目标位置图 `/turtle2/pose` 最后,我们重新绘制 `/output/cmd_vel` 专题至 `/turtlesim2/turtle1/cmd_vel`这边 `turtle1` 在我们 `turtlesim2` 模拟世界将随之而来 `turtle2` 在我们最初的乌龟世界里
+它启动 `mimic` 节点，向一只海龟发送命令，使其跟随另一只。节点原本从 `/input/pose` 接收目标位姿，这里将其重映射为 `/turtle2/pose`；再将 `/output/cmd_vel` 重映射到 `/turtlesim2/turtle1/cmd_vel`。于是第二个仿真世界中的 `turtle1` 就会跟随第一个世界中的 `turtle2`。
 
 <span id="config-files"></span>
 
 ### 7 配置文件
 
-让我们现在创建一个名为“ ” 的文件 `turtlesim_rviz_launch`.
+创建 `turtlesim_rviz_launch`，复制对应示例：
 
-##### XML 数据
+- [launch/turtlesim_rviz_launch.xml](launch/turtlesim_rviz_launch.xml)
+- [launch/turtlesim_rviz_launch.yaml](launch/turtlesim_rviz_launch.yaml)
+- [launch/turtlesim_rviz_launch.py](launch/turtlesim_rviz_launch.py)
 
-复制并粘贴完整的代码到 `launch/turtlesim_rviz_launch.xml` 文件 :
-
-``` xml
-<?xml version="1.0" encoding="UTF-8"?>
-<launch>
-  <node pkg="rviz2" exec="rviz2" name="rviz2"
-        args="-d $(find-pkg-share turtle_tf2_py)/rviz/turtle_rviz.rviz" />
-</launch>
-```
-
-##### 也门
-
-复制并粘贴完整的代码到 `launch/turtlesim_rviz_launch.yaml` 文件 :
-
-``` yaml
-%YAML 1.2
----
-launch:
-  - node:
-      pkg: "rviz2"
-      exec: "rviz2"
-      name: "rviz2"
-      args: "-d $(find-pkg-share turtle_tf2_py)/rviz/turtle_rviz.rviz"
-```
-
-##### Python
-
-复制并粘贴完整的代码到 `launch/turtlesim_rviz_launch.py` 文件 :
-
-``` python
-from launch import LaunchDescription
-from launch.substitutions import PathJoinSubstitution
-from launch_ros.actions import Node
-from launch_ros.substitutions import FindPackageShare
-
-
-def generate_launch_description():
-    return LaunchDescription([
-        Node(
-            package='rviz2',
-            executable='rviz2',
-            name='rviz2',
-            arguments=['-d', PathJoinSubstitution([
-                FindPackageShare('turtle_tf2_py'), 'rviz', 'turtle_rviz.rviz'])],
-        ),
-    ])
-```
-
-此启动文件将启动 RViz 配置文件 。 `turtle_tf2_py` 软件包。这种 RViz 配置将设置世界框架,启用 TF 可视化,并以自上而下的视图启动 RViz 。
+它使用 `turtle_tf2_py` 中的配置启动 RViz，设置世界坐标系、启用 TF 可视化，并使用俯视视角。
 
 <span id="environment-variables"></span>
 
 ### 8 环境变量
 
-让我们现在创建最后的发射文件 `fixed_broadcaster_launch` 在我们的包裹。
+创建最后一个启动文件 `fixed_broadcaster_launch`，复制对应示例：
 
-##### XML 数据
+- [launch/fixed_broadcaster_launch.xml](launch/fixed_broadcaster_launch.xml)
+- [launch/fixed_broadcaster_launch.yaml](launch/fixed_broadcaster_launch.yaml)
+- [launch/fixed_broadcaster_launch.py](launch/fixed_broadcaster_launch.py)
 
-复制并粘贴完整的代码到 `launch/fixed_broadcaster_launch.xml` 文件 :
+它展示如何在启动文件中引用环境变量。环境变量可以用来定义或推入命名空间，以区分不同计算机或机器人上的节点。
 
-``` xml
-<?xml version="1.0" encoding="UTF-8"?>
-<launch>
-  <arg name="node_prefix" default="$(env USER '')_" description="prefix for node name" />
-  <node pkg="turtle_tf2_py" exec="fixed_frame_tf2_broadcaster" name="$(var node_prefix)fixed_broadcaster" />
-</launch>
-```
-
-##### 也门
-
-复制并粘贴完整的代码到 `launch/fixed_broadcaster_launch.yaml` 文件 :
-
-``` yaml
-%YAML 1.2
----
-launch:
-  - arg:
-      name: "node_prefix"
-      default: "$(env USER '')_"
-      description: "prefix for node name"
-  - node:
-      pkg: "turtle_tf2_py"
-      exec: "fixed_frame_tf2_broadcaster"
-      name: "$(var node_prefix)fixed_broadcaster"
-```
-
-##### Python
-
-复制并粘贴完整的代码到 `launch/fixed_broadcaster_launch.py` 文件 :
-
-``` python
-from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import EnvironmentVariable, LaunchConfiguration
-from launch_ros.actions import Node
-
-
-def generate_launch_description():
-    return LaunchDescription([
-        DeclareLaunchArgument(
-            'node_prefix',
-            default_value=[EnvironmentVariable('USER'), '_'],
-            description='prefix for node name'
-        ),
-        Node(
-            package='turtle_tf2_py',
-            executable='fixed_frame_tf2_broadcaster',
-            name=[LaunchConfiguration('node_prefix'), 'fixed_broadcaster'],
-        ),
-    ])
-```
-
-这个发射文件显示了在发射文件内部可以调用环境变量的方法. 环境变量可以用来定义或推动命名空间,以区分不同计算机或机器人上的节点.
-
-> **说明**
->
-> 如果你正在运行 发射文件在哪里 `USER` 环境变量没有定义(如ROS docker文件中),然后可以将上面的环境变量引用替换为任何其他你喜欢的单词.
+> 如果运行环境未定义 `USER` 环境变量，例如 ROS Docker 环境，可以将相应环境变量引用替换为任意合适的文本。
 
 <span id="running-launch-files"></span>
 
@@ -794,11 +249,11 @@ def generate_launch_description():
 
 <span id="update-setup-py"></span>
 
-### 1 更新设置. py
+### 1 更新 setup.py
 
-打开 `setup.py` 并添加下列行,以便从 `launch/` 文件夹和配置文件 `config/` 将安装。 `data_files` 字段现在应该是这样的:
+打开 `setup.py`，添加安装 `launch/` 中启动文件和 `config/` 中配置文件的条目。`data_files` 应如下：
 
-``` Python
+```Python
 import os
 from glob import glob
 from setuptools import setup
@@ -817,46 +272,48 @@ data_files=[
 
 <span id="build-and-run"></span>
 
-### 2 构建和运行
+### 2 构建并运行
 
-为了最终看到我们代码的结果,构建软件包,并使用以下命令发射顶级发射文件:
+构建软件包并启动顶层文件。
 
-##### XML 数据
+XML：
 
-``` console
+```console
 $ ros2 launch launch_tutorial launch_turtlesim_launch.xml
 ```
 
-##### 也门
+YAML：
 
-``` console
+```console
 $ ros2 launch launch_tutorial launch_turtlesim_launch.yaml
 ```
 
-##### Python
+Python：
 
-``` console
+```console
 $ ros2 launch launch_tutorial launch_turtlesim_launch.py
 ```
 
-现在你们将看到两只龟龟模拟开始。第一只龟有两只龟,第二只龟有一只龟。在第一只龟模拟中, `turtle2` 它的目的是为了到达世界最左边的地方。 `carrot1` 在X轴上距离5米的帧相对 `turtle1` 边框。
+现在可以看到两个 turtlesim 仿真，第一个包含两只海龟，第二个包含一只。在第一个世界中，`turtle2` 出生在左下方，目标是追踪 `carrot1` 坐标系；它相对于 `turtle1` 沿 x 轴偏移 5 米。
 
-那个... `turtlesim2/turtle1` 在第二组中,它旨在模仿人类的行为 `turtle2`.
+第二个世界中的 `turtlesim2/turtle1` 会模仿 `turtle2` 的行为。
 
-如果你想控制 `turtle1`运行电话节点。
+要控制 `turtle1`，运行遥控节点：
 
-``` console
+```console
 $ ros2 run turtlesim turtle_teleop_key
 ```
 
-因此,你会看到类似的情况:
+显示效果类似下图：
 
 ![](images/turtlesim_worlds.png)
 
-除此之外,RViz应该已经开始了。它会显示所有与该图相对的龟框。 `world` 框,其来源位于左下角。
+RViz 也应已启动，显示所有海龟坐标系相对于 `world` 的关系，世界原点位于左下角。
 
-![](images/turtlesim_rviz.png) <span id="summary"></span>
+![](images/turtlesim_rviz.png)
+
+<span id="summary"></span>
 
 ## 小结
 
-在这个教程中,你学到了使用ROS 2发射文件管理大型项目的各种技巧和做法.
+本教程介绍了使用 ROS 2 启动文件管理大型项目的多种技巧与实践。

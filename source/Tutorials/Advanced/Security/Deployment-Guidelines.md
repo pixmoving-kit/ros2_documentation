@@ -1,55 +1,40 @@
----
-translation_status: machine_translated
-source: Tutorials/Advanced/Security/Deployment-Guidelines.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="deployment-guidelines"></span>
+<span id="background"></span>
+<span id="prerequisites"></span>
+<span id="general-guidelines"></span>
+<span id="building-a-deployment-scenario"></span>
+<span id="generating-the-docker-image"></span>
+<span id="understanding-the-compose-file"></span>
+<span id="running-the-example"></span>
+<span id="examining-the-containers"></span>
 
 # 部署指南
 
-**目标：** 了解在生产系统中部署安全文物的最佳做法。
+**目标：** 了解在生产系统中部署安全相关文件的最佳实践。
 
 **教程级别：** 高级
 
-**用时：** 20分钟
-
-<span id="background"></span>
+**耗时：** 20 分钟
 
 ## 背景
 
-典型的部署方案往往涉及将集装箱化的应用程序或包件运入远程系统,在部署安全功能应用程序时应特别注意,要求用户对包件文件的敏感性提出理由。
+典型部署场景通常需要将容器化应用或软件包分发到远程系统。部署启用安全功能的应用时，需要特别注意打包文件的敏感程度。
 
-遵守 [DDS 安全标准](https://www.omg.org/spec/DDS-SECURITY/1.1/About-DDS-SECURITY/),则 `sros2` 成套软件以模块化和灵活化的方式,为在ROS 2环境下管理安保提供一套公用事业。
+`sros2` 软件包遵循 [DDS Security 标准](https://www.omg.org/spec/DDS-SECURITY/1.1/About-DDS-SECURITY/)，提供一组高度模块化、灵活的工具，用于管理 ROS 2 环境中的安全功能。
 
-关于如何组织不同的证书、钥匙和目录的基本核心准则仍然是避免损害系统安全的关键因素,其中包括保护意识和选择在远程生产系统上部署的最低限度必要文件的标准,以尽量减少安全风险。
-
-<span id="prerequisites"></span>
+遵循有关证书、密钥和目录组织方式的基本指导，是避免系统安全受到破坏的关键。这包括明确哪些内容需要保护，以及如何选择部署到远程生产系统的最小必要文件集，从而减少安全风险暴露。
 
 ## 前提条件
 
-- 带有编曲插件的嵌入器安装 。 请参考详细可见的安装步骤 。 [嵌入器安装](https://docs.docker.com/engine/install/) 财务报告和财务报告 [编译插件](https://docs.docker.com/compose/install).
+- 安装 Docker 及 Compose 插件。参阅 [Docker 安装](https://docs.docker.com/engine/install/)和 [Compose 插件](https://docs.docker.com/compose/install)的安装步骤。
+- 建议具备 [ROS 2 安全设计](https://design.ros2.org/articles/ros2_dds_security.html)的基本知识。
+- 建议完成前面的安全教程，特别是 [ROS 2 安全入门](Introducing-ros2-security.md)、[了解密钥库](The-Keystore.md)和[设置访问控制](Access-Controls.md)。
 
-- (建议) [ROS 2 安保设计](https://design.ros2.org/articles/ros2_dds_security.html).
+## 通用指导
 
-- (建议)以前的安全辅导完成情况。特别是:
+ROS 2 使用 DDS Security 扩展，保障同一安全隔离域内的消息交换。隔离域中的签名文件和证书由受信任的[证书颁发机构（CA）](https://en.wikipedia.org/wiki/Certificate_authority)的私钥和证书生成。实际上，每个隔离域的身份认证和权限管理可以选用不同的 CA。这些 CA 文件保存在[密钥库](https://design.ros2.org/articles/ros2_security_enclaves.html)的 `private/` 和 `public/` 子目录中，目录结构如下：
 
-  > - [配置安全机制](Introducing-ros2-security.md)
-  >
-  > - [了解安全密钥库](The-Keystore.md)
-  >
-  > - [设置访问控制](Access-Controls.md)
-
-<span id="general-guidelines"></span>
-
-## 一般准则
-
-ROS 2 利用 DDS 安全扩展来保证同一飞地内信件交换的安全。飞地内不同的签名文件和证书来自一个飞地的私人密钥和证书 [证书管理权限( CA)](https://en.wikipedia.org/wiki/Certificate_authority) 信任的实体。事实上,每个飞地可以选择两个不同的 CA 身份和权限。这些 CA 的文物存放在内部 。 `private/` 财务报告和财务报告 `public/` a 的子目录 [键盘](https://design.ros2.org/articles/ros2_security_enclaves.html) 带有以下文件夹结构:
-
-``` text
+```text
 keystore
 ├── enclaves
 │   └── ...
@@ -60,128 +45,105 @@ keystore
     └── ...
 ```
 
-在生产系统的典型部署方面,设立和使用某一证书管理局的一个良好做法是:
+在典型生产系统部署中，创建和使用 CA 的良好实践是：
 
-1.  在组织系统内创建,仅供内部使用。
+1. 在组织内部专用的系统中创建 CA。
+2. 创建或修改所需的安全隔离域。注意，并非所有隔离域都应部署到所有目标设备；按应用分别建立隔离域，是实现职责分离的一种合理方式。
+3. 初始化设备时，将 `public/` 和相应的 `enclaves/` 分发到不同的远程生产设备。
+4. 将 `private/` 中的密钥和／或证书请求保留在组织内部并妥善保护。
 
-2.  生成/修改所希望的飞地,同时铭记:
+如果丢失 `private/` 中的文件，就无法再更改访问权限、添加或修改安全配置。
 
-    > - 并非所有生成的飞地都应部署在所有目标装置上.
-    >
-    > - 合理的处理方式是每份申请有一个飞地,从而能够区分各种关切。
+此外，还可以考虑以下做法：
 
-3.  船舶 `public/` 与相应的 `enclaves/` 在设置时进入不同的远程生产设备。
+- 将 `enclaves/` 目录内容的权限设为只读。
+- 如果生成隔离域私钥时提供了符合 PKCS#11 的 URI，可以使用[硬件安全模块（HSM）](https://en.wikipedia.org/wiki/Hardware_security_module)存储私钥。
 
-4.  维护和保护 `private/` 组织中的密钥和/或认证请求。
+下表归纳了密钥库各目录的推荐存放位置：
 
-必须指出,如果 `private/` 文件丢失, 无法再更改访问权限、 添加或修改安全配置 。
+| 目录／位置 | 组织内部 | 目标设备 | 文件敏感程度 |
+| --- | --- | --- | --- |
+| public | ✓ | ✓ | 低 |
+| private | ✓ | ✕ | 高 |
+| enclaves | ✓ | ✓ | 中 |
 
-此外,还可考虑下列其他做法:
+## 构建部署场景
 
-- 给予只读权限 `enclaves/` 目录内容。
+为了演示一个简单的部署场景，我们将在 `ros:<DISTRO>` 镜像的基础上构建新 Docker 镜像，并创建三个容器，用于：
 
-- 如果为生成飞地的私人密钥提供了符合PKCS#11的URI,则 a [硬件安全模块(HSM)](https://en.wikipedia.org/wiki/Hardware_security_module) 可以用来储存它们。
+- 在本地主机的共享卷中初始化密钥库。
+- 模拟两台彼此安全通信的远程设备。
 
-下表概述了以往与Keystore目录相关的声明,并标明了建议的位置:
+此例中，本地主机充当组织内部系统。首先创建工作目录：
 
-| 目录/ 位置 | 组织 | 目标设备 | 材料敏感性 |
-|------------|------|----------|------------|
-| 公开       | ✓    | ✓        | 低级       |
-| 私营       | ✓    | ✕        | 高级       |
-| 飞地       | ✓    | ✓        | 中型       |
-
-<span id="building-a-deployment-scenario"></span>
-
-## B. 建立部署设想
-
-为了说明一个简单的部署方案,将在由下列人员提供的插头图像之上建立一个新的插头图像: `ros:<DISTRO>`从图像开始,将创建三个容器,目的是:
-
-- 在本地主机共享的音量中初始化密钥托 。
-
-- 模拟两个部署的远程设备,它们以安全的方式相互相互作用。
-
-在这个例子中,当地东道主充当该组织的系统。让我们首先创建一个工作空间文件夹:
-
-``` console
+```console
 $ mkdir ~/security_gd_tutorial
 $ cd ~/security_gd_tutorial
 ```
 
-<span id="generating-the-docker-image"></span>
+### 生成 Docker 镜像
 
-### 生成 Docker 图像
+构建新 Docker 镜像需要 Dockerfile。运行以下命令下载本教程使用的 Dockerfile：
 
-要构建一个新的嵌入器图像, 需要一个嵌入器文件。 要下载为此教程提议的嵌入器文件, 请运行 :
-
-``` console
+```console
 $ wget https://raw.githubusercontent.com/ros2/ros2_documentation/rolling/source/Tutorials/Advanced/Security/resources/deployment_gd/Dockerfile
 ```
 
-现在,用命令构建嵌入器图像 :
+然后构建镜像：
 
-``` console
+```console
 $ docker build -t ros2_security/deployment_tutorial --build-arg ROS_DISTRO=rolling .
 ```
 
-<span id="understanding-the-compose-file"></span>
+### 理解 Compose 文件
 
-### 理解编曲文件
+Compose 配置文件使用镜像创建作为服务运行的容器。本教程的配置定义了三个服务：
 
-编曲配置文件需要一个图像来创建容器作为服务。在这个教程中,在配置中定义了三个服务:
+- *keystore-creator*：与前面的教程类似，在内部初始化密钥库目录树，创建 `enclaves/`、`public/` 和 `private/`。详情参阅 [ROS 2 安全隔离域](https://design.ros2.org/articles/ros2_security_enclaves.html)。`keystore` 目录配置为各容器之间的共享卷。
+- *listener* 和 *talker*：模拟本教程中的远程设备。它们加载所需的安全环境变量，并从共享卷读取必要的密钥库文件。
 
-- *密钥生成器*: 类似于以前的教程, 它在内部初始化一个新的密钥托尔树目录。 这将创建 *enclaves/* *public/* 财务报告和财务报告 *private/*,在下文中对此作了更详细的解释。 [ROS 2 安全飞地](https://design.ros2.org/articles/ros2_security_enclaves.html)。该词 `keystore` 目录被配置为跨容器共享的卷。
+下载 Compose YAML 配置文件：
 
-- *监听器* 财务报告和财务报告 *说话者*: 担任此教程中的远程设备角色。 需要 `Security` 环境变量来自共享的音量以及必要的密钥文件。
-
-编曲配置 Yaml 文件可以下载到 :
-
-``` console
+```console
 $ wget https://raw.githubusercontent.com/ros2/ros2_documentation/rolling/source/Tutorials/Advanced/Security/resources/deployment_gd/compose.deployment.yaml
 ```
 
-<span id="running-the-example"></span>
-
 ## 运行示例
 
-在同一工作目录中 `~/security_gd_tutorial`,以开始示例运行 :
+仍在 `~/security_gd_tutorial` 工作目录中，运行：
 
-``` console
+```console
 $ docker compose -f compose.deployment.yaml up
 ```
 
-这将产生以下产出:
+应得到以下输出：
 
-- *教程收听器 - 1*: `Found security directory: /keystore/enclaves/talker_listener/listener`
+- *tutorial-listener-1*：`Found security directory: /keystore/enclaves/talker_listener/listener`
+- *tutorial-talker-1*：`Found security directory: /keystore/enclaves/talker_listener/talker`
+- *tutorial-listener-1*：`Publishing: 'Hello World: <number>'`
+- *tutorial-talker-1*：`I heard: [Hello World: <number>]`
 
-- *导读器 - 1*: `Found security directory: /keystore/enclaves/talker_listener/talker`
+### 检查容器
 
-- *教程收听器 - 1*: `Publishing: 'Hello World: <number>'`
+保持模拟两台远程设备的容器运行，打开两个终端，分别进入容器。在第一个终端运行：
 
-- *导读器 - 1*: `I heard: [Hello World: <number>]`
-
-<span id="examining-the-containers"></span>
-
-### 检查集装箱
-
-在运行模拟此教程的两个远程设备的容器时, 请通过打开两个不同的终端来连接每个设备。 在第一个终端中, 运行 :
-
-``` console
+```console
 $ docker exec -it tutorial-listener-1 bash
 $ cd keystore
 $ tree
 ```
 
-在第二航站楼,运行:
+在第二个终端运行：
 
-``` console
+```console
 $ docker exec -it tutorial-talker-1 bash
 $ cd keystore
 $ tree
 ```
 
-应获得与下文所述产出类似的产出:
+应得到类似以下的输出：
 
-``` bash
+```bash
 # Terminal 1
 keystore
  ├── enclaves
@@ -221,12 +183,11 @@ keystore
      └── permissions_ca.cert.pem
 ```
 
-注意:
+注意：
 
-- *private/* 文件夹不移动,而是留在本地主机(组织)中。
+- `private/` 目录没有被复制到设备上，而是保留在本地主机（组织内部）。
+- 每台已部署的设备仅包含自身应用所需的最小隔离域。
 
-- 所部署的装置中的每一装置都装有其应用所需的最低飞地。
+!!! note "说明"
 
-> **说明**
->
-> 为了简单起见,同一CA在这个飞地内用于身份和权限.
+    为简化演示，此隔离域使用同一个 CA 进行身份认证和权限管理。

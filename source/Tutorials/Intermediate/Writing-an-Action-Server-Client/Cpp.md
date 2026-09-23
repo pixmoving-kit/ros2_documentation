@@ -1,80 +1,71 @@
----
-translation_status: machine_translated
-source: Tutorials/Intermediate/Writing-an-Action-Server-Client/Cpp.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="writing-an-action-server-and-client-c"></span> <span id="actionscpp"></span>
 
-# 编写动作服务端与客户端（C++）
+# 编写动作服务端和客户端（C++）
 
-**目标：** 在 C++ 中执行动作服务器和客户端.
+**目标：** 使用 C++ 实现动作服务端和客户端。
 
 **教程级别：** 中级
 
-**用时：** 15分钟
+**预计耗时：** 15 分钟
 
 <span id="background"></span>
 
 ## 背景
 
-动作是在ROS中的一种同步通信形式. *行动客户* 发送目标请求到 *动作服务器*. *动作服务器* 将目标反馈和结果发送给 *动作客户端*.
+动作是 ROS 中的一种异步通信形式。动作客户端向服务端发送目标请求，服务端向客户端返回目标反馈和结果。
 
 <span id="prerequisites"></span>
 
 ## 前提条件
 
-你需要那个... `action_tutorials_interfaces` 软件包和 `Fibonacci.action` 在上一个教程中定义的界面, [创建动作](../Creating-an-Action.md).
+需要使用[创建动作](../Creating-an-Action.md)教程中的 `action_tutorials_interfaces` 包及 `Fibonacci.action` 接口。
 
 <span id="tasks"></span>
 
-## 操作步骤
+## 任务
 
 <span id="creating-the-action-tutorials-cpp-package"></span>
 
-### 1 创建动作_tutorys_cpp 套件
+### 1 创建 action_tutorials_cpp 软件包
 
-正如我们所看到的那样 [创建软件包](../../Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.md) 教程,我们需要创建一个新的软件包来保存我们的 C++ 和辅助代码 。
+按照[创建 ROS 2 软件包](../../Beginner-Client-Libraries/Creating-Your-First-ROS2-Package.md)教程的方法，新建存放 C++ 及配套代码的软件包。
 
 <span id="id1"></span>
 
-#### 1.1 创建动作_tutoris_cpp 套件
+#### 1.1 创建 action_tutorials_cpp
 
-进入您在其中创建的动作工作空间 [上一个教程](../Creating-an-Action.md) (记住要源代码工作空间),并为 C++ 动作服务器创建新软件包 :
+进入[上一篇教程](../Creating-an-Action.md)创建的工作空间，并先加载其环境，然后为 C++ 动作服务端创建软件包。
 
-##### Linux
+Linux：
 
-``` console
+```console
 $ cd ~/ros2_ws/src
 $ ros2 pkg create --dependencies action_tutorials_interfaces rclcpp rclcpp_action rclcpp_components -- action_tutorials_cpp
 ```
 
-##### macOS
+macOS：
 
-``` console
+```console
 $ cd ~/ros2_ws/src
 $ ros2 pkg create --dependencies action_tutorials_interfaces rclcpp rclcpp_action rclcpp_components -- action_tutorials_cpp
 ```
 
-##### Windows
+Windows：
 
-``` console
+```console
 $ cd \dev\ros2_ws\src
 $ ros2 pkg create --dependencies action_tutorials_interfaces rclcpp rclcpp_action rclcpp_components -- action_tutorials_cpp
 ```
 
 <span id="adding-in-visibility-control"></span>
 
-#### 1.2 在可见度控制中添加
+#### 1.2 添加可见性控制
 
-为了使软件包在Windows上编译和工作,我们需要在一些“可见控制”中添加。 [Windows 文档中的 Windows 符号可见度](../../../The-ROS2-Project/Contributing/Windows-Tips-and-Tricks.md#windows-symbol-visibility).
+为了让软件包能在 Windows 上编译运行，需要添加符号可见性控制。详见 [Windows 技巧中的符号可见性说明](../../../The-ROS2-Project/Contributing/Windows-Tips-and-Tricks.md#windows-symbol-visibility)。
 
-开门 `action_tutorials_cpp/include/action_tutorials_cpp/visibility_control.h`,并插入以下代码:
+打开 `action_tutorials_cpp/include/action_tutorials_cpp/visibility_control.h`，填入：
 
-``` c++
+```c++
 #ifndef ACTION_TUTORIALS_CPP__VISIBILITY_CONTROL_H_
 #define ACTION_TUTORIALS_CPP__VISIBILITY_CONTROL_H_
 
@@ -123,262 +114,44 @@ extern "C"
 
 <span id="writing-an-action-server"></span>
 
-### 2 写入动作服务器
+### 2 编写动作服务端
 
-让我们集中力量写一个动作服务器,利用我们创建的动作来计算Fibonacci序列 [创建动作](../Creating-an-Action.md) 教学。
+使用[创建动作](../Creating-an-Action.md)中定义的接口，编写计算斐波那契数列的服务端。
 
 <span id="writing-the-action-server-code"></span>
 
-#### 2.1 写入动作服务器代码
+#### 2.1 编写服务端代码
 
-开门 `action_tutorials_cpp/src/fibonacci_action_server.cpp`,并插入以下代码:
+将[完整服务端代码](scripts/server.cpp)放入 `action_tutorials_cpp/src/fibonacci_action_server.cpp`。
 
-``` c++
-#include <functional>
-#include <memory>
-#include <thread>
+文件开头引入编译所需的头文件；另见 [rclcpp 便捷头文件说明](../../../_internal/Rclcpp-Convenience-Header-Note.md)。
 
-#include "action_tutorials_interfaces/action/fibonacci.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_action/rclcpp_action.hpp"
-#include "rclcpp_components/register_node_macro.hpp"
+[代码第 14 行](scripts/server.cpp)定义继承 `rclcpp::Node` 的类；第 21–22 行的 `FibonacciActionServer` 构造函数将节点名设为 `fibonacci_action_server`；第 26–31 行创建动作服务端。
 
-#include "action_tutorials_cpp/visibility_control.h"
+动作服务端需要六项信息：
 
-namespace action_tutorials_cpp
-{
-class FibonacciActionServer : public rclcpp::Node
-{
-public:
-  using Fibonacci = action_tutorials_interfaces::action::Fibonacci;
-  using GoalHandleFibonacci = rclcpp_action::ServerGoalHandle<Fibonacci>;
+1. 模板动作类型 `Fibonacci`。
+2. 用于承载动作的 ROS 2 节点 `this`。
+3. 动作名称 `'fibonacci'`。
+4. 处理目标请求的回调 `handle_goal`。
+5. 处理取消请求的回调 `handle_cancel`。
+6. 处理已接受目标的回调 `handle_accepted`。
 
-  ACTION_TUTORIALS_CPP_PUBLIC
-  explicit FibonacciActionServer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
-  : Node("fibonacci_action_server", options)
-  {
-    using namespace std::placeholders;
+随后实现各回调。所有回调都应迅速返回，否则可能使执行器无法处理其他任务。
 
-    this->action_server_ = rclcpp_action::create_server<Fibonacci>(
-      this,
-      "fibonacci",
-      std::bind(&FibonacciActionServer::handle_goal, this, _1, _2),
-      std::bind(&FibonacciActionServer::handle_cancel, this, _1),
-      std::bind(&FibonacciActionServer::handle_accepted, this, _1));
-  }
+第 37–44 行的 `handle_goal` 接受所有新目标；第 46–52 行的 `handle_cancel` 通知客户端取消请求已被接受；第 54–59 行的 `handle_accepted` 开始处理新目标。由于执行过程耗时较长，它会启动新线程完成实际工作，以便回调迅速返回。
 
-private:
-  rclcpp_action::Server<Fibonacci>::SharedPtr action_server_;
+新线程中所有后续处理与更新都在 `execute` 方法完成，见第 61–95 行。工作线程每秒计算斐波那契数列的一个数，并在每一步发布反馈；完成后将 `goal_handle` 标记为成功，然后退出。
 
-  rclcpp_action::GoalResponse handle_goal(
-    const rclcpp_action::GoalUUID & uuid,
-    std::shared_ptr<const Fibonacci::Goal> goal)
-  {
-    RCLCPP_INFO(this->get_logger(), "Received goal request with order %d", goal->order);
-    (void)uuid;
-    return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
-  }
-
-  rclcpp_action::CancelResponse handle_cancel(
-    const std::shared_ptr<GoalHandleFibonacci> goal_handle)
-  {
-    RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
-    (void)goal_handle;
-    return rclcpp_action::CancelResponse::ACCEPT;
-  }
-
-  void handle_accepted(const std::shared_ptr<GoalHandleFibonacci> goal_handle)
-  {
-    using namespace std::placeholders;
-    // this needs to return quickly to avoid blocking the executor, so spin up a new thread
-    std::thread{std::bind(&FibonacciActionServer::execute, this, _1), goal_handle}.detach();
-  }
-
-  void execute(const std::shared_ptr<GoalHandleFibonacci> goal_handle)
-  {
-    RCLCPP_INFO(this->get_logger(), "Executing goal");
-    rclcpp::Rate loop_rate(1);
-    const auto goal = goal_handle->get_goal();
-    auto feedback = std::make_shared<Fibonacci::Feedback>();
-    auto & sequence = feedback->partial_sequence;
-    sequence.push_back(0);
-    sequence.push_back(1);
-    auto result = std::make_shared<Fibonacci::Result>();
-
-    for (int i = 1; (i < goal->order) && rclcpp::ok(); ++i) {
-      // Check if there is a cancel request
-      if (goal_handle->is_canceling()) {
-        result->sequence = sequence;
-        goal_handle->canceled(result);
-        RCLCPP_INFO(this->get_logger(), "Goal canceled");
-        return;
-      }
-      // Update sequence
-      sequence.push_back(sequence[i] + sequence[i - 1]);
-      // Publish feedback
-      goal_handle->publish_feedback(feedback);
-      RCLCPP_INFO(this->get_logger(), "Publish feedback");
-
-      loop_rate.sleep();
-    }
-
-    // Check if goal is done
-    if (rclcpp::ok()) {
-      result->sequence = sequence;
-      goal_handle->succeed(result);
-      RCLCPP_INFO(this->get_logger(), "Goal succeeded");
-    }
-  }
-};  // class FibonacciActionServer
-
-}  // namespace action_tutorials_cpp
-
-RCLCPP_COMPONENTS_REGISTER_NODE(action_tutorials_cpp::FibonacciActionServer)
-```
-
-前几行包括我们需要编译的所有信头.
-
-> **说明**
->
-> `rclcpp/rclcpp.hpp` 是一个 *便利性* 头部 整个都拉着 `rclcpp` API同时——节点,出版商,订阅,服务,定时器,参数,执行器,速率,等位集,等等——所以每个包含它的翻译单元都是根据它从未使用过的特性编译的.
->
-> 在教程之外, 偏爱只包含您实际使用的 API 特定调用时的页眉 。 例如, `rclcpp::Node` 已声明为 `rclcpp/node.hpp`, `rclcpp::spin` 输入 `rclcpp/executors.hpp`,以及 `rclcpp::init` 财务报告和财务报告 `rclcpp::shutdown` 输入 `rclcpp/utilities.hpp`。保存量最大的是从未创建或旋转节点的翻译单位——标题、插件和辅助工具库,它们只需要像 `rclcpp/qos.hpp` 或 时 间 `rclcpp/time.hpp` - 因为... `rclcpp/node.hpp` 财务报告和财务报告 `rclcpp/executors.hpp` 他们本身就很大。 `rclcpp/rclcpp.hpp` 只不过是这些信头的列表,所以在研究你需要哪个信头的时候,这是一个很好的开始。
-
-接下来我们创建一个类 一个衍生的类: `rclcpp::Node`:
-
-``` c++
-class FibonacciActionServer : public rclcpp::Node
-```
-
-设计器 `FibonacciActionServer` 类初始化节点名称为 `fibonacci_action_server`:
-
-``` c++
-  explicit FibonacciActionServer(const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
-  : Node("fibonacci_action_server", options)
-```
-
-构造器还即时化新动作服务器 :
-
-``` c++
-    this->action_server_ = rclcpp_action::create_server<Fibonacci>(
-      this,
-      "fibonacci",
-      std::bind(&FibonacciActionServer::handle_goal, this, _1, _2),
-      std::bind(&FibonacciActionServer::handle_cancel, this, _1),
-      std::bind(&FibonacciActionServer::handle_accepted, this, _1));
-```
-
-动作服务器需要六件东西 :
-
-1.  模板动作类型名称 : `Fibonacci`.
-
-2.  一个ROS 2节点将动作添加到: `this`.
-
-3.  动作名称 : `'fibonacci'`.
-
-4.  一个处理目标的回调函数 : `handle_goal`
-
-5.  处理取消的召回功能 : `handle_cancel`.
-
-6.  处理目标时的回调功能接受 : `handle_accept`.
-
-各种回调的执行是文件的下一个。 请注意, 所有的回调需要迅速返回, 否则我们有可能饿死执行者 。
-
-我们从处理新目标的回话开始:
-
-``` c++
-  rclcpp_action::GoalResponse handle_goal(
-    const rclcpp_action::GoalUUID & uuid,
-    std::shared_ptr<const Fibonacci::Goal> goal)
-  {
-    RCLCPP_INFO(this->get_logger(), "Received goal request with order %d", goal->order);
-    (void)uuid;
-    return rclcpp_action::GoalResponse::ACCEPT_AND_EXECUTE;
-  }
-```
-
-这种执行只是接受所有目标。
-
-接下来是处理取消的回调 :
-
-``` c++
-  rclcpp_action::CancelResponse handle_cancel(
-    const std::shared_ptr<GoalHandleFibonacci> goal_handle)
-  {
-    RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
-    (void)goal_handle;
-    return rclcpp_action::CancelResponse::ACCEPT;
-  }
-```
-
-这一执行只是告诉客户,它接受了取消。
-
-最后一个回调接受一个新的目标并开始处理:
-
-``` c++
-  void handle_accepted(const std::shared_ptr<GoalHandleFibonacci> goal_handle)
-  {
-    using namespace std::placeholders;
-    // this needs to return quickly to avoid blocking the executor, so spin up a new thread
-    std::thread{std::bind(&FibonacciActionServer::execute, this, _1), goal_handle}.detach();
-  }
-```
-
-由于行刑是长期的行动,我们从一个线上孵化出来来做实际的工作,然后从 `handle_accepted` 快点
-
-所有进一步处理和更新均在 `execute` 新线程中的方法 :
-
-``` c++
-  void execute(const std::shared_ptr<GoalHandleFibonacci> goal_handle)
-  {
-    RCLCPP_INFO(this->get_logger(), "Executing goal");
-    rclcpp::Rate loop_rate(1);
-    const auto goal = goal_handle->get_goal();
-    auto feedback = std::make_shared<Fibonacci::Feedback>();
-    auto & sequence = feedback->partial_sequence;
-    sequence.push_back(0);
-    sequence.push_back(1);
-    auto result = std::make_shared<Fibonacci::Result>();
-
-    for (int i = 1; (i < goal->order) && rclcpp::ok(); ++i) {
-      // Check if there is a cancel request
-      if (goal_handle->is_canceling()) {
-        result->sequence = sequence;
-        goal_handle->canceled(result);
-        RCLCPP_INFO(this->get_logger(), "Goal canceled");
-        return;
-      }
-      // Update sequence
-      sequence.push_back(sequence[i] + sequence[i - 1]);
-      // Publish feedback
-      goal_handle->publish_feedback(feedback);
-      RCLCPP_INFO(this->get_logger(), "Publish feedback");
-
-      loop_rate.sleep();
-    }
-
-    // Check if goal is done
-    if (rclcpp::ok()) {
-      result->sequence = sequence;
-      goal_handle->succeed(result);
-      RCLCPP_INFO(this->get_logger(), "Goal succeeded");
-    }
-  }
-```
-
-此工作线索每秒处理一个Fibonacci序列序列的序列号, 发布每个步骤的反馈更新。 当它完成处理后, 它会标记 `goal_handle` 已成功,则退出。
-
-我们现在已经有了一个功能完备的动作服务器。让我们把它建成并运行起来。
+至此，服务端功能已完整，接下来构建并运行。
 
 <span id="compiling-the-action-server"></span>
 
-#### 2.2 编译动作服务器
+#### 2.2 编译动作服务端
 
-在上一节中,我们设置了动作服务器代码。要编译和运行它,我们需要做一些额外的工作。
+还需配置 CMake 才能编译运行。打开 `action_tutorials_cpp/CMakeLists.txt`，在 `find_package` 调用之后加入：
 
-首先,我们需要设置 CMakeLists.txt , 以便编译动作服务器。 打开 `action_tutorials_cpp/CMakeLists.txt`,然后在 `find_package` 电话:
-
-``` cmake
+```cmake
 add_library(action_server SHARED
   src/fibonacci_action_server.cpp)
 target_include_directories(action_server PRIVATE
@@ -399,298 +172,63 @@ install(TARGETS
   RUNTIME DESTINATION bin)
 ```
 
-现在我们可以编译软件包了,请到顶层 `ros2_ws`,然后运行 :
+进入 `ros2_ws` 顶层并构建：
 
-``` console
+```console
 $ colcon build
 ```
 
-这应当汇编整个工作空间,包括 `fibonacci_action_server` 输入 `action_tutorials_cpp` 软件包。
+这会编译整个工作空间，包括 `action_tutorials_cpp` 中的 `fibonacci_action_server`。
 
 <span id="running-the-action-server"></span>
 
-#### 2.3 运行动作服务器
+#### 2.3 运行动作服务端
 
-现在我们已经建造了动作服务器,我们可以运行它。源码我们刚刚建造的工作空间(`ros2_ws`),并尝试运行动作服务器:
+加载刚构建的 `ros2_ws` 工作空间环境，然后运行：
 
-``` console
+```console
 $ ros2 run action_tutorials_cpp fibonacci_action_server
 ```
 
 <span id="writing-an-action-client"></span>
 
-### 3 写入动作客户端
+### 3 编写动作客户端
 
 <span id="writing-the-action-client-code"></span>
 
-#### 3.1 写入动作客户端代码
+#### 3.1 编写客户端代码
 
-开门 `action_tutorials_cpp/src/fibonacci_action_client.cpp`,并插入以下代码:
+将[完整客户端代码](scripts/client.cpp)放入 `action_tutorials_cpp/src/fibonacci_action_client.cpp`。
 
-``` c++
-#include <functional>
-#include <future>
-#include <memory>
-#include <string>
-#include <sstream>
+开头引入所需头文件，第 15 行定义继承 `rclcpp::Node` 的类。第 20–22 行的构造函数将节点名设为 `fibonacci_action_client`，第 24–26 行创建动作客户端。
 
-#include "action_tutorials_interfaces/action/fibonacci.hpp"
+动作客户端需要三项信息：
 
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_action/rclcpp_action.hpp"
-#include "rclcpp_components/register_node_macro.hpp"
+1. 模板动作类型 `Fibonacci`。
+2. 用于承载客户端的 ROS 2 节点 `this`。
+3. 动作名称 `'fibonacci'`。
 
-namespace action_tutorials_cpp
-{
-class FibonacciActionClient : public rclcpp::Node
-{
-public:
-  using Fibonacci = action_tutorials_interfaces::action::Fibonacci;
-  using GoalHandleFibonacci = rclcpp_action::ClientGoalHandle<Fibonacci>;
+第 27–30 行还创建了 ROS 定时器，触发唯一一次 `send_goal` 调用。计时结束后，执行第 32–57 行的 `send_goal`，它会：
 
-  explicit FibonacciActionClient(const rclcpp::NodeOptions & options)
-  : Node("fibonacci_action_client", options)
-  {
-    this->client_ptr_ = rclcpp_action::create_client<Fibonacci>(
-      this,
-      "fibonacci");
+1. 取消定时器，保证只调用一次。
+2. 等待动作服务端就绪。
+3. 创建新的 `Fibonacci::Goal`。
+4. 设置响应、反馈和结果回调。
+5. 向服务端发送目标。
 
-    this->timer_ = this->create_wall_timer(
-      std::chrono::milliseconds(500),
-      std::bind(&FibonacciActionClient::send_goal, this));
-  }
+服务端收到并接受目标后，会向客户端发送响应，由第 62–71 行的 `goal_response_callback` 处理。
 
-  void send_goal()
-  {
-    using namespace std::placeholders;
+如果目标已被接受，服务端开始执行；期间反馈由第 72–83 行的 `feedback_callback` 处理。执行完成后的结果则由第 84–107 行的 `result_callback` 处理。
 
-    this->timer_->cancel();
-
-    if (!this->client_ptr_->wait_for_action_server()) {
-      RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
-      rclcpp::shutdown();
-    }
-
-    auto goal_msg = Fibonacci::Goal();
-    goal_msg.order = 10;
-
-    RCLCPP_INFO(this->get_logger(), "Sending goal");
-
-    auto send_goal_options = rclcpp_action::Client<Fibonacci>::SendGoalOptions();
-    send_goal_options.goal_response_callback =
-      std::bind(&FibonacciActionClient::goal_response_callback, this, _1);
-    send_goal_options.feedback_callback =
-      std::bind(&FibonacciActionClient::feedback_callback, this, _1, _2);
-    send_goal_options.result_callback =
-      std::bind(&FibonacciActionClient::result_callback, this, _1);
-    this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
-  }
-
-private:
-  rclcpp_action::Client<Fibonacci>::SharedPtr client_ptr_;
-  rclcpp::TimerBase::SharedPtr timer_;
-
-  void goal_response_callback(const GoalHandleFibonacci::SharedPtr & goal_handle)
-  {
-    if (!goal_handle) {
-      RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
-    } else {
-      RCLCPP_INFO(this->get_logger(), "Goal accepted by server, waiting for result");
-    }
-  }
-
-  void feedback_callback(
-    GoalHandleFibonacci::SharedPtr,
-    const std::shared_ptr<const Fibonacci::Feedback> feedback)
-  {
-    std::stringstream ss;
-    ss << "Next number in sequence received: ";
-    for (auto number : feedback->partial_sequence) {
-      ss << number << " ";
-    }
-    RCLCPP_INFO(this->get_logger(), ss.str().c_str());
-  }
-
-  void result_callback(const GoalHandleFibonacci::WrappedResult & result)
-  {
-    switch (result.code) {
-      case rclcpp_action::ResultCode::SUCCEEDED:
-        break;
-      case rclcpp_action::ResultCode::ABORTED:
-        RCLCPP_ERROR(this->get_logger(), "Goal was aborted");
-        return;
-      case rclcpp_action::ResultCode::CANCELED:
-        RCLCPP_ERROR(this->get_logger(), "Goal was canceled");
-        return;
-      default:
-        RCLCPP_ERROR(this->get_logger(), "Unknown result code");
-        return;
-    }
-    std::stringstream ss;
-    ss << "Result received: ";
-    for (auto number : result.result->sequence) {
-      ss << number << " ";
-    }
-    RCLCPP_INFO(this->get_logger(), ss.str().c_str());
-    rclcpp::shutdown();
-  }
-};  // class FibonacciActionClient
-
-}  // namespace action_tutorials_cpp
-
-RCLCPP_COMPONENTS_REGISTER_NODE(action_tutorials_cpp::FibonacciActionClient)
-```
-
-前几行包括我们需要编译的所有信头.
-
-接下来我们创建一个类 一个衍生的类: `rclcpp::Node`:
-
-``` c++
-class FibonacciActionClient : public rclcpp::Node
-```
-
-设计器 `FibonacciActionClient` 类初始化节点名称为 `fibonacci_action_client`:
-
-``` c++
-  explicit FibonacciActionClient(const rclcpp::NodeOptions & options)
-  : Node("fibonacci_action_client", options)
-```
-
-构造器还即时切换了一个新的动作客户端:
-
-``` c++
-    this->client_ptr_ = rclcpp_action::create_client<Fibonacci>(
-      this,
-      "fibonacci");
-```
-
-动作客户端需要三件事:
-
-1.  模板动作类型名称 : `Fibonacci`.
-
-2.  一个ROS 2节点将动作客户端添加到: `this`.
-
-3.  动作名称 : `'fibonacci'`.
-
-我们还在现场播放一个ROS计时器 它将启动一个,唯一的呼唤 `send_goal`:
-
-``` c++
-    this->timer_ = this->create_wall_timer(
-      std::chrono::milliseconds(500),
-      std::bind(&FibonacciActionClient::send_goal, this));
-```
-
-当计时器到期时,它会呼叫 `send_goal`:
-
-``` c++
-  void send_goal()
-  {
-    using namespace std::placeholders;
-
-    this->timer_->cancel();
-
-    if (!this->client_ptr_->wait_for_action_server()) {
-      RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting");
-      rclcpp::shutdown();
-    }
-
-    auto goal_msg = Fibonacci::Goal();
-    goal_msg.order = 10;
-
-    RCLCPP_INFO(this->get_logger(), "Sending goal");
-
-    auto send_goal_options = rclcpp_action::Client<Fibonacci>::SendGoalOptions();
-    send_goal_options.goal_response_callback =
-      std::bind(&FibonacciActionClient::goal_response_callback, this, _1);
-    send_goal_options.feedback_callback =
-      std::bind(&FibonacciActionClient::feedback_callback, this, _1, _2);
-    send_goal_options.result_callback =
-      std::bind(&FibonacciActionClient::result_callback, this, _1);
-    this->client_ptr_->async_send_goal(goal_msg, send_goal_options);
-  }
-```
-
-此函数具有以下功能:
-
-1.  取消计时器(所以只调用一次).
-
-2.  等待动作服务器出现.
-
-3.  证明一个新的 `Fibonacci::Goal`.
-
-4.  设置响应、反馈和结果回调。
-
-5.  将目标发送给服务器。
-
-当服务器接收和接受目标时,它会向客户端发送响应。该响应由 `goal_response_callback`:
-
-``` c++
-  void goal_response_callback(const GoalHandleFibonacci::SharedPtr & goal_handle)
-  {
-    if (!goal_handle) {
-      RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server");
-    } else {
-      RCLCPP_INFO(this->get_logger(), "Goal accepted by server, waiting for result");
-    }
-  }
-```
-
-假设目标被服务器接受,它会开始处理。对客户端的任何反馈都会由服务器处理。 `feedback_callback`:
-
-``` c++
-  void feedback_callback(
-    GoalHandleFibonacci::SharedPtr,
-    const std::shared_ptr<const Fibonacci::Feedback> feedback)
-  {
-    std::stringstream ss;
-    ss << "Next number in sequence received: ";
-    for (auto number : feedback->partial_sequence) {
-      ss << number << " ";
-    }
-    RCLCPP_INFO(this->get_logger(), ss.str().c_str());
-  }
-```
-
-当服务器完成处理后,它会返回结果给客户端。结果由处理器处理 `result_callback`:
-
-``` c++
-  void result_callback(const GoalHandleFibonacci::WrappedResult & result)
-  {
-    switch (result.code) {
-      case rclcpp_action::ResultCode::SUCCEEDED:
-        break;
-      case rclcpp_action::ResultCode::ABORTED:
-        RCLCPP_ERROR(this->get_logger(), "Goal was aborted");
-        return;
-      case rclcpp_action::ResultCode::CANCELED:
-        RCLCPP_ERROR(this->get_logger(), "Goal was canceled");
-        return;
-      default:
-        RCLCPP_ERROR(this->get_logger(), "Unknown result code");
-        return;
-    }
-    std::stringstream ss;
-    ss << "Result received: ";
-    for (auto number : result.result->sequence) {
-      ss << number << " ";
-    }
-    RCLCPP_INFO(this->get_logger(), ss.str().c_str());
-    rclcpp::shutdown();
-  }
-};  // class FibonacciActionClient
-```
-
-我们现在已经有了一个功能完备的动作客户端。 让我们把它建成并运行起来。
+客户端功能已经完整，接下来构建并运行。
 
 <span id="compiling-the-action-client"></span>
 
 #### 3.2 编译动作客户端
 
-在上一节中,我们设置了动作客户端代码。要编译和运行它,我们需要做一些额外的工作。
+打开 `action_tutorials_cpp/CMakeLists.txt`，在 `find_package` 调用之后加入：
 
-首先我们需要设置 CMakeLists.txt , 以便编译动作客户端。 打开 `action_tutorials_cpp/CMakeLists.txt`,然后在 `find_package` 电话:
-
-``` cmake
+```cmake
 add_library(action_client SHARED
   src/fibonacci_action_client.cpp)
 target_include_directories(action_client PRIVATE
@@ -711,36 +249,35 @@ install(TARGETS
   RUNTIME DESTINATION bin)
 ```
 
-现在我们可以编译软件包了,请到顶层 `ros2_ws`,然后运行 :
+进入 `ros2_ws` 顶层并构建：
 
-``` console
+```console
 $ colcon build
 ```
 
-这应当汇编整个工作空间,包括 `fibonacci_action_client` 输入 `action_tutorials_cpp` 软件包。
+这会编译整个工作空间，包括 `action_tutorials_cpp` 中的 `fibonacci_action_client`。
 
 <span id="running-the-action-client"></span>
 
 #### 3.3 运行动作客户端
 
-现在我们已经构建了动作客户端, 我们可以运行它。 首先要确保一个动作服务器在单独的终端运行。 现在从我们刚刚构建的工作空间中找到源( ) 。`ros2_ws`),并尝试运行动作客户端:
+先确认动作服务端正在另一终端运行。加载刚构建的 `ros2_ws` 环境后，启动客户端：
 
-``` console
+```console
 $ ros2 run action_tutorials_cpp fibonacci_action_client
 ```
 
-您应该看到已登录的用于目标被接受的信息, 反馈被打印, 以及最终结果 。
+应看到目标已接受的日志、反馈和最终结果。
 
 <span id="summary"></span>
 
 ## 小结
 
-在此教程中,您按行设置了 C++ 动作服务器和动作客户端行,并配置它们以交换目标,反馈和结果.
+本教程逐步编写了 C++ 动作服务端和客户端，并配置它们交换目标、反馈和结果。
 
 <span id="related-content"></span>
 
 ## 相关内容
 
-- C++ 有几种方法可以写一个动作服务器和客户端; 请检查 `minimal_action_server` 财务报告和财务报告 `minimal_action_client` 软件包中 [ros2/examples](https://github.com/ros2/examples/tree/rolling/rclcpp) 复传.
-
-- 欲了解关于ROS行动的更详细资料,请参见: [设计文章](http://design.ros2.org/articles/actions.html).
+- C++ 动作服务端和客户端有多种写法，可参阅 [ros2/examples](https://github.com/ros2/examples/tree/rolling/rclcpp) 中的 `minimal_action_server` 和 `minimal_action_client`。
+- 动作的更多细节见[设计文章](http://design.ros2.org/articles/actions.html)。

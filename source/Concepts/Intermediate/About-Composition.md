@@ -1,98 +1,71 @@
----
-translation_status: machine_translated
-source: Concepts/Intermediate/About-Composition.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="composition"></span>
-
 # 组件组合
 
 <span id="ros-1-nodes-vs-nodelets"></span>
+## ROS 1：节点与 Nodelet
 
-## ROS 1 - 节点对节点
-
-在 ROS 1 中,您也可以将您的代码写成 [ROS 节点](https://wiki.ros.org/Nodes) 或作为 [ROS 节点](https://wiki.ros.org/nodelet). ROS 1 节点编译为可执行文件. ROS 1 节点则编译为共享库,然后通过容器过程在运行时加载.
+在 ROS 1 中，可以将代码编写为 [ROS 节点](https://wiki.ros.org/Nodes)或 [ROS Nodelet](https://wiki.ros.org/nodelet)。ROS 1 节点会编译为可执行文件，而 Nodelet 会编译为共享库，再由容器进程在运行时加载。
 
 <span id="ros-2-unified-api"></span>
+## ROS 2：统一的 API
 
-## ROS 2 - 统一的API
+在 ROS 2 中，推荐采用类似 Nodelet 的方式编写代码，我们将其称为组件（`Component`）。这种方式便于将[生命周期](https://design.ros2.org/articles/node_lifecycle.html)等通用概念引入现有代码。ROS 1 的一个主要缺点是两种方式使用不同的 API；ROS 2 中两者使用相同的 API，避免了这一问题。
 
-在ROS 2中,推荐的代码写法类似于节点,我们称之为: `Component`。这使得在现有代码中加入共同概念变得容易,例如 [生命周期](https://design.ros2.org/articles/node_lifecycle.html)在ROS 2中避免出现不同的API,这是ROS 1中最大的缺点,因为这两种方法都使用相同的API。
+!!! note "说明"
+    仍然可以采用类似独立节点的方式，自行编写 `main` 函数，但在常见场景中不推荐这样做。
 
-> **说明**
->
-> 仍然可以使用节点式的“写自己的主”风格,但对常见的情况则不建议使用。
+将进程布局的选择留到部署阶段，用户便可以在以下方案之间选择：
 
-通过使程序布局成为部署时间的决定,用户可以在以下两种选择:
+- 在独立进程中运行多个节点，以获得进程隔离和故障隔离，并方便单独调试各节点。
+- 在同一进程中运行多个节点，以降低开销，并可选择更高效的通信方式，参见[进程内通信](../../Tutorials/Demos/Intra-Process-Communication.md)。
 
-- 在不同的进程中运行多个节点,同时具有进程/断层隔离以及单个节点更容易调试的好处。
-
-- 在一个单一进程中运行多个节点,其间接费用较低,可选效率更高的通信(见 [进程内部交流](../../Tutorials/Demos/Intra-Process-Communication.md)).
-
-此外,还有 `ros2 launch` 可以用来通过专门的发射行动使这些行动自动化。
+此外，还可以通过 `ros2 launch` 中专门的启动动作自动执行这些操作。
 
 <span id="component-container"></span> <span id="componentcontainer"></span>
+## 组件容器
 
-## 集装箱组件
+组件容器是一个宿主进程，允许在运行时将多个组件加载到同一进程空间中并加以管理。
 
-一个组件容器是一个主机进程,允许您在同一进程空间内运行时加载和管理多个组件.
+目前提供以下通用组件容器：
 
-截至目前,共有下列通用组件集装箱类型:
+- [`component_container`](https://github.com/ros2/rclcpp/blob/rolling/rclcpp_components/src/component_container.cpp)：使用一个 `SingleThreadedExecutor` 执行所有组件，是最通用的组件容器。
+- [`component_container_mt`](https://github.com/ros2/rclcpp/blob/rolling/rclcpp_components/src/component_container_mt.cpp)：使用一个 `MultiThreadedExecutor` 执行各组件。
+- [`component_container_isolated`](https://github.com/ros2/rclcpp/blob/rolling/rclcpp_components/src/component_container_isolated.cpp)：为每个组件提供专用的执行器，可选 `SingleThreadedExecutor`（默认）或 `MultiThreadedExecutor`。
 
-- [component_container](https://github.com/ros2/rclcpp/blob/rolling/rclcpp_components/src/component_container.cpp)
-
-  - 使用单一组件的最通用容器 `SingleThreadedExecutor` 以执行所有组件。
-
-- [component_container_mt](https://github.com/ros2/rclcpp/blob/rolling/rclcpp_components/src/component_container_mt.cpp)
-
-  - 使用单个组件容器 `MultiThreadedExecutor` 用于执行组件。
-
-- [component_container_isolated](https://github.com/ros2/rclcpp/blob/rolling/rclcpp_components/src/component_container_isolated.cpp)
-
-  - 使用每个组件专用执行器的组件容器: `SingleThreadedExecutor` (违约)或 `MultiThreadedExecutor`.
-
-关于执行人类型的更多信息,请参见: [执行者的类型](About-Executors.md#typesofexecutors)。关于每个组件容器的选项的更多信息,见 [组件容器类型](../../Tutorials/Intermediate/Composition.md#componentcontainertypes) 在构成教程中。
+有关执行器类型的更多信息，请参见[执行器类型](About-Executors.md#typesofexecutors)。有关各组件容器的选项，请参见组合教程中的[组件容器类型](../../Tutorials/Intermediate/Composition.md#componentcontainertypes)。
 
 <span id="writing-a-component"></span>
+## 编写组件
 
-## 写入组件
+组件只会构建为共享库，因此没有 `main` 函数，参见 [Talker 源代码](https://github.com/ros2/demos/blob/rolling/composition/src/talker_component.cpp)。组件通常是 `rclcpp::Node` 的子类。由于组件并不掌控线程，因此不应在构造函数中执行长时间运行或阻塞的任务。可以改用定时器来接收周期性通知。此外，组件也可以创建发布者、订阅、服务端和客户端。
 
-因为一个组件只建在一个共享的库中,所以它没有 `main` 函数(参见 [谈话者源代码](https://github.com/ros2/demos/blob/rolling/composition/src/talker_component.cpp)。一个组件通常是一个子类: `rclcpp::Node`。由于它不能控制线程,它不应该在构建器中执行任何长期运行或阻断任务。相反,它可以使用定时器来获取定期通知。 此外,它还可以创建出版商、订阅者、服务器和客户端。
+要使这样的类成为组件，一个重要步骤是使用 `rclcpp_components` 包提供的宏注册该类，参见源代码的最后一行。这样，在将组件库加载到运行中的进程时，就能发现该组件；这个注册机制起到类似入口点的作用。
 
-将这样的类作为组成部分的一个重要方面是,类本身使用软件包中的宏进行注册。 `rclcpp_components` (参见源代码中最后一行) , 这使得组件在被装入库到运行过程中时可以发现—— 它起到某种切入点的作用 。
+此外，创建组件后，还必须将其注册到索引中，工具才能发现它。
 
-此外,一个组件一旦创建,就必须在索引中注册,才能通过工具发现。
-
-``` cmake
+```cmake
 add_library(talker_component SHARED src/talker_component.cpp)
 rclcpp_components_register_nodes(talker_component "composition::Talker")
 # To register multiple components in the same shared library, use multiple calls
 # rclcpp_components_register_nodes(talker_component "composition::Talker2")
 ```
 
-举例来说, [检查此教程](../../Tutorials/Intermediate/Writing-a-Composable-Node.md)
+示例参见[编写可组合节点教程](../../Tutorials/Intermediate/Writing-a-Composable-Node.md)。
 
-> **说明**
->
-> 为了使组件_容器能够找到想要的组件,它必须执行或从已经源代码到相应的工作空间的 shell 发射.
+!!! note "说明"
+    为使 `component_container` 能够找到所需组件，必须在已加载（source）相应工作空间环境的 shell 中运行或启动它。
 
 <span id="cmake-registration-macros"></span>
-
 ## CMake 注册宏
 
-ROS 2提供了两个CMake宏用于注册组件,每个宏的目的不同:
+ROS 2 提供了两个用于注册组件的 CMake 宏，分别适用于不同用途。
 
 <span id="rclcpp-components-register-node"></span>
-
 ### `rclcpp_components_register_node`
 
-此宏会注册一个组件并生成一个独立的可执行文件。 如果您同时需要可调和性和将节点作为独立进程运行的能力, 请使用此程序 。
+此宏会注册一个组件，并生成一个独立的可执行文件。如果既希望支持组件组合，又希望能够将节点作为独立进程运行，可以使用此宏。
 
-``` cmake
+```cmake
 add_library(talker_component SHARED src/talker_component.cpp)
 rclcpp_components_register_node(talker_component
   PLUGIN "composition::Talker"
@@ -100,30 +73,25 @@ rclcpp_components_register_node(talker_component
 ```
 
 <span id="rclcpp-components-register-nodes"></span>
-
 ### `rclcpp_components_register_nodes`
 
-此宏将一个或多个组件注册为运行时的构成 **不含** 创建独立的可执行文件。当您想要在运行时装入组件容器的纯组件库时使用此程序。
+此宏会注册一个或多个用于运行时组合的组件，**不会**创建独立的可执行文件。如果只需要在运行时加载到组件容器中的组件库，可以使用此宏。
 
-``` cmake
+```cmake
 add_library(talker_component SHARED src/talker_component.cpp)
 rclcpp_components_register_nodes(talker_component "composition::Talker")
 ```
 
 <span id="using-components"></span>
-
 ## 使用组件
 
-那个... [组成](https://github.com/ros2/demos/tree/rolling/composition) 软件包包含关于如何使用组件的几种不同方法。
+[`composition`](https://github.com/ros2/demos/tree/rolling/composition) 包展示了几种使用组件的方法，其中最常见的三种是：
 
-1.  开始 a ([通用集装箱工艺](https://github.com/ros2/rclcpp/blob/rolling/rclcpp_components/src/component_container.cpp)并呼叫ROS服务 [load_node](https://github.com/ros2/rcl_interfaces/blob/rolling/composition_interfaces/srv/LoadNode.srv) 然后,ROS服务将加载通过软件包名称和库名称指定的组件,并在运行过程中开始执行。您也可以使用一个程序化的ROS服务,而不是使用程序化的ROS服务。 [命令行工具](https://github.com/ros2/ros2cli/tree/rolling/ros2component) 以命令行参数引用 ROS 服务
-
-2.  创建一个 [自定义可执行文件](https://github.com/ros2/demos/blob/rolling/composition/src/manual_composition.cpp) 包含在编译时已知的多个节点。这种方法要求每个组件都有一个头文件(对于第一个案例来说严格来说并不需要)。
-
-3.  创建发射文件并使用 `ros2 launch` 以创建包含多个组件的容器进程。
+1. 启动[通用容器进程](https://github.com/ros2/rclcpp/blob/rolling/rclcpp_components/src/component_container.cpp)，调用容器提供的 ROS 服务 [`load_node`](https://github.com/ros2/rcl_interfaces/blob/rolling/composition_interfaces/srv/LoadNode.srv)。该服务会根据传入的包名和库名加载指定组件，并在运行中的进程内开始执行该组件。除了通过程序调用该服务，也可以使用[命令行工具](https://github.com/ros2/ros2cli/tree/rolling/ros2component)，通过命令行参数调用服务。
+2. 创建一个[自定义可执行文件](https://github.com/ros2/demos/blob/rolling/composition/src/manual_composition.cpp)，其中包含编译时已知的多个节点。这种方式要求每个组件都有头文件，而第一种方式并没有这一硬性要求。
+3. 创建启动文件，通过 `ros2 launch` 创建容器进程，并加载多个组件。
 
 <span id="practical-application"></span>
+## 实践应用
 
-## 实际应用
-
-试试看 [组成演示](../../Tutorials/Intermediate/Composition.md).
+尝试运行[组件组合示例](../../Tutorials/Intermediate/Composition.md)。

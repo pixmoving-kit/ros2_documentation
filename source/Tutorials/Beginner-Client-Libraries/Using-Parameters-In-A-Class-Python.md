@@ -1,79 +1,55 @@
----
-translation_status: machine_translated
-source: Tutorials/Beginner-Client-Libraries/Using-Parameters-In-A-Class-Python.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="using-parameters-in-a-class-python"></span> <span id="pythonparamnode"></span>
-
 # 在类中使用参数（Python）
 
-**目标：** 使用 Python 创建并运行一个带有 ROS 参数的类.
+**目标：** 使用 Python 创建并运行一个包含 ROS 参数的类。
 
-**教程级别：** 入门
+**教程级别：** 初学者
 
-**用时：** 20分钟
+**预计用时：** 20 分钟
 
 <span id="background"></span>
-
 ## 背景
 
-当自己做的时候 [节点](../Beginner-CLI-Tools/Understanding-ROS2-Nodes/Understanding-ROS2-Nodes.md) 您有时需要添加可以从发射文件中设定的参数。
-
-此教程将演示如何在 Python 类中创建这些参数,以及如何在发射文件中设置这些参数.
+编写自己的[节点](../Beginner-CLI-Tools/Understanding-ROS2-Nodes/Understanding-ROS2-Nodes.md)时，有时需要添加能够通过 launch 文件设置的参数。本教程介绍如何在 Python 类中创建这些参数，并在 launch 文件中设置它们。
 
 <span id="prerequisites"></span>
-
 ## 前提条件
 
-在之前的教程中,你学会了如何 [创建工作空间](Creating-A-Workspace/Creating-A-Workspace.md) 财务报告和财务报告 [创建软件包](Creating-Your-First-ROS2-Package.md)。您还了解到 [参数](../Beginner-CLI-Tools/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md) 及其在ROS 2系统中的功能.
+此前教程介绍了[创建工作空间](Creating-A-Workspace/Creating-A-Workspace.md)、[创建软件包](Creating-Your-First-ROS2-Package.md)，以及[参数](../Beginner-CLI-Tools/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md)在 ROS 2 系统中的作用。
 
 <span id="tasks"></span>
-
 ## 操作步骤
 
 <span id="create-a-package"></span>
-
 ### 1 创建软件包
 
-打开一个新的终端 [源代码 ROS 2 安装](../Beginner-CLI-Tools/Configuring-ROS2-Environment.md) 这样一来 `ros2` 命令会起作用的。
+打开新终端，[加载 ROS 2 安装环境](../Beginner-CLI-Tools/Configuring-ROS2-Environment.md)，使 `ros2` 命令可用。
 
-跟着 [这些指示](Creating-A-Workspace/Creating-A-Workspace.md#new-directory) 创建新工作空间 `ros2_ws`.
+按照[创建目录的步骤](Creating-A-Workspace/Creating-A-Workspace.md#new-directory)创建名为 `ros2_ws` 的新工作空间。软件包应放在 `src` 而非根目录，因此进入 `ros2_ws/src` 并创建软件包：
 
-回顾 应在 `src` 目录,不是工作空间的根。导航到 `ros2_ws/src` 并创建新软件包 :
-
-``` console
+```console
 $ ros2 pkg create --build-type ament_python --license Apache-2.0 python_parameters --dependencies rclpy
 ```
 
-您的终端将返回一个消息, 以验证您的软件包的创建 `python_parameters` 以及所有必要的文件和文件夹。
-
-那个... `--dependencies` 参数将自动添加必要的依赖线到 `package.xml`.
+终端会确认 `python_parameters` 及其必需文件和目录已经创建。`--dependencies` 会自动将所需依赖写入 `package.xml`。
 
 <span id="update-package-xml"></span>
+#### 1.1 更新 package.xml
 
-#### 1.1 最新情况 `package.xml`
+使用了 `--dependencies`，就无需手动添加依赖。不过仍需填写说明、维护者邮箱和姓名，以及许可证：
 
-因为你用了 `--dependencies` 在创建软件包时,您不需要手动添加依赖性到 `package.xml`.
-
-但是,与往常一样,确保添加描述、维护者电子邮件和姓名,并给信息发放许可证。 `package.xml`.
-
-``` xml
+```xml
 <description>Python parameter tutorial</description>
 <maintainer email="you@email.com">Your Name</maintainer>
 <license>Apache License 2.0</license>
 ```
 
 <span id="write-the-python-node"></span>
+### 2 编写 Python 节点
 
-### 2 写入 Python 节点
+在 `ros2_ws/src/python_parameters/python_parameters` 中创建 `python_parameters_node.py`，粘贴以下代码：
 
-内侧 `ros2_ws/src/python_parameters/python_parameters` 目录,创建名为新文件 `python_parameters_node.py` 并粘贴下列编码:
-
-``` Python
+```Python
 import rclpy
 import rclpy.node
 
@@ -108,14 +84,13 @@ if __name__ == '__main__':
 ```
 
 <span id="examine-the-code"></span>
+#### 2.1 分析代码
 
-#### 2.1 审查守则
+开头的 `import` 语句用于导入软件包依赖。
 
-那个... `import` 顶部的语句用于导入软件包的依赖性。
+随后定义类及其构造函数。`self.declare_parameter('my_parameter', 'world')` 声明名为 `my_parameter` 的参数，默认值为 `world`。参数类型由默认值推断，因此这里是字符串。定时器周期设为 1，使 `timer_callback` 每秒执行一次。
 
-下一块代码创建类和构造器。线条 `self.declare_parameter('my_parameter', 'world')` 创建带有名称的参数 `my_parameter` 和默认值 `world`。从默认值中推断出参数类型,因此在此情况下,参数类型将被设定为字符串类型。 `timer` 初始化的时期为1, 导致 `timer_callback` 函数将每秒执行一次。
-
-``` Python
+```Python
 class MinimalParam(rclpy.node.Node):
     def __init__(self):
         super().__init__('minimal_param_node')
@@ -125,9 +100,9 @@ class MinimalParam(rclpy.node.Node):
         self.timer = self.create_timer(1, self.timer_callback)
 ```
 
-我们的第一线 `timer_callback` 函数获得参数 `my_parameter` 从节点,并储存在 `my_param`下一个 `get_logger` 函数确保该事件被记录。 `set_parameters` 函数然后设置参数 `my_parameter` 返回默认字符串值 `world`。如果用户外部更改了参数,这将保证它总是被重置为原参数。
+`timer_callback` 首先从节点获取 `my_parameter`，将字符串值保存到 `my_param`。随后通过 `get_logger` 输出日志。`set_parameters` 再将 `my_parameter` 设回默认字符串 `world`，确保即使用户从外部修改参数，也会被恢复为原值。
 
-``` Python
+```Python
 def timer_callback(self):
     my_param = self.get_parameter('my_parameter').get_parameter_value().string_value
 
@@ -142,9 +117,9 @@ def timer_callback(self):
     self.set_parameters(all_new_parameters)
 ```
 
-紧接着 `timer_callback` 是我们的 `main`。这里,ROS 2是初始化的。 `MinimalParam` 类别是构建的,以及 `rclpy.spin` 开始从节点处理数据。
+`timer_callback` 之后是 `main`：初始化 ROS 2，创建 `MinimalParam` 实例，再通过 `rclpy.spin` 开始处理节点数据。
 
-``` Python
+```Python
 def main():
     rclpy.init()
     node = MinimalParam()
@@ -155,12 +130,11 @@ if __name__ == '__main__':
 ```
 
 <span id="optional-add-parameterdescriptor"></span>
+##### 2.1.1 可选：添加 ParameterDescriptor
 
-##### 2.1.1(备选) 添加参数描述符
+可以为参数设置描述符，提供文字说明和约束，例如只读属性、取值范围等。为此，将 `__init__` 修改为：
 
-可以选择设置参数的描述符。描述符允许您指定参数及其约束的文本描述,如使其只读,指定范围等。要工作,请使用 `__init__` 代码必须更改为:
-
-``` Python
+```Python
 # ...
 
 class MinimalParam(rclpy.node.Node):
@@ -175,32 +149,31 @@ class MinimalParam(rclpy.node.Node):
         self.timer = self.create_timer(1, self.timer_callback)
 ```
 
-既然我们进口了 `rcl_interfaces`,我们需要添加依赖性到 `package.xml` 今后避免任何依赖性问题:
+由于导入了 `rcl_interfaces`，还需要在 `package.xml` 中声明依赖，避免后续出现依赖问题：
 
-``` xml
+```xml
 # ...
 <depend>rclpy</depend>
 <depend>rcl_interfaces</depend>
 ```
 
-其余代码保持不变。一旦运行了节点,您就可以运行 `ros2 param describe /minimal_param_node my_parameter` 以查看类型和描述。
+其余代码保持不变。运行节点后，执行 `ros2 param describe /minimal_param_node my_parameter` 即可查看类型和说明。
 
 <span id="add-an-entry-point"></span>
+#### 2.2 添加入口点
 
-#### 2.2 增加一个切入点
+打开 `setup.py`，使 `maintainer`、`maintainer_email`、`description` 和 `license` 与 `package.xml` 一致：
 
-打开 `setup.py` 文档。再次,匹配 `maintainer`, `maintainer_email`, `description` 财务报告和财务报告 `license` 字段为您 `package.xml`:
-
-``` python
+```python
 maintainer='YourName',
 maintainer_email='you@email.com',
 description='Python parameter tutorial',
 license='Apache License 2.0',
 ```
 
-在下行中添加以下行 `console_scripts` 括号 `entry_points` 字段 :
+在 `entry_points` 的 `console_scripts` 列表中添加：
 
-``` python
+```python
 entry_points={
     'console_scripts': [
         'minimal_param_node = python_parameters.python_parameters_node:main',
@@ -208,141 +181,114 @@ entry_points={
 },
 ```
 
-不要忘记拯救。
+保存文件。
 
 <span id="build-and-run"></span>
+### 3 构建并运行
 
-### 3 构建和运行
+推荐构建前在工作空间根目录 `ros2_ws` 运行 `rosdep` 检查缺失依赖。
 
-运行是好的做法 `rosdep` 在工作空间的根部(`ros2_ws`在建构前检查缺失的依赖性 :
+**Linux**
 
-##### Linux
-
-``` console
+```console
 $ rosdep install -i --from-path src --rosdistro rolling -y
 ```
 
-##### macOS
+**macOS 和 Windows**
 
-rosdep只运行在Linux上,所以可以提前跳到下一步.
+本教程的 rosdep 步骤仅适用于 Linux，可跳到下一步。
 
-##### Windows
+返回 `ros2_ws` 根目录，构建新软件包。
 
-rosdep只运行在Linux上,所以可以提前跳到下一步.
+**Linux**
 
-导航回你工作空间的根, `ros2_ws`,并构建您的新软件包:
-
-##### Linux
-
-``` console
+```console
 $ colcon build --packages-select python_parameters
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ colcon build --packages-select python_parameters
 ```
 
-##### Windows
+**Windows**
 
-``` console
+```console
 $ colcon build --merge-install --packages-select python_parameters
 ```
 
-打开新终端, 导航到 `ros2_ws`,并源代码设置文件 :
+打开新终端，进入 `ros2_ws` 并加载环境设置文件。
 
-##### Linux
+**Linux**
 
-``` console
+```console
 $ source install/setup.bash
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ . install/setup.bash
 ```
 
-##### Windows
+**Windows**
 
-``` console
+```console
 $ call install/setup.bat
 ```
 
-现在运行节点,终端应该返回 `Hello world!` 每秒钟:
+运行节点，终端应每秒显示一次 `Hello world!`：
 
-``` console
+```console
  $ ros2 run python_parameters minimal_param_node
 [INFO] [parameter_node]: Hello world!
 ```
 
-现在您可以看到您参数的默认值, 但是您想要自己设置它。 有两种方法可以实现 。
+现在看到的是参数默认值。接下来用两种方式设置它。
 
 <span id="change-via-the-console"></span>
+#### 3.1 通过控制台修改
 
-#### 3.1 通过控制台进行更改
+将[参数教程](../Beginner-CLI-Tools/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md)中的知识应用到刚创建的节点。
 
-这部分将利用你从 [关于参数的教程](../Beginner-CLI-Tools/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md) 并将其应用到您刚刚创建的节点上。
+确认节点正在运行：
 
-确保节点运行中 :
-
-``` console
+```console
 $ ros2 run python_parameters minimal_param_node
 ```
 
-打开另一个终端, 从内部源出设置文件 `ros2_ws` ,并输入以下行:
+打开另一个终端，在 `ros2_ws` 中加载环境，再输入：
 
-``` console
+```console
 $ ros2 param list
 ```
 
-您将在此看到自定义参数 `my_parameter`。为了改变它,只需在控制台上运行以下一行:
+列表中会显示自定义参数 `my_parameter`。运行以下命令修改它：
 
-``` console
+```console
 $ ros2 param set /minimal_param_node my_parameter earth
 ```
 
-你知道,如果你得到输出,它很顺利 `Set parameter successful`。如果查看另一个终端,则应当看到输出更改为 `[INFO] [minimal_param_node]: Hello earth!`
+输出 `Set parameter successful` 表示设置成功。另一个终端中应出现 `[INFO] [minimal_param_node]: Hello earth!`。
 
-由于节点之后将参数放回 `world`,进一步产出显示 `[INFO] [minimal_param_node]: Hello world!`
+节点随后将参数设回 `world`，所以之后又会显示 `[INFO] [minimal_param_node]: Hello world!`。
 
 <span id="change-via-a-launch-file"></span>
+#### 3.2 通过 launch 文件修改
 
-#### 3.2 通过发射文件更改
+也可以在 launch 文件中设置参数。先在 `ros2_ws/src/python_parameters/` 下创建 `launch` 目录，再在其中创建 `python_parameters_launch.py`，内容见[原始 launch 示例文件](launch/python_parameters_launch.py)。
 
-也可以在发射文件中设置参数,但首先需要添加发射目录。 `ros2_ws/src/python_parameters/` 目录,创建新的目录,名为 `launch`中,创建名为“新文件”的文件 `python_parameters_launch.py`
+该文件在启动节点时将 `my_parameter` 设为 `earth`。以下两行确保输出打印在控制台中：
 
-``` python
-from launch import LaunchDescription
-from launch_ros.actions import Node
-
-
-def generate_launch_description():
-    return LaunchDescription([
-        Node(
-            package='python_parameters',
-            executable='minimal_param_node',
-            name='custom_minimal_param_node',
-            output='screen',
-            emulate_tty=True,
-            parameters=[
-                {'my_parameter': 'earth'}
-            ]
-        )
-    ])
-```
-
-在这里,你可以看到,我们设置 `my_parameter` 改为: `earth` 当我们发射节点时 `parameter_node`。通过在下面增加两行,我们保证我们的输出在我们的控制台上打印。
-
-``` console
+```console
 output="screen",
 emulate_tty=True,
 ```
 
-现在打开 `setup.py` 文件。添加 `import` 对文件顶端的语句,对文件的其他新语句 `data_files` 包含所有发射文件的参数 :
+打开 `setup.py`，在文件开头添加 import 语句，再向 `data_files` 添加配置，以包含所有 launch 文件：
 
-``` Python
+```Python
 import os
 from glob import glob
 # ...
@@ -356,63 +302,61 @@ setup(
   )
 ```
 
-打开一个控制台 导航到您工作空间的根, `ros2_ws`,并构建您的新软件包:
+打开终端，进入工作空间根目录 `ros2_ws`，重新构建软件包。
 
-##### Linux
+**Linux**
 
-``` console
+```console
 $ colcon build --packages-select python_parameters
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ colcon build --packages-select python_parameters
 ```
 
-##### Windows
+**Windows**
 
-``` console
+```console
 $ colcon build --merge-install --packages-select python_parameters
 ```
 
-然后从新终端中获取设置文件 :
+随后在新终端中加载环境设置文件。
 
-##### Linux
+**Linux**
 
-``` console
+```console
 $ source install/setup.bash
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ . install/setup.bash
 ```
 
-##### Windows
+**Windows**
 
-``` console
+```console
 $ call install/setup.bat
 ```
 
-现在使用我们刚刚创建的发射文件运行节点。 终端应该第一次返回以下信息 :
+使用刚创建的 launch 文件运行节点。第一次应输出：
 
-``` console
+```console
 $ ros2 launch python_parameters python_parameters_launch.py
 [INFO] [custom_minimal_param_node]: Hello earth!
 ```
 
-其他产出应显示 `[INFO] [minimal_param_node]: Hello world!` 每一秒钟。
+之后应每秒输出 `[INFO] [minimal_param_node]: Hello world!`。
 
 <span id="summary"></span>
-
 ## 小结
 
-您创建了一个自定义参数的节点, 可以从发射文件或命令行中设置。 您在软件包配置文件中添加了依赖性、 可执行文件以及启动文件, 以便构建和运行它们, 并在操作中看到参数 。
+你创建了带自定义参数的节点，能够通过 launch 文件或命令行设置参数。将依赖、可执行程序和 launch 文件加入软件包配置后，完成了构建和运行，并观察了参数的作用。
 
 <span id="next-steps"></span>
-
 ## 后续步骤
 
-现在,你有一些包 和ROS 2系统你自己的, [下一个教程](Getting-Started-With-Ros2doctor.md) 将教你如何检查环境和系统中的问题,以防出现问题。
+现在你已经有了自己的软件包和 ROS 2 系统。[下一篇教程](Getting-Started-With-Ros2doctor.md)将介绍出现问题时如何检查环境和系统。

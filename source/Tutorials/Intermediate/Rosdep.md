@@ -1,115 +1,95 @@
----
-translation_status: machine_translated
-source: Tutorials/Intermediate/Rosdep.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="managing-dependencies-with-rosdep"></span>
 
 # 使用 rosdep 管理依赖
 
-**目标：** 使用 `rosdep`.
+**目标：** 使用 `rosdep` 管理外部依赖。
 
 **教程级别：** 中级
 
-**用时：** 5分钟
+**预计耗时：** 5 分钟
 
-此教程将解释如何使用 `rosdep`.
+本教程介绍如何使用 `rosdep` 管理外部依赖。
 
-> **警告**
->
-> 目前 rosdep 只工作于 Linux 和 macOS; Windows 不支持。 有长期计划将支持 Windows 添加到 <https://github.com/ros-infrastructure/rosdep>.
+> 目前 rosdep 仅支持 Linux 和 macOS，不支持 Windows。[rosdep 项目](https://github.com/ros-infrastructure/rosdep)有长期计划增加 Windows 支持。
 
 <span id="what-is-rosdep"></span>
 
-## 罗斯德是什么?
+## 什么是 rosdep？
 
-`rosdep` 是一个依赖性管理工具,可以与软件包和外部库合作。它是一个命令行工具,用于识别和安装依赖性以构建或安装软件包。 `rosdep` 是,这是 *没有* 软件包管理器本身; 是元软件包管理器, 使用自身对系统和依赖性的知识来寻找合适的软件包, 以便在某个特定平台上安装。 实际安装使用系统软件包管理器( 例如) 。 `apt` 在Debian/Ubuntu网站上, `dnf` (见Fedora/RHEL等)。
+`rosdep` 是处理软件包和外部库的依赖管理命令行工具，负责识别并安装构建或安装软件包所需的依赖。它本身不是直接安装软件包的包管理器，而是元包管理器：根据系统和依赖信息，确定特定平台需要安装的包，再交给系统包管理器实际安装，例如 Debian/Ubuntu 的 `apt`、Fedora/RHEL 的 `dnf`。
 
-在建立工作空间之前,它最常被引用,用来在工作空间内安装软件包的依赖性.
+通常在构建工作空间前运行它，安装其中各包的依赖。既可针对单个包，也可针对包含多个包的目录，例如工作空间。
 
-它具有在单个软件包上工作或在一个软件包目录上工作的能力(如工作空间).
-
-> **说明**
->
-> 虽然这个名字是给ROS的, `rosdep` 在非ROS软件项目中可以使用这个强大的工具,将它安装为独立的 Python 软件包。成功运行 `rosdep` 依赖 `rosdep keys` ,可以从一个带有几个简单命令的公共 git 寄存器中下载。
+> 名称虽包含 ROS，`rosdep` 并非完全依赖 ROS。可将它作为独立 Python 包安装，用于非 ROS 项目。正常运行需要可用的 rosdep 键，只需几条命令即可从公开 Git 仓库下载。
 
 <span id="a-little-about-package-xml-files"></span>
 
-## 关于 package.xml 文件的一点
+## package.xml 文件简介
 
-那个... `package.xml` 是您软件中的文件, 其中 `rosdep` 找到一组依存关系。重要的是,该目录必须列出依存关系。 `package.xml` 完整而正确,这使得所有工具都能够确定软件包的依赖性。缺失或不正确的依赖性可能导致用户无法使用您的软件包,无法在正在建设的工作空间中运行软件包,以及无法发布软件包。
+`rosdep` 从 `package.xml` 中读取依赖。依赖列表必须完整、正确，才能让各类工具确定软件包所需的依赖。缺失或错误的声明可能导致用户无法使用软件包、工作空间中的包构建顺序错误，或无法发布软件包。
 
-二、《公约》的依赖性 `package.xml` 文件一般称为“ rosdep 密钥”。 这些依赖性是手动拼接的。 `package.xml` 由软件包的创建者编写的文件,并且应当详尽列出它需要的任何非构建的库和软件包。
+`package.xml` 中的依赖通常称为“rosdep 键”，由包的创建者手动填写，应完整列出需要的所有非内置库和软件包。
 
-这些标签在下列标签中有所体现(见: [REP-149号文件](https://reps.openrobotics.org/rep-0149/) 详细规格:
+依赖通过以下标签表示，完整规范见 [REP-149](https://reps.openrobotics.org/rep-0149/)。
 
 <span id="depend"></span>
 
-### `<depend>`
+### depend
 
-这些是您软件包在构建时间和运行时间中都应该提供的依赖性。 对于 C++ 软件包, 如果有疑问, 请使用此标签 。 纯 Python 软件包一般没有构建阶段, 所以永远不应该使用, 并且应该使用 。 `<exec_depend>` 换句话说。
+`<depend>` 表示构建和运行时都需要的依赖。对于 C++ 包，不确定时可使用此标签。纯 Python 包通常没有构建阶段，应使用 `<exec_depend>`，而不是此标签。
 
 <span id="build-depend"></span>
 
-### `<build_depend>`
+### build_depend
 
-如果您只使用特定的依赖来构建您的软件包,而不是在执行时,您可以使用 `<build_depend>` 标记 。
+`<build_depend>` 用于只在构建时需要、运行时不需要的依赖。安装好的二进制包无须再安装这些依赖。
 
-由于这种依赖性,您的软件包的已安装二进制不需要安装该特定软件包 。
-
-但是,如果您的软件包导出一个包含来自此依赖的页眉的页眉,则会产生问题。在这种情况下,您还需要一个 `<build_export_depend>`.
+但若导出的头文件包含该依赖的头文件，下游用户仍会需要它，此时还要声明 `<build_export_depend>`。
 
 <span id="build-export-depend"></span>
 
-### `<build_export_depend>`
+### build_export_depend
 
-如果导出一个包含来自依赖的页眉的页眉,则其他包将需要它。 `<build_depend>` 。这主要适用于信头和 CMake 配置文件。您导出库引用的库软件包通常应该指定 `<depend>`,因为在执行时也需要这些设备。
+若导出的头文件包含某依赖的头文件，那么对你的包声明 `<build_depend>` 的其他包也需要该依赖。这主要适用于头文件和 CMake 配置文件。
+
+导出的库所引用的其他库通常应声明为 `<depend>`，因为运行时也需要它们。
 
 <span id="exec-depend"></span>
 
-### `<exec_depend>`
+### exec_depend
 
-此标签声明共享库、 可执行文件、 Python 模块、 启动脚本以及运行您的软件包所需的其他文件的依赖性 。
+`<exec_depend>` 声明运行软件包时所需的共享库、可执行程序、Python 模块、启动脚本及其他文件的依赖。
 
 <span id="test-depend"></span>
 
-### `<test_depend>`
+### test_depend
 
-此标签只通过测试来声明依赖性 。 这里的依赖性应该 *没有* 与指定的密钥复制 `<build_depend>`, `<exec_depend>`,或 `<depend>`.
+`<test_depend>` 声明仅测试需要的依赖，不应与 `<build_depend>`、`<exec_depend>` 或 `<depend>` 中已有的键重复。
 
 <span id="how-does-rosdep-work"></span>
 
-## 罗斯德是怎么工作的?
+## rosdep 如何工作？
 
-`rosdep` 将检查 `package.xml` 在路径或特定软件包中找到存储在其中的 rosdep 密钥。然后,这些密钥与中央索引交叉引用,以便在各种软件包管理器中找到合适的ROS 软件包或软件库。最后,一旦找到软件包,它们就被安装并准备出发 !
+`rosdep` 检查指定路径或软件包的 `package.xml`，读取其中的键，再查询中央索引，找到各包管理器中对应的 ROS 包或软件库，然后安装。
 
-`rosdep` 工作方式是将中央索引检索到您的本地机器上, 这样它就不必每次运行时访问网络( 在 Debian/ Ubuntu 上, 它的配置存储在其中) `/etc/ros/rosdep/sources.list.d/20-default.list`).
+中央索引会下载到本机，避免每次运行都联网。Debian/Ubuntu 的配置位于 `/etc/ros/rosdep/sources.list.d/20-default.list`。
 
-中央指数称为: `rosdistro`,哪个 [可在网上找到](https://github.com/ros/rosdistro)我们将在下一节探讨更多的问题。
+该中央索引称为 `rosdistro`，可在[网上查看](https://github.com/ros/rosdistro)，下一节会进一步介绍。
 
 <span id="how-do-i-know-what-keys-to-put-in-my-package-xml"></span>
 
-## 我怎么知道把什么钥匙放进我的包里?
+## package.xml 应填写哪些键？
 
-问得好, 我很高兴你问!
+<span id="id1"></span>
 
-- 如果您想要依赖的软件包基于ROS, 并已释放到ROS生态系统中 <span id="id1"></span>[\[1\]](#id2), e.g. `nav2_bt_navigator`,您可以简单地使用软件包的名称。您可以在其中找到所有已发布的ROS软件包的清单。 <https://github.com/ros/rosdistro> 现时 `<distro>/distribution.yaml` (e.g. `humble/distribution.yaml`你给的ROS分配。
+- 如果依赖是基于 ROS 且已发布到 ROS 生态的软件包[¹](#id2)，例如 `nav2_bt_navigator`，直接使用包名。对应发行版的全部已发布包可在 [rosdistro](https://github.com/ros/rosdistro) 的 `<distro>/distribution.yaml` 中找到，例如 `humble/distribution.yaml`。
+- 如果依赖非 ROS 软件包，通常称为系统依赖，则需要查找对应库的键。主要查看 [rosdep/base.yaml](https://github.com/ros/rosdistro/blob/master/rosdep/base.yaml)，其中包含 `apt` 系统依赖，以及 [rosdep/python.yaml](https://github.com/ros/rosdistro/blob/master/rosdep/python.yaml)，其中包含 Python 依赖。
 
-- 如果您想要依赖一个非ROS软件包, 经常被称为“ 系统依赖性 ” , 您需要为特定库找到密钥 。 一般来说, 有两个文件值得关注 :
+在这些文件中搜索所需库，找到的键名就是应填入 `package.xml` 的名称。
 
-  - [rosdep/base.yaml](https://github.com/ros/rosdistro/blob/master/rosdep/base.yaml) 包含 `apt` 系统依赖关系
+例如，软件包重视文档质量，因此依赖 `doxygen`。在 `rosdep/base.yaml` 中搜索后可见：
 
-  - [rosdep/python.yaml](https://github.com/ros/rosdistro/blob/master/rosdep/python.yaml) 包含 Python 依赖性
-
-要找到密钥, 请在这些文件中搜索您的库并找到名称。 这是要放入的密钥 。 `package.xml` 文档。
-
-例如,想象一个软件包依赖 `doxygen` 因为它是一个伟大的软件,它关心高质量的文档(提示)。我们会搜索 `rosdep/base.yaml` (单位:千美元) `doxygen` 并来到这里:
-
-``` yaml
+```yaml
 doxygen:
   arch: [doxygen]
   debian: [doxygen]
@@ -124,83 +104,76 @@ doxygen:
   ubuntu: [doxygen]
 ```
 
-这意味着我们的玫瑰花钥匙是 `doxygen`,将确定不同操作系统软件包管理器中的各种名称,以供安装。
+这里的 rosdep 键是 `doxygen`，它会根据操作系统解析为各包管理器中的相应名称。
 
 <span id="what-if-my-library-isn-t-in-rosdistro"></span>
 
-## 如果我的库不在罗盘里呢?
+## 库不在 rosdistro 中怎么办？
 
-如果您的库不在, `rosdistro`,您可以体验开源软件开发的伟大性:您可以自己加入它! Pull for rosdistro 请求通常在一周内被很好地合并。
+这正是参与开源开发的机会：可以自己添加！rosdistro 的 PR 通常在一周内即可合并。贡献新键的方法见[详细说明](https://github.com/ros/rosdistro/blob/master/CONTRIBUTING.md#rosdep-rules-contributions)。
 
-[详细说明请参见此处。](https://github.com/ros/rosdistro/blob/master/CONTRIBUTING.md#rosdep-rules-contributions) 如果出于某种原因这些可能无法公开提供,则存在其他选项:
+如果由于某种原因无法公开贡献，还可以：
 
-1.  伪造rosdistro并维持包含额外密钥的替代索引([使用自定义 Rosdistro 版本](../../How-To-Guides/Using-Custom-Rosdistro.md))
-
-2.  创建包含自定义密钥的新文件并指示 `rosdep` 当输入本地索引时检查它( T) :[补充自定义 rosdep 键](../Advanced/Supplementing-Custom-Rosdep-Keys.md))
+1. Fork rosdistro，维护包含额外键的替代索引，参见[使用自定义 rosdistro](../../How-To-Guides/Using-Custom-Rosdistro.md)。
+2. 新建包含自定义键的文件，让 rosdep 在构建本地索引时读取它，参见[补充自定义 rosdep 键](../Advanced/Supplementing-Custom-Rosdep-Keys.md)。
 
 <span id="how-do-i-use-the-rosdep-tool"></span>
 
-## 我该怎么用Rostep工具?
+## 如何使用 rosdep？
 
 <span id="rosdep-installation"></span>
 
-### 罗斯德普安装
+### 安装 rosdep
 
-如果你在用的话 `rosdep` 使用ROS,可以方便地与ROS的分布进行包装。 `rosdep`。您可以安装它 :
+结合 ROS 使用时，推荐安装随 ROS 发行版提供的系统软件包。
 
-##### Ubuntu
+Ubuntu：
 
-``` console
+```console
 $ sudo apt install python3-rosdep
 ```
 
-##### RHEL
+RHEL：
 
-``` console
+```console
 $ sudo dnf install python3-rosdep
 ```
 
-> **说明**
->
-> 在Debian和Ubuntu上,还有一个类似命名的软件包叫做 `python3-rosdep2`。如果安装了该软件包,请在安装前确保将其删除 `python3-rosdep`.
+> Debian 和 Ubuntu 还有一个名称相似的包 `python3-rosdep2`。若已安装，应先卸载它，再安装 `python3-rosdep`。
 
-如果你在用的话 `rosdep` 在ROS之外,系统软件包可能不可用。在这种情况下,您可以直接从 <https://pypi.org>:
+在非 ROS 项目中使用时，系统软件包可能不可用，可以从 [PyPI](https://pypi.org) 直接安装：
 
-``` console
+```console
 $ pip install rosdep
 ```
 
 <span id="rosdep-operation"></span>
 
-### 罗斯德操作
+### 运行 rosdep
 
-现在,我们有些理解 `rosdep`, `package.xml`,以及 `rosdistro`首先,如果这是第一次使用 `rosdep`,必须通过以下方式初始化:
+了解 rosdep、package.xml 和 rosdistro 后，就可以开始使用。首次使用时需要初始化：
 
-``` console
+```console
 $ sudo rosdep init
 $ rosdep update
 ```
 
-这将初始化 rosdep 和 `update` 将更新本地缓存的 rodistro 索引。 `update` 罗斯德普偶尔会得到最新的索引.
+这会初始化 rosdep，`update` 则更新本地缓存的 rosdistro 索引。建议定期运行 `update`，获取最新索引。
 
-我们终于可以跑步了 `rosdep install` 以安装依赖性。通常情况下,它会运行在一个工作空间上,在一个单一调用中包含许多软件包,以安装所有依赖性。如果在工作空间的根部有目录,这样的调用将显示如下: `src` 包含源代码。
+最后用 `rosdep install` 安装依赖。通常在包含多个软件包的工作空间中，一次安装全部依赖。在工作空间根目录、源码位于 `src` 时执行：
 
-``` console
+```console
 $ rosdep install --from-paths src -y --ignore-src
 ```
 
-打破了这一点:
+参数含义：
 
-- `--from-paths src` 指定要检查的路径 `package.xml` 用于解析密钥的文件
+- `--from-paths src`：指定查找 `package.xml` 并解析依赖键的路径。
+- `-y`：对包管理器的所有确认默认回答“是”，以免交互提示。
+- `--ignore-src`：若依赖包本身已存在于工作空间中，即使有对应 rosdep 键，也不再安装。
 
-- `-y` 表示默认是, 以不提示即从软件包管理器安装到所有提示
-
-- `--ignore-src` 表示忽略安装依赖性,即使存在一个rosdep密钥,如果包本身也在工作空间中.
-
-还有其他参数和选项。 使用 `rosdep -h` ,或查看罗斯德更完整的文档 at <http://docs.ros.org/en/independent/api/rosdep/html/> .
+其他选项可通过 `rosdep -h` 查看，或阅读[完整文档](http://docs.ros.org/en/independent/api/rosdep/html/)。
 
 <span id="id2"></span>
 
-\[[1](#id1)\]
-
-“释放到ROS生态系统”是指该包被列在其中一种或多种 `<distro>/distribution.yaml` 目录 [rodistro 数据库](https://github.com/ros/rosdistro).
+¹ “发布到 ROS 生态”是指软件包已列入 [rosdistro 数据库](https://github.com/ros/rosdistro)中至少一个发行版的 `<distro>/distribution.yaml`。

@@ -1,60 +1,45 @@
----
-translation_status: machine_translated
-source: Releases/Release-Rolling-Ridley.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="rolling-ridley-rolling"></span>
 
-# Rolling Ridley（`rolling`)
+# Rolling Ridley（`rolling`）
 
-*Rolling Ridley* 是ROS 2的滚动开发发布.
+*Rolling Ridley* 是 ROS 2 的滚动开发发行版。
 
-> **警告**
->
-> Rolling Ridley 不断更新, 并进行现场更新, 有时包括断开更改。 它被用于ROS 2 开发, 并被维护者使用, 希望发布其软件包, 准备下一次稳定分发。 我们建议 ROS 2 的多数用户使用最新版本 。 [稳定分布](Release-Lyrical-Luth.md#latest-release).
+!!! warning "警告"
+    Rolling Ridley 持续更新，会直接更新现有版本，有时包含不兼容变更。它用于 ROS 2 开发，也供希望提前发布软件包、为下一个稳定发行版做好准备的维护者使用。建议大多数 ROS 2 用户使用最新的[稳定发行版](Release-Lyrical-Luth.md#latest-release)。
 
-更多信息见 [REP-2002 (英语).](https://reps.openrobotics.org/rep-2002/)
+更多信息见 [REP 2002](https://reps.openrobotics.org/rep-2002/)。
 
 <span id="currently-supported-platforms"></span>
 
 ## 当前支持的平台
 
-Ridley 支持以下平台: [平台支持级别](../The-ROS2-Project/Platform-Support-Tiers.md):
+按照[平台支持级别](../The-ROS2-Project/Platform-Support-Tiers.md)，Rolling Ridley 支持以下平台。
 
-第一级平台:
+**一级支持：**
 
-- 红帽企业 Linux 10: `amd64`
+- Red Hat Enterprise Linux 10：`amd64`。
+- Ubuntu 24.04（Noble）：`amd64` 和 `arm64`。
+- Windows 11（Visual Studio 2022）：`amd64`。
 
-- 乌班图24.04(诺布尔语: `amd64` 财务报告和财务报告 `arm64`
+**二级支持：**
 
-- Windows 11 (Visual Studio 2022): (英语). `amd64`
+- RHEL 10：`amd64`。
 
-第二级平台:
+**三级支持：**
 
-- 莱尔10: `amd64`
-
-第三级平台:
-
-- 德比安·特里克西(13): `amd64`
-
-- 费多拉·林纳 44: `amd64`
-
-- 马科斯: `amd64`
-
-- OpenEmbed / Yocto 项目 : `amd64`, `arm64` 财务报告和财务报告 `arm32`
+- Debian Trixie（13）：`amd64`。
+- Fedora Linux 44：`amd64`。
+- macOS：`amd64`。
+- OpenEmbedded / Yocto Project：`amd64`、`arm64` 和 `arm32`。
 
 <span id="installation"></span>
 
 ## 安装
 
-[安装滚筒](https://docs.ros.org/en/rolling/Installation.html)
+[安装 Rolling Ridley](../Installation.md)。
 
 <span id="new-features-and-changes-in-this-release"></span>
 
-## 此发行中的新特性和变化
+## 此发行版的新功能与变更
 
-Rolling Ridley是一个持续的开发发行。当前稳定发行与即将发行之间的变化可以在网页上找到。 [即将发行](Release-Makoa-Mata-mata.md#upcoming-release).
+Rolling Ridley 是持续开发的发行版。当前稳定版与下一个发行版之间的变化，可以在[即将发布的版本](Release-Makoa-Mata-mata.md#upcoming-release)页面查看。

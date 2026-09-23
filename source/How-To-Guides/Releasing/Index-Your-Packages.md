@@ -1,77 +1,56 @@
----
-translation_status: machine_translated
-source: How-To-Guides/Releasing/Index-Your-Packages.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="index-your-packages"></span>
-
 # 为软件包建立索引
 
-您是否将一个新的 ROS 软件包放入 ROS 分布中 ? 通过先对您的软件包进行索引, 使进程更快 。
+准备将一个新的 ROS 软件包发布到 ROS 发行版中？先为软件包建立索引，可以加快发布流程。
 
 <span id="put-your-ros-packages-into-a-public-repository"></span>
+## 将 ROS 软件包放入公开仓库
 
-## 将您的ROS 软件包放入公共仓库
+如果还没有这样做，请将 ROS 软件包的源码放入公开的 Git 仓库。所有发布到 ROS 中的软件包都必须开源。代码可以托管在任何地方，但推荐使用 GitHub，因为它支持启用拉取请求构建任务。可选平台包括：
 
-如果您还没有这样做, 请将 ROS 软件包的源代码放入一个公共 git 仓库。 所有放入 ROS 的软件包都必须是开源的。 您可以在任何地方主机代码, 但是 GitHub 被推荐, 因为它给了您一个选项来启用拉动请求任务 。 以下是一些选项 :
-
-- [GitHub](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository) **建议**
-
-- [吉特拉布语Name](https://docs.gitlab.com/ee/user/project/repository/)
-
-- [位点](https://support.atlassian.com/bitbucket-cloud/docs/create-a-git-repository/)
+- [GitHub](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-new-repository)（**推荐**）。
+- [GitLab](https://docs.gitlab.com/ee/user/project/repository/)。
+- [Bitbucket](https://support.atlassian.com/bitbucket-cloud/docs/create-a-git-repository/)。
 
 <span id="give-your-packages-an-osi-approved-license"></span>
+## 为软件包选择 OSI 批准的许可证
 
-## 给您的包 OSI 许可
+为 ROS 软件包选择一种 [OSI 批准的许可证](https://opensource.org/licenses)。如果难以决定，可以考虑采用大多数 ROS 2 核心软件包使用的 [Apache-2.0 许可证](https://opensource.org/license/apache-2-0)。
 
-选择一个 [OSI 核准许可证](https://opensource.org/licenses) 如果您无法决定, 请考虑使用 ROS 2 核心软件包所使用的许可证 : [Apache-2.0 许可证](https://opensource.org/license/apache-2-0).
+在仓库中每个 `package.xml` 的 `<license>` 标签中，填写该许可证的 SPDX 短标识符。
 
-每笔 `package.xml` 在您的仓库中, 将 SPDX 许可证的简短标识符放入 `<license>` 标签在您的 `package.xml`.
-
-如果您的所有ROS软件包都有相同的许可证, 或者您的仓库中只有一个ROS软件包, 请创建一个名为 `LICENSE` 将您选择的许可证文本放在您的仓库的根部。 如果您仓库中的ROS 软件包有不同的许可证, 请创建 `LICENSE` 与每个文件相邻 `package.xml` 文档。
+如果所有 ROS 软件包使用相同许可证，或者仓库中只有一个 ROS 软件包，请在仓库根目录创建 `LICENSE` 文件，填入所选许可证的文本。如果各软件包使用不同许可证，则应在每个 `package.xml` 旁分别创建 `LICENSE` 文件。
 
 <span id="give-your-packages-rep-144-compliant-names"></span>
+## 使用符合 REP 144 的软件包名称
 
-## 给您的包 REP 144 符合要求的名称
-
-释放到ROS分发的软件包必须具有符合下列要求的名称: [REP 144 (中文(简体) ).](https://reps.openrobotics.org/rep-0144/)。读取完整的REP以了解规则。如果您的ROS 包名称不符合,请在继续前更改名称。
+发布到 ROS 发行版中的软件包，其名称必须符合 [REP 144](https://reps.openrobotics.org/rep-0144/)。请阅读完整 REP 以了解规则。如果某个软件包名称不符合要求，请先修改名称再继续。
 
 <span id="decide-what-ros-distribution-you-want-to-release-into"></span>
+## 确定目标 ROS 发行版
 
-## 决定您想要放入的 ROS 分布
-
-决定您想要放出您的软件包的ROS 分布。 至少您应该放入您的软件包 。 [ROS 滚转](https://docs.ros.org/en/rolling) 这样,您的ROS软件包将自动包含在下一次ROS发行中。您也可能想要释放到任何活跃的ROS发行中,但这取决于您。
+决定要将软件包发布到哪些 ROS 发行版。至少应发布到 [ROS Rolling](https://docs.ros.org/en/rolling)，这样软件包就会自动包含在下一个 ROS 发行版中。也可以根据需要发布到其他仍受支持的 ROS 发行版。
 
 <span id="create-a-github-account"></span>
+## 创建 GitHub 账号
 
-## 创建 GitHub 账户
-
-[创建 GitHub 账户](https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github) 如果您还没有。 您不需要在 GitHub 上托管 ROS 软件包的源代码, 但是您需要一个账户来索引和发布软件包 。
+如果还没有 GitHub 账号，请[创建一个](https://docs.github.com/en/get-started/start-your-journey/creating-an-account-on-github)。ROS 软件包源码不必托管在 GitHub 上，但建立索引和发布软件包需要使用 GitHub 账号。
 
 <span id="fork-and-clone-ros-rosdistro"></span>
+## Fork 并克隆 ros/rosdistro
 
-## 叉和克隆 ros/rosdistro
-
-[叉子](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) 编号 [ros/rosdistro](https://github.com/ros/rosdistro/) 仓库。您只需在您的账户上做一次这一步骤。每次您进行发布时,叉子都会被使用。
+[Fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) [ros/rosdistro](https://github.com/ros/rosdistro/) 仓库。每个账号只需要执行一次此步骤，之后每次发布都会使用这个 fork。
 
 <span id="make-changes-to-your-fork"></span>
+## 修改你的 fork
 
-## 改变你的叉子
+回顾之前选定的目标 ROS 发行版。[ros/rosdistro](https://github.com/ros/rosdistro/) 仓库为每个发行版提供一个文件夹，例如 ROS Rolling 对应的文件夹名为 `rolling`。对每个目标发行版，都执行以下步骤：
 
-记得您决定放入的 ROS 发行版本吗 ? 每个 ROS 发行版本都有文件夹 。 [ros/rosdistro](https://github.com/ros/rosdistro/) 存储器。例如,ROS滚动文件夹的名称是 `rolling`。对于每个 ROS 分布,您想要放入:
+1. 填写下面的模板。
+2. 将填写后的内容加入对应发行版文件夹中的 `distribution.yaml`。
+3. 确保仓库名称所在的位置符合 YAML 文件中的字母排序。
 
-1.  填写以下模板
-
-2.  将填充模板放入 `distribution.yaml` 在相应的 ROS 分发文件夹中的文件
-
-3.  确保MY-REPO-NAME在Yaml文件中的字母顺序中位于正确的位置
-
-``` yaml
+```yaml
 YOUR-REPO-NAME:
   source:
     type: git
@@ -80,26 +59,21 @@ YOUR-REPO-NAME:
   status: YOUR-STATUS
 ```
 
-以下是每个项目的填写方式:
+各项填写方式如下：
 
-- Your-REPO-NAME : 这是一个任意的人类可读名称。 对于在 GitHub 上主机的重置程序, 请使用您寄存器的小写名称, 不包括组织。 例如, 寄存器名称 `https://github.com/ros2/rosidl` 是,这是 `rosidl`.
-
-- 这是https URL,人们可以从中找到的 `git clone` 您的仓库, 例如: git repo URL `https://github.com/ros2/rosidl` 是,这是 `https://github.com/ros2/rosidl.git`。重要的是,此 URL 结束于 `.git`,否则它不会通过 linters 。
-
-- 这是您寄存器上的 git 分支, 您将从中将您的软件包放入此 ROS 分布 。 这通常是 : `main`, `master`,或 ROS 分布本身的名称。例如, [rosidl 仓库](https://github.com/ros2/rosidl) 使用分支 `rolling` 将更改保存到 ROS Rolling 中。
-
-- 这是从列表中的状态 。 [REP 141 (中文(简体) ).](https://reps.openrobotics.org/rep-0141/#distribution-file)。您可能想要的任意一个 `maintained` 或 时 间 `developed`.
+- `YOUR-REPO-NAME`：便于阅读的仓库名称。对于托管在 GitHub 上的仓库，使用不含组织名称的小写仓库名。例如，`https://github.com/ros2/rosidl` 的仓库名为 `rosidl`。
+- `YOUR-GIT-REPO-URL`：可用于 `git clone` 的 HTTPS 地址。例如，`https://github.com/ros2/rosidl` 对应的 Git 仓库 URL 为 `https://github.com/ros2/rosidl.git`。该 URL 必须以 `.git` 结尾，否则无法通过格式检查。
+- `YOUR-BRANCH-NAME`：用于向此 ROS 发行版发布软件包的 Git 分支。常见值为 `main`、`master`，或 ROS 发行版名称。例如，[rosidl 仓库](https://github.com/ros2/rosidl)使用 `rolling` 分支保存要发布到 ROS Rolling 的更改。
+- `YOUR-STATUS`：从 [REP 141](https://reps.openrobotics.org/rep-0141/#distribution-file) 列出的状态中选择，通常使用 `maintained` 或 `developed`。
 
 <span id="open-a-pull-request-to-ros-rosdistro"></span>
+## 向 ros/rosdistro 提交拉取请求
 
-## 打开向 ros/ rosdistro 的拉动请求
-
-[打开拉动请求](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) 改为: [ros/rosdistro](https://github.com/ros/rosdistro/) 与您更改的分支。 等待几天, 以便它被审查 。
+使用包含更改的分支，向 [ros/rosdistro](https://github.com/ros/rosdistro/) [提交拉取请求](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request)，然后等待几天进行审查。
 
 <span id="what-happens-next"></span>
+## 接下来会发生什么
 
-## 接下来会发生什么?
+至此，为 ROS 软件包建立索引所需的操作已经完成。审查者会检查拉取请求是否[符合审查指南](https://github.com/ros/rosdistro/blob/master/REVIEW_GUIDELINES.md)，可能直接批准更改，也可能提出具体的修改建议。拉取请求符合要求并合并后，软件包就会出现在 [ROS Index](https://index.ros.org/) 中。
 
-您已经做了所有必要的工作来索引您的 ROS 软件包。 其中一位审查员将查看您的拉动请求并决定是否 [符合审查准则](https://github.com/ros/rosdistro/blob/master/REVIEW_GUIDELINES.md)。审查者可以按原样批准您的修改,也可以向您提供可操作的反馈。一旦拉动请求符合审查准则,将合并,您的软件包将出现在 [ROS 指数](https://index.ros.org/).
-
-您已完成了释放您软件包的重要一步。 请前往下一个指南 : [首次发布](First-Time-Release.md).
+你已经完成了软件包发布前的重要一步。接下来请阅读[首次发布](First-Time-Release.md)指南。

@@ -1,149 +1,126 @@
----
-translation_status: machine_translated
-source: Tutorials/Advanced/Simulators/MVSim/Getting-Started-MVSim.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="getting-started-with-mvsim"></span>
+<span id="background"></span>
+<span id="prerequisites"></span>
+<span id="tasks"></span>
+<span id="launch-demo-worlds-with-the-standalone-cli"></span>
+<span id="controlling-the-robot"></span>
+<span id="launch-with-ros-2"></span>
+<span id="inspect-ros-2-topics"></span>
+<span id="visualize-in-rviz2"></span>
+<span id="headless-mode"></span>
+<span id="summary"></span>
 
 # MVSim 入门
 
-**目标：** 发射MVSim演示世界既独立化,又与ROS 2一起,并学习如何与模拟机器人互动.
+**目标：** 独立运行及通过 ROS 2 运行 MVSim 演示世界，并学习与仿真机器人交互。
 
 **教程级别：** 高级
 
-**用时：** 20分钟
-
-<span id="background"></span>
+**耗时：** 20 分钟
 
 ## 背景
 
-MVSim 飞船的演示世界集显示不同的特性,例如多机器人模拟、传感器配置、地形类型、人类演员、清晰的车辆和环境布局。您可以使用此功能作为独立应用程序运行这些演示。 `mvsim` CLI,或作为一个ROS 2节点,通过标准ROS 2主题发布传感器数据并接受速度指令.
+MVSim 自带一组演示世界，展示多机器人仿真、传感器配置、地形类型、人物、铰接车辆及环境布局等功能。可以使用 `mvsim` 命令行工具独立运行，也可以将其作为 ROS 2 节点，通过标准 ROS 2 话题发布传感器数据并接收速度指令。
 
-![MVSim 演示截图](Image/mvsim_demos_screenshot.png) <span id="prerequisites"></span>
+![MVSim 演示截图](Image/mvsim_demos_screenshot.png)
 
 ## 前提条件
 
-你应该安装MVSim跟随 [安装（Ubuntu）](Installation-Ubuntu.md) 教学。
+请先按照[在 Ubuntu 上安装](Installation-Ubuntu.md)教程安装 MVSim。
 
-<span id="tasks"></span>
+## 任务
 
-## 操作步骤
+### 1 使用独立命令行工具启动演示世界
 
-<span id="launch-demo-worlds-with-the-standalone-cli"></span>
+MVSim 包含不依赖 ROS 2 的独立启动工具，适合快速测试世界文件或非 ROS 使用场景。
 
-### 1 带有独立 CLI 的启动演示世界
+启动仓库演示：
 
-MVSim包括一个不需要ROS 2. 的独立的发射装置,这对快速测试世界文件或对非ROS使用案例有用.
-
-要启动仓库演示:
-
-``` console
+```console
 $ mvsim launch ~/ros2_ws/src/mvsim/mvsim_tutorial/demo_warehouse.world.xml
 ```
 
-如果您从二进制包安装, 演示文件通常在下面找到 。 `/opt/ros/rolling/share/mvsim/mvsim_tutorial/`.
+如果通过二进制软件包安装，演示文件通常位于 `/opt/ros/rolling/share/mvsim/mvsim_tutorial/`。
 
-其它的演示世界,你可以尝试:
+还可以尝试以下世界：
 
-- `demo_turtlebot_world.world.xml` – 在有障碍的经典ROS风格环境中的TurtleBot3.
-
-- `demo_2robots.world.xml` ——两台机器人在家具区块之间导航.
-
-- `demo_elevation_map.world.xml` – 一个有海拔数据的杰克机器人驾车飞越地形.
-
-- `demo_greenhouse.world.xml` – 一个复杂的温室环境,显示程序内容的XML环路.
-
-<span id="controlling-the-robot"></span>
+- `demo_turtlebot_world.world.xml`：带有障碍物的经典 ROS 风格环境中的 TurtleBot3。
+- `demo_2robots.world.xml`：两台机器人在家具块之间行驶。
+- `demo_elevation_map.world.xml`：Jackal 机器人在带高程数据的地形上行驶。
+- `demo_greenhouse.world.xml`：复杂的温室环境，展示使用 XML 循环以程序化方式生成内容。
 
 ### 2 控制机器人
 
-一旦一个世界运行,你可以控制机器人使用:
+世界启动后，可以通过以下方式控制机器人：
 
-- **键盘 :** 按 W/ S 向前/ 向后移动, A/ D 向左/ 右转, 空间栏向后停止。 如果世界有多个机器人, 请点击 GUI 中的机器人在使用键盘控制前选择它 。
+- **键盘：** W/S 前进／后退，A/D 左转／右转，空格停止。如果世界中有多台机器人，先在图形界面中点击选中机器人，再使用键盘控制。
+- **操纵杆：** 已连接的游戏手柄会被自动检测到。
 
-- **欢乐棒:** 如果一个游戏板被连接,它将被自动检测到.
+![MVSim 图形界面操作参考](Image/mvsim_gui_controls.jpg)
 
-![MVSim GUI 控制引用](Image/mvsim_gui_controls.jpg)
+图形界面还提供摄像机视角、仿真速度和可视化选项。你可以在正交视图和透视视图之间切换，并直接在三维窗口中启用传感器数据可视化。
 
-图形用户界面还为相机视图、模拟速度和可视化选项提供控制。您可以切换正图/透视视图,并直接在3D窗口中实现传感器数据的可视化。
+### 3 使用 ROS 2 启动
 
-<span id="launch-with-ros-2"></span>
+使用提供的启动文件，将 MVSim 作为 ROS 2 节点运行：
 
-### 3 运载火箭2发射
-
-发射MVSim作为ROS 2节点,使用所提供的发射文件:
-
-``` console
+```console
 $ source /opt/ros/rolling/setup.bash
 $ ros2 launch mvsim demo_warehouse.launch.py
 ```
 
-这开始模拟器,并为每个车辆和传感器创建ROS 2主题.
+这会启动仿真器，并为每辆车和每个传感器创建 ROS 2 话题。
 
-<span id="inspect-ros-2-topics"></span>
+### 4 检查 ROS 2 话题
 
-### 4 检查ROS 2个专题
+保持演示运行，打开新终端并列出可用话题：
 
-随着演示的运行,打开一个新的终端并列出可用的主题:
-
-``` console
+```console
 $ ros2 topic list
 ```
 
-您应该看到以下主题:
+应能看到以下话题：
 
-- `/robot1/cmd_vel` - 发送 `geometry_msgs/msg/Twist` 命令来控制机器人。
+- `/robot1/cmd_vel`：发送 `geometry_msgs/msg/Twist` 指令来控制机器人。
+- `/robot1/odom`：轮式编码器里程计（`nav_msgs/msg/Odometry`）。
+- `/robot1/base_pose_ground_truth`：无误差的真实位姿。
+- `/robot1/<sensor_name>`：各传感器对应的话题，例如三维激光雷达点云 `/robot1/lidar1_points` 和二维扫描 `/robot1/laser1`。
+- `/tf` 和 `/tf_static`：遵循 [REP-105](https://www.ros.org/reps/rep-0105.html) 的 TF2 变换（`map` → `odom` → `base_link`）。
 
-- `/robot1/odom` - 从轮式编码器得到的测量仪(`nav_msgs/msg/Odometry`).
+可以从命令行发送速度指令：
 
-- `/robot1/base_pose_ground_truth` - 完美的地面真实姿势。
-
-- `/robot1/<sensor_name>` - 传感器专题(例如: `/robot1/lidar1_points` 为3D LiDAR 点云, `/robot1/laser1` 2D扫描).
-
-- `/tf` 财务报告和财务报告 `/tf_static` - TF2在之后的变换 [REP-105 (韩语)](https://www.ros.org/reps/rep-0105.html) (`map` → `odom` → `base_link`).
-
-您可以从命令行发送速度命令 :
-
-``` console
+```console
 $ ros2 topic pub /robot1/cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.5}, angular: {z: 0.3}}"
 ```
 
-或使用( E) `teleop_twist_keyboard` 用于交互式控制 :
+也可以使用 `teleop_twist_keyboard` 进行交互控制：
 
-``` console
+```console
 $ ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -r cmd_vel:=/robot1/cmd_vel
 ```
 
-<span id="visualize-in-rviz2"></span>
+### 5 在 RViz2 中可视化
 
-### 5 在 RViz2 可视化
+可以在 RViz2 中显示 MVSim 传感器数据。部分启动文件提供 `use_rviz` 选项：
 
-您可以在 RViz2 中可视化 MVSim 传感器数据 。 `use_rviz` 选项 :
-
-``` console
+```console
 $ ros2 launch mvsim demo_warehouse.launch.py use_rviz:=True
 ```
 
-或者,手动打开RViz2,并为感兴趣的主题添加显示(例如, `LaserScan`, `PointCloud2`, `Image`, `Odometry`).
+也可以手动打开 RViz2，为关注的话题添加显示项，例如 `LaserScan`、`PointCloud2`、`Image` 和 `Odometry`。
 
-![MVSim深度相机可视化](Image/mvsim_depth_camera_demo.png) <span id="headless-mode"></span>
+![MVSim 深度摄像头可视化](Image/mvsim_depth_camera_demo.png)
 
-### 6 无头模式
+### 6 无界面模式
 
-对于没有显示的CI管道或远程服务器,MVSim支持无头操作:
+对于 CI 流水线或没有显示器的远程服务器，MVSim 支持无界面运行：
 
-``` console
+```console
 $ ros2 launch mvsim demo_warehouse.launch.py headless:=True
 ```
 
-这在不打开GUI窗口的情况下运行了完整的模拟.
+这样会运行完整仿真，但不打开图形界面窗口。
 
-<span id="summary"></span>
+## 总结
 
-## 小结
-
-在这个教程中,你推出了MVSim演示世界,既独立化,又与ROS 2. 你学会了如何用键盘和ROS 2主题来控制机器人,检查已发布的主题,并在RViz2中可视化数据. 下一个教程涵盖了如何用定制机器人和传感器来定义你自己的世界.
+本教程中，你独立运行并通过 ROS 2 运行了 MVSim 演示世界，学习了通过键盘和 ROS 2 话题控制机器人、检查发布的话题，以及在 RViz2 中可视化数据。下一教程将介绍如何定义带有自定义机器人和传感器的世界。

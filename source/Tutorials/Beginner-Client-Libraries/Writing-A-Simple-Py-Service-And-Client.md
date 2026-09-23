@@ -1,88 +1,68 @@
----
-translation_status: machine_translated
-source: Tutorials/Beginner-Client-Libraries/Writing-A-Simple-Py-Service-And-Client.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="writing-a-simple-service-and-client-python"></span> <span id="pysrvcli"></span>
+# 编写简单的服务端和客户端（Python）
 
-# 编写简单的服务端与客户端（Python）
+**目标：** 使用 Python 创建并运行服务端和客户端节点。
 
-**目标：** 使用 Python 创建并运行服务和客户端节点.
+**教程级别：** 初学者
 
-**教程级别：** 入门
-
-**用时：** 20分钟
+**预计用时：** 20 分钟
 
 <span id="background"></span>
-
 ## 背景
 
-何时 [节点](../Beginner-CLI-Tools/Understanding-ROS2-Nodes/Understanding-ROS2-Nodes.md) 使用 [服务](../Beginner-CLI-Tools/Understanding-ROS2-Services/Understanding-ROS2-Services.md),发送数据请求的节点称为客户端节点,响应请求的节点为服务节点。请求和响应的结构由一个 `.srv` 文档。
+[节点](../Beginner-CLI-Tools/Understanding-ROS2-Nodes/Understanding-ROS2-Nodes.md)通过[服务](../Beginner-CLI-Tools/Understanding-ROS2-Services/Understanding-ROS2-Services.md)通信时，发送数据请求的节点称为客户端节点，响应请求的节点称为服务端节点。请求和响应的结构由 `.srv` 文件决定。
 
-这里使用的例子是一个简单的整数加法系统;一个节点请求两个整数的总和,另一个响应结果.
+本例实现简单的整数加法系统：一个节点请求计算两个整数的和，另一个返回结果。
 
 <span id="prerequisites"></span>
-
 ## 前提条件
 
-在之前的教程中,你学会了如何 [创建工作空间](Creating-A-Workspace/Creating-A-Workspace.md) 财务报告和财务报告 [创建软件包](Creating-Your-First-ROS2-Package.md).
+此前教程介绍了[创建工作空间](Creating-A-Workspace/Creating-A-Workspace.md)和[创建软件包](Creating-Your-First-ROS2-Package.md)。
 
 <span id="tasks"></span>
-
 ## 操作步骤
 
 <span id="create-a-package"></span>
-
 ### 1 创建软件包
 
-打开一个新的终端 [源代码 ROS 2 安装](../Beginner-CLI-Tools/Configuring-ROS2-Environment.md) 这样一来 `ros2` 命令会起作用的。
+打开新终端，[加载 ROS 2 安装环境](../Beginner-CLI-Tools/Configuring-ROS2-Environment.md)，使 `ros2` 命令可用。
 
-导航到 `ros2_ws` 在 a 中创建目录 [上一个教程](Creating-A-Workspace/Creating-A-Workspace.md#new-directory).
+进入[此前创建](Creating-A-Workspace/Creating-A-Workspace.md#new-directory)的 `ros2_ws` 工作空间。软件包应放在 `src` 中，而非工作空间根目录。进入 `ros2_ws/src` 并创建新软件包：
 
-回顾 应在 `src` 目录,不是工作空间的根。导航到 `ros2_ws/src` 并创建新软件包 :
-
-``` console
+```console
 $ ros2 pkg create --build-type ament_python --license Apache-2.0 py_srvcli --dependencies rclpy example_interfaces
 ```
 
-您的终端将返回一个消息, 以验证您的软件包的创建 `py_srvcli` 以及所有必要的文件和文件夹。
+终端会确认已创建 `py_srvcli` 及其必需文件和目录。
 
-那个... `--dependencies` 参数将自动添加必要的依赖线到 `package.xml`. `example_interfaces` 是包含以下内容的软件包 [.srv 文件](https://github.com/ros2/example_interfaces/blob/rolling/srv/AddTwoInts.srv) 您需要组织您的请求和答复:
+`--dependencies` 会自动将所需依赖写入 `package.xml`。`example_interfaces` 包含本例定义请求和响应结构所需的 [.srv 文件](https://github.com/ros2/example_interfaces/blob/rolling/srv/AddTwoInts.srv)：
 
-``` bash
+```bash
 int64 a
 int64 b
 ---
 int64 sum
 ```
 
-前两行是请求的参数,短线以下是响应.
+前两行是请求参数，分隔线下方是响应。
 
 <span id="update-package-xml"></span>
+#### 1.1 更新 package.xml
 
-#### 1.1 最新情况 `package.xml`
+创建时使用了 `--dependencies`，所以无需手动添加依赖。不过，仍需填写软件包说明、维护者邮箱和姓名，以及许可证：
 
-因为你用了 `--dependencies` 在创建软件包时,您不需要手动添加依赖性到 `package.xml`.
-
-但是,与往常一样,确保添加描述、维护者电子邮件和姓名,并给信息发放许可证。 `package.xml`.
-
-``` xml
+```xml
 <description>Python client server tutorial</description>
 <maintainer email="you@email.com">Your Name</maintainer>
 <license>Apache License 2.0</license>
 ```
 
 <span id="update-setup-py"></span>
+#### 1.2 更新 setup.py
 
-#### 1.2 最新情况 `setup.py`
+在 `setup.py` 的 `maintainer`、`maintainer_email`、`description` 和 `license` 字段中填写相同信息：
 
-将同样信息添加到 `setup.py` 用于文档 `maintainer`, `maintainer_email`, `description` 财务报告和财务报告 `license` 字段 :
-
-``` python
+```python
 maintainer='Your Name',
 maintainer_email='you@email.com',
 description='Python client server tutorial',
@@ -90,12 +70,11 @@ license='Apache License 2.0',
 ```
 
 <span id="write-the-service-node"></span>
+### 2 编写服务端节点
 
-### 2 写入服务节点
+在 `ros2_ws/src/py_srvcli/py_srvcli` 中创建 `service_member_function.py`，粘贴以下代码：
 
-内侧 `ros2_ws/src/py_srvcli/py_srvcli` 目录,创建名为新文件 `service_member_function.py` 并粘贴下列编码:
-
-``` python
+```python
 from example_interfaces.srv import AddTwoInts
 
 import rclpy
@@ -130,29 +109,28 @@ if __name__ == '__main__':
 ```
 
 <span id="examine-the-code"></span>
+#### 2.1 分析代码
 
-#### 2.1 审查守则
+第一条 `import` 从 `example_interfaces` 导入 `AddTwoInts` 服务类型，接下来的语句导入 ROS 2 Python 客户端库及其 `Node` 类：
 
-第一个 `import` 语句导入 `AddTwoInts` 服务类型 `example_interfaces` 软件包。以下 `import` 语句导入 ROS 2 Python 客户端库,特别是 `Node` 班级。
-
-``` python
+```python
 from example_interfaces.srv import AddTwoInts
 
 import rclpy
 from rclpy.node import Node
 ```
 
-那个... `MinimalService` 类构造器以名称初始化节点 `minimal_service`。然后,它创建一个服务并定义类型、名称和召回。
+`MinimalService` 构造函数初始化名为 `minimal_service` 的节点，再创建服务，指定服务类型、名称和回调：
 
-``` python
+```python
 def __init__(self):
     super().__init__('minimal_service')
     self.srv = self.create_service(AddTwoInts, 'add_two_ints', self.add_two_ints_callback)
 ```
 
-服务召回的定义接收了请求数据,总和,并返回总和作为响应.
+服务回调接收请求数据，计算两数之和，并将结果作为响应返回：
 
-``` python
+```python
 def add_two_ints_callback(self, request, response):
     response.sum = request.a + request.b
     self.get_logger().info('Incoming request\na: %d b: %d' % (request.a, request.b))
@@ -160,27 +138,23 @@ def add_two_ints_callback(self, request, response):
     return response
 ```
 
-最后,主课初始化ROS 2 Python 客户端库,即时化 `MinimalService` 类来创建服务节点,并旋转节点来处理调回。
+最后，主函数初始化 ROS 2 Python 客户端库，实例化 `MinimalService` 创建服务端节点，并通过 spin 处理回调。
 
 <span id="add-an-entry-point"></span>
+#### 2.2 添加入口点
 
-#### 2.2 增加一个切入点
+为了通过 `ros2 run` 运行节点，必须在 `ros2_ws/src/py_srvcli/setup.py` 中添加入口点。在 `'console_scripts':` 对应列表中加入：
 
-允许 `ros2 run` 命令来运行您的节点,您必须添加切入点到 `setup.py` 页:1 `ros2_ws/src/py_srvcli` 目录).
-
-将下行添加到 `'console_scripts':` 括号 :
-
-``` python
+```python
 'service = py_srvcli.service_member_function:main',
 ```
 
 <span id="write-the-client-node"></span>
+### 3 编写客户端节点
 
-### 3 写入客户端节点
+在 `ros2_ws/src/py_srvcli/py_srvcli` 中创建 `client_member_function.py`，粘贴以下代码：
 
-内侧 `ros2_ws/src/py_srvcli/py_srvcli` 目录,创建名为新文件 `client_member_function.py` 并粘贴下列编码:
-
-``` python
+```python
 import sys
 
 from example_interfaces.srv import AddTwoInts
@@ -223,12 +197,11 @@ if __name__ == '__main__':
 ```
 
 <span id="id1"></span>
+#### 3.1 分析代码
 
-#### 3.1 审查守则
+与服务端一样，先导入所需库：
 
-和服务代码一样,我们先 `import` 拥有必要的库。
-
-``` python
+```python
 import sys
 
 from example_interfaces.srv import AddTwoInts
@@ -236,9 +209,9 @@ import rclpy
 from rclpy.node import Node
 ```
 
-那个... `MinimalClientAsync` 类构造器以名称初始化节点 `minimal_client_async`。构建器定义创建了与服务节点相同类型和名称的客户端。类型和名称必须匹配客户端和服务才能进行通信。 `while` 循环在构建器中检查一个匹配客户端类型和名称的服务是否有一次可用。 `AddTwoInts` 请求对象。
+`MinimalClientAsync` 构造函数初始化名为 `minimal_client_async` 的节点，创建与服务端类型和名称一致的客户端。两者必须匹配才能通信。构造函数中的 `while` 循环每秒检查一次是否已有匹配的服务，最后创建 `AddTwoInts` 请求对象。
 
-``` python
+```python
 def __init__(self):
     super().__init__('minimal_client_async')
     self.cli = self.create_client(AddTwoInts, 'add_two_ints')
@@ -247,18 +220,18 @@ def __init__(self):
     self.req = AddTwoInts.Request()
 ```
 
-构造器下面是 `send_request` 方法,它会发送请求并旋转,直到它收到答复或失败。
+构造函数下方的 `send_request` 方法填写并发送请求，返回用于等待响应或失败的 future：
 
-``` python
+```python
 def send_request(self, a, b):
     self.req.a = a
     self.req.b = b
     return self.cli.call_async(self.req)
 ```
 
-我们终于有了 `main` 方法,用于构建一个 `MinimalClientAsync` 对象,使用通过的命令行参数发送请求 `rclpy.spin_until_future_complete` 以等待结果,并记录结果。
+`main` 创建 `MinimalClientAsync` 对象，使用命令行传入的参数发送请求，再调用 `rclpy.spin_until_future_complete` 等待结果，并记录结果日志：
 
-``` python
+```python
 def main():
     rclpy.init()
 
@@ -274,19 +247,15 @@ def main():
     rclpy.shutdown()
 ```
 
-> **警告**
->
-> 不使用 `rclpy.spin_until_future_complete` 更多详情请参见 [同步僵局文章](../../How-To-Guides/Sync-Vs-Async.md).
+!!! warning "警告"
+    不要在 ROS 2 回调中使用 `rclpy.spin_until_future_complete`。更多说明见[同步调用与死锁](../../How-To-Guides/Sync-Vs-Async.md)。
 
 <span id="id2"></span>
+#### 3.2 添加入口点
 
-#### 3.2 增加一个切入点
+与服务端一样，客户端也需要入口点才能运行。`setup.py` 的 `entry_points` 应为：
 
-与服务节点一样,您还需要添加一个切入点才能运行客户端节点.
-
-那个... `entry_points` 区域 `setup.py` 文件应该像这样 :
-
-``` python
+```python
 entry_points={
     'console_scripts': [
         'service = py_srvcli.service_member_function:main',
@@ -296,91 +265,82 @@ entry_points={
 ```
 
 <span id="build-and-run"></span>
+### 4 构建并运行
 
-### 4 构建和运行
+推荐构建前在工作空间根目录 `ros2_ws` 运行 `rosdep`，检查缺失依赖。
 
-运行是好的做法 `rosdep` 在工作空间的根部(`ros2_ws`在建构前检查缺失的依赖性 :
+**Linux**
 
-##### Linux
-
-``` console
+```console
 $ rosdep install -i --from-path src --rosdistro rolling -y
 ```
 
-##### macOS
+**macOS 和 Windows**
 
-rosdep只运行在Linux上,所以可以提前跳到下一步.
+本教程的 rosdep 步骤仅适用于 Linux，可跳到下一步。
 
-##### Windows
+返回工作空间根目录 `ros2_ws`，构建新软件包：
 
-rosdep只运行在Linux上,所以可以提前跳到下一步.
-
-导航回你工作空间的根, `ros2_ws`,并构建您的新软件包:
-
-``` console
+```console
 $ colcon build --packages-select py_srvcli
 ```
 
-打开新终端, 导航到 `ros2_ws`,并源代码设置文件 :
+打开新终端，进入 `ros2_ws` 并加载环境设置文件。
 
-##### Linux
+**Linux**
 
-``` console
+```console
 $ source install/setup.bash
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ . install/setup.bash
 ```
 
-##### Windows
+**Windows**
 
-``` console
+```console
 $ call install/setup.bat
 ```
 
-现在运行服务节点:
+运行服务端节点：
 
-``` console
+```console
 $ ros2 run py_srvcli service
 ```
 
-节点将等待客户端的要求.
+节点将等待客户端请求。
 
-打开另一个终端, 从内部源代码创建文件 `ros2_ws` 。启动客户端节点,然后用空格分隔任意两个整数。如果您选择 `2` 财务报告和财务报告 `3`例如,客户会收到这样的回复:
+打开另一个终端，再次从 `ros2_ws` 加载环境。启动客户端节点，在命令后添加两个以空格分隔的整数。例如输入 `2` 和 `3`，客户端会收到：
 
-``` console
+```console
 $ ros2 run py_srvcli client 2 3
 [INFO] [minimal_client_async]: Result of add_two_ints: for 2 + 3 = 5
 ```
 
-返回您的服务节点运行所在的终端。 您会看到它收到请求时已发布日志消息 :
+回到服务端终端，可以看到它收到请求时输出的日志：
 
-``` console
+```console
 [INFO] [minimal_service]: Incoming request
 a: 2 b: 3
 ```
 
-输入 `Ctrl+C` 在服务器终端中阻止节点旋转。
+在服务端终端按 `Ctrl+C` 停止节点。
 
 <span id="summary"></span>
-
 ## 小结
 
-您创建了两个节点来通过服务请求和响应数据。 您在软件包配置文件中添加了它们的依赖性和可执行性, 以便您构建和运行它们, 允许您在工作时看到一个服务/ 客户端系统 。
+你创建了两个通过服务发送请求和响应数据的节点，将依赖和可执行程序配置加入软件包文件，完成构建和运行，并观察了服务端/客户端系统的工作方式。
 
 <span id="next-steps"></span>
-
 ## 后续步骤
 
-在最近几次的辅导中,您一直在使用接口来传递数据,以跨越主题和服务。接下来,您将学习如何 [创建自定义接口](Custom-ROS2-Interfaces.md).
+最近几篇教程使用接口通过话题和服务传递数据。接下来学习[创建自定义接口](Custom-ROS2-Interfaces.md)。
 
 <span id="related-content"></span>
-
 ## 相关内容
 
-- 您可以在 Python 中写一个服务和客户端有几种方法; 请检查 `minimal_client` 财务报告和财务报告 `minimal_service` 软件包中 [ros2/examples](https://github.com/ros2/examples/tree/rolling/rclpy/services) 复传.
-
-- 在这个教程中,你使用了 `call_async()` API 在您的客户端节点中调用服务。 Python 有另一个服务名为 API 。 我们不建议使用同步调用, 但是如果您想要了解更多有关这些调用的信息, 请读取指南 。 [同步对同步客户端](../../How-To-Guides/Sync-Vs-Async.md).
+- Python 服务端和客户端有多种写法，可参阅 [ros2/examples](https://github.com/ros2/examples/tree/rolling/rclpy/services) 中的 `minimal_client` 和 `minimal_service` 软件包。
+- 本教程在客户端使用 `call_async()` 调用服务。Python 还提供同步服务调用 API，但不推荐使用。更多信息见[同步与异步客户端](../../How-To-Guides/Sync-Vs-Async.md)。

@@ -1,133 +1,121 @@
----
-translation_status: machine_translated
-source: Installation/Testing.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="testing-with-pre-release-binaries"></span>
 
-# 使用预发布二进制包测试
+# 使用预发布二进制软件包进行测试
 
-许多ROS软件包是作为预建的二进制提供的。通常,您在跟踪时会获得已发布的二进制版本 [安装](../Installation.md)。还有预释的二进制版本,在正式发布前可用于测试。如果您想要尝试预释的 ROS 二进制版本,此文章描述了多个选项 。
+许多 ROS 软件包都提供预先构建好的二进制软件包。按照[安装指南](../Installation.md)操作时，通常会安装已正式发布的二进制版本。此外，也有预发布版本，可用于在正式发布之前进行测试。本文介绍几种试用 ROS 预发布二进制版本的方法。
 
-当包被放入ROS分布(使用开花)时,建材农场将包建成Deb包,暂时储存在 **大楼** apt寄存器。随着依赖软件包的重建,一个自动进程定期同步软件包 **大楼** 转到一个二级仓库 **横向测试**. **横向测试** 目的是在软件包被手动同步到公共的 ros 仓库之前,让开发者和血缘用户进行额外测试。
+使用 bloom 将软件包发布到某个 ROS 发行版后，构建农场会将它们构建为 deb 软件包，并临时存放在 **building** apt 软件源中。随着依赖这些软件包的其他软件包完成重新构建，自动化流程会定期将 **building** 中的软件包同步到名为 **ros-testing** 的第二个软件源。**ros-testing** 用于在正式发布前进行持续测试，开发者和希望体验最新软件的用户可以在这里进一步测试软件包，然后这些软件包才会手动同步到用户通常使用的公共 ROS 软件源。
 
-大约每隔两周, rodistro的发布管理器 手动同步的内容 **横向测试** 输入 **主体** ROS仓库.
+大约每两周，rosdistro 的发布管理员会手动将 **ros-testing** 的内容同步到 **main** ROS 软件源。
 
 <span id="deb-testing-repository"></span>
 
-## deb 测试存储器
+## deb 测试软件源
 
-对于基于Debian的操作系统,您可以从中安装二进制软件包 **横向测试** 存储器。
+在基于 Debian 的操作系统上，可以从 **ros-testing** 软件源安装二进制软件包。
 
-1.  请确保您在 DEB 包中安装工作 ROS 2 (参见 [安装](../Installation.md)).
+1. 确保已通过 deb 软件包安装了可正常使用的 ROS 2，参阅[安装指南](../Installation.md)。
 
-2.  安装 ros2- testing- apt- source 软件包。 这将自动解开 ros2- apt- source 软件包, 因为每次只能启用一个寄存器 。
+2. 安装 ros2-testing-apt-source 软件包。由于一次只能启用一个软件源，这会自动卸载 ros2-apt-source 软件包。
 
-    ``` console
+    ```console
     $ sudo apt install -y ros2-testing-apt-source
     ```
 
-3.  更新合适的索引 :
+3. 更新 apt 索引：
 
-    ``` console
+    ```console
     $ sudo apt update
     ```
 
-4.  您现在可以从测试仓库安装单个软件包, 例如 :
+4. 现在可以从测试软件源安装单个软件包，例如：
 
-    ``` console
+    ```console
     $ sudo apt install ros-rolling-my-just-released-package
     ```
 
-5.  或者,您可以将整个ROS 2 安装移动到测试仓库 :
+5. 也可以将整个 ROS 2 安装切换为测试软件源中的版本：
 
-    ``` console
+    ```console
     $ sudo apt dist-upgrade
     ```
 
-6.  完成测试后,您可以通过重排 ros-apt-source 包来切换回普通寄存器 :
+6. 测试完成后，可以重新安装 ros2-apt-source 软件包，切回常规软件源：
 
-    ``` console
+    ```console
     $ sudo apt install -y ros2-apt-source
     ```
 
-    并进行更新和升级:
+    然后更新软件包索引并升级：
 
-    ``` console
+    ```console
     $ sudo apt update
     $ sudo apt dist-upgrade
     ```
 
 <span id="rhel-testing-repository"></span>
 
-## RHEL 测试仓库
+## RHEL 测试软件源
 
-对于 RHEL ,您可以从中安装二进制软件包 **横向测试** 寄存器,通过启用源配置的测试寄存器:
+在 RHEL 上，可以在软件源配置中启用测试软件源，从 **ros-testing** 安装二进制软件包。
 
-1.  确定您有工作 ROS 2 的 rpm 软件包安装( 请参看 [RHEL 安装指令](RHEL-Install-RPMs.md)).
+1. 确保已通过 RPM 软件包安装了可正常使用的 ROS 2，参阅 [RHEL 安装说明](RHEL-Install-RPMs.md)。
 
-2.  启用测试并禁用主仓库 :
+2. 启用测试软件源，并禁用主软件源：
 
-    ``` console
+    ```console
     $ sudo dnf config-manager --set-enabled ros2-testing
     $ sudo dnf config-manager --set-disabled ros2
     ```
 
-3.  更新 dnf 索引 :
+3. 更新 dnf 索引：
 
-    ``` console
+    ```console
     $ sudo dnf update
     ```
 
-4.  您现在可以从测试仓库安装单个软件包, 例如 :
+4. 现在可以从测试软件源安装单个软件包，例如：
 
-> ``` console
-> $ sudo dnf install ros-rolling-my-just-released-package
-> ```
+    ```console
+    $ sudo dnf install ros-rolling-my-just-released-package
+    ```
 
-5.  完成测试后,可以通过重新启用主寄存器来切换回普通寄存器:
+5. 测试完成后，可以重新启用主软件源，切回常规软件源：
 
-> ``` console
-> $ sudo dnf config-manager --set-disabled ros2-testing
-> $ sudo dnf config-manager --set-enabled ros2
-> ```
->
-> 并进行更新和升级:
->
-> ``` console
-> $ sudo dnf update
-> $ sudo dnf system-upgrade
-> ```
+    ```console
+    $ sudo dnf config-manager --set-disabled ros2-testing
+    $ sudo dnf config-manager --set-enabled ros2
+    ```
 
-<span id="binary-archives"></span> <span id="prerelease-binaries"></span>
+    然后更新并升级：
 
-## 二进制档案
+    ```console
+    $ sudo dnf update
+    $ sudo dnf system-upgrade
+    ```
 
-对于核心软件包, 我们运行 Ubuntu Linux, RHEL, 和 Windows 的夜间包装任务。 这些包装任务会生成预建的二进制文件, 可以下载并提取到您的文件系统 。
+<span id="binary-archives"></span>
+<span id="prerelease-binaries"></span>
 
-1.  确定您已按照 [最新开发设置](Alternatives/Latest-Development-Setup.md) 为您的平台。
+## 二进制归档包
 
-2.  转到 <https://ci.ros2.org/view/packaging/> ,然后从列表中选择一个与您的平台相对应的包装工作。
+对于核心软件包，我们每晚都会在 Ubuntu Linux、RHEL 和 Windows 上运行打包任务。这些任务生成包含预构建二进制文件的归档包，可以下载并解压到文件系统中。
 
-3.  在“最后成功的艺术”标题下,您应该看到一个下载链接(例如,Windows, `ros2-package-windows-AMD64.zip`).
+1. 按照对应平台的[最新开发版本安装说明](Alternatives/Latest-Development-Setup.md)，确保已安装全部依赖。
+2. 访问 <https://ci.ros2.org/view/packaging/>，从列表中选择对应平台的打包任务。
+3. 在“Last Successful Artifacts”标题下找到下载链接，例如 Windows 的 `ros2-package-windows-AMD64.zip`。
+4. 下载归档包，并将其解压到文件系统中。
+5. 加载归档包根目录中的 `setup.*` 文件，使用这个二进制安装环境。
 
-4.  下载并提取归档到您的文件系统 。
+    **Ubuntu Linux 和 RHEL：**
 
-5.  要使用二进制归档安装, 请来源于 `setup.*` 可在归档根中找到的文件。
-
-    ##### Ubuntu Linux 和 RHEL 软件
-
-    ``` console
+    ```console
     $ source path/to/extracted/archive/setup.bash
     ```
 
-    ##### Windows
+    **Windows：**
 
-    ``` console
+    ```console
     $ call path\to\extracted\archive\setup.bat
     ```
 
@@ -135,18 +123,18 @@ source: Installation/Testing.rst
 
 ## Docker
 
-对于Ubuntu Linux,也有一个基于夜二进制存档的夜道克图像.
+对于 Ubuntu Linux，还提供基于每晚生成的二进制归档包构建的 Docker 镜像。
 
-1.  拖动 Docker 图像 :
+1. 拉取 Docker 镜像：
 
-    ``` console
+    ```console
     $ docker pull osrf/ros2:nightly
     ```
 
-2.  启动交互式容器 :
+2. 启动交互式容器：
 
-    ``` console
+    ```console
     $ docker run -it osrf/ros2:nightly
     ```
 
-对于在 Docker 运行 GUI 应用程序时的支持, 请查看教程 [用户界面与 Docker](https://wiki.ros.org/docker/Tutorials/GUI) 或该工具 [摇摆](https://github.com/osrf/rocker).
+如果需要在 Docker 中运行图形界面应用，请参阅[在 Docker 中使用图形界面应用](https://wiki.ros.org/docker/Tutorials/GUI)教程或 [rocker 工具](https://github.com/osrf/rocker)。

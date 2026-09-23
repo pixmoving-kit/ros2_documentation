@@ -1,12 +1,6 @@
----
-translation_status: machine_translated
-source: How-To-Guides/Releasing/_Next-Steps.rst
----
+提交拉取请求后，rosdistro 的维护者通常会在一到两天内审查并合并。
+如果软件包构建成功，24 至 48 小时后，软件包将进入 **ros-testing** 仓库，你可以在那里[测试预发布二进制包](../../Installation/Testing.md)。
 
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
-一旦您提交拉动请求, 通常在一两天内, rodistro 的维护者之一将会审查并合并您的拉动请求 。 如果您的包构建成功, 您的包将在24- 48 小时内在 **横向测试** 存储器, 您可以在其中 [测试您的预释二进制](../../Installation/Testing.md).
-
-发行版的发行管理器大约每两到四周会手动将 ROS 测试内容同步到主 ROS 仓库中。 这是当您的软件包真正可供 ROS 社区的其他用户使用的时候。 要获得下一次同步( sync) 即将到来时的更新, 请订阅 。 [开放机器人演讲的包装和释放管理类别](https://discourse.openrobotics.org/c/ros/release/16).
+发行版的发布负责人通常每两到四周手动将 ros-testing 中的内容同步到 ROS 主仓库。
+此时，ROS 社区的其他用户才能正式获取你的软件包。
+要了解下一次同步的时间，请订阅 Open Robotics Discourse 的[打包与发布管理分类](https://discourse.openrobotics.org/c/ros/release/16)。

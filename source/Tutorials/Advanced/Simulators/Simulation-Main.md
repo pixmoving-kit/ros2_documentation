@@ -1,20 +1,12 @@
----
-translation_status: machine_translated
-source: Tutorials/Advanced/Simulators/Simulation-Main.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
-<span id="simulators"></span> <span id="simulationmain"></span>
+<span id="simulators"></span>
+<span id="simulationmain"></span>
 
 # 仿真器
 
-几个先进的机器人模拟器可以和ROS 2一起使用,比如Gazebo, Webots 等。 与Turtersim不同的是,它们为机器人、传感器、起动器和物体提供了相当现实的结果。 因此,你在模拟中观察到的非常接近于在将ROS 2控制器转移到真正的机器人时会得到的结果。
+ROS 2 可以与多种高级机器人仿真器配合使用，例如 Gazebo、Webots 等。与 turtlesim 不同，这些仿真器基于机器人、传感器、执行器和物体的物理模型，能提供相当逼真的结果。因此，将 ROS 2 控制器移植到真实机器人后，实际表现通常与仿真中观察到的非常接近。
 
-此套教程将教你如何用ROS 2配置不同的模拟器.
+本系列教程介绍如何配置不同的仿真器，使其与 ROS 2 配合使用。
 
-- [韦伯茨语Name](Webots/Simulation-Webots.md)
+- [Webots](Webots/Simulation-Webots.md)
 - [Gazebo](Gazebo/Simulation-Gazebo.md)
-- [MVSim 游戏](MVSim/Simulation-MVSim.md)
+- [MVSim](MVSim/Simulation-MVSim.md)

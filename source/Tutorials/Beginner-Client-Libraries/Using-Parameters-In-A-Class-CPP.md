@@ -1,79 +1,55 @@
----
-translation_status: machine_translated
-source: Tutorials/Beginner-Client-Libraries/Using-Parameters-In-A-Class-CPP.rst
----
-
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="using-parameters-in-a-class-c"></span> <span id="cppparamnode"></span>
-
 # 在类中使用参数（C++）
 
-**目标：** 使用 C++ 创建和运行带有 ROS 参数的类.
+**目标：** 使用 C++ 创建并运行一个包含 ROS 参数的类。
 
-**教程级别：** 入门
+**教程级别：** 初学者
 
-**用时：** 20分钟
+**预计用时：** 20 分钟
 
 <span id="background"></span>
-
 ## 背景
 
-当自己做的时候 [节点](../Beginner-CLI-Tools/Understanding-ROS2-Nodes/Understanding-ROS2-Nodes.md) 您有时需要添加可以从发射文件中设定的参数。
-
-此教程将显示如何在 C++ 类中创建这些参数, 以及如何在发射文件中设置这些参数 。
+编写自己的[节点](../Beginner-CLI-Tools/Understanding-ROS2-Nodes/Understanding-ROS2-Nodes.md)时，有时需要添加能够通过 launch 文件设置的参数。本教程介绍如何在 C++ 类中创建这些参数，并在 launch 文件中设置它们。
 
 <span id="prerequisites"></span>
-
 ## 前提条件
 
-在之前的教程中,你学会了如何 [创建工作空间](Creating-A-Workspace/Creating-A-Workspace.md) 财务报告和财务报告 [创建软件包](Creating-Your-First-ROS2-Package.md)。您还了解到 [参数](../Beginner-CLI-Tools/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md) 及其在ROS 2系统中的功能.
+此前教程介绍了[创建工作空间](Creating-A-Workspace/Creating-A-Workspace.md)、[创建软件包](Creating-Your-First-ROS2-Package.md)，以及[参数](../Beginner-CLI-Tools/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md)在 ROS 2 系统中的作用。
 
 <span id="tasks"></span>
-
 ## 操作步骤
 
 <span id="create-a-package"></span>
-
 ### 1 创建软件包
 
-打开一个新的终端 [源代码 ROS 2 安装](../Beginner-CLI-Tools/Configuring-ROS2-Environment.md) 这样一来 `ros2` 命令会起作用的。
+打开新终端，[加载 ROS 2 安装环境](../Beginner-CLI-Tools/Configuring-ROS2-Environment.md)，使 `ros2` 命令可用。
 
-跟着 [这些指示](Creating-A-Workspace/Creating-A-Workspace.md#new-directory) 创建新工作空间 `ros2_ws`.
+按照[创建目录的步骤](Creating-A-Workspace/Creating-A-Workspace.md#new-directory)创建名为 `ros2_ws` 的新工作空间。软件包应放在 `src` 而非根目录，因此进入 `ros2_ws/src` 并创建软件包：
 
-回顾 应在 `src` 目录,不是工作空间的根。导航到 `ros2_ws/src` 并创建新软件包 :
-
-``` console
+```console
 $ ros2 pkg create --build-type ament_cmake --license Apache-2.0 cpp_parameters --dependencies rclcpp
 ```
 
-您的终端将返回一个消息, 以验证您的软件包的创建 `cpp_parameters` 以及所有必要的文件和文件夹。
-
-那个... `--dependencies` 参数将自动添加必要的依赖线到 `package.xml` 财务报告和财务报告 `CMakeLists.txt`.
+终端会确认 `cpp_parameters` 及其必需文件和目录已经创建。`--dependencies` 自动在 `package.xml` 和 `CMakeLists.txt` 中添加所需依赖。
 
 <span id="update-package-xml"></span>
+#### 1.1 更新 package.xml
 
-#### 1.1 最新情况 `package.xml`
+使用了 `--dependencies`，就无需手动向 `package.xml` 或 `CMakeLists.txt` 添加依赖。不过仍需填写说明、维护者邮箱和姓名，以及许可证：
 
-因为你用了 `--dependencies` 在创建软件包时,您不需要手动添加依赖性到 `package.xml` 或 时 间 `CMakeLists.txt`.
-
-但是,与往常一样,确保添加描述、维护者电子邮件和姓名,并给信息发放许可证。 `package.xml`.
-
-``` xml
+```xml
 <description>C++ parameter tutorial</description>
 <maintainer email="you@email.com">Your Name</maintainer>
 <license>Apache License 2.0</license>
 ```
 
 <span id="write-the-c-node"></span>
+### 2 编写 C++ 节点
 
-### 2 写入 C++ 节点
+在 `ros2_ws/src/cpp_parameters/src` 中创建 `cpp_parameters_node.cpp`，粘贴以下代码：
 
-内侧 `ros2_ws/src/cpp_parameters/src` 目录,创建名为新文件 `cpp_parameters_node.cpp` 并粘贴下列编码:
-
-``` C++
+```C++
 #include <chrono>
 #include <functional>
 #include <string>
@@ -117,21 +93,16 @@ int main(int argc, char ** argv)
 }
 ```
 
-> **说明**
->
-> `rclcpp/rclcpp.hpp` 是一个 *便利性* 头部 整个都拉着 `rclcpp` API同时——节点,出版商,订阅,服务,定时器,参数,执行器,速率,等位集,等等——所以每个包含它的翻译单元都是根据它从未使用过的特性编译的.
->
-> 在教程之外, 偏爱只包含您实际使用的 API 特定调用时的页眉 。 例如, `rclcpp::Node` 已声明为 `rclcpp/node.hpp`, `rclcpp::spin` 输入 `rclcpp/executors.hpp`,以及 `rclcpp::init` 财务报告和财务报告 `rclcpp::shutdown` 输入 `rclcpp/utilities.hpp`。保存量最大的是从未创建或旋转节点的翻译单位——标题、插件和辅助工具库,它们只需要像 `rclcpp/qos.hpp` 或 时 间 `rclcpp/time.hpp` - 因为... `rclcpp/node.hpp` 财务报告和财务报告 `rclcpp/executors.hpp` 他们本身就很大。 `rclcpp/rclcpp.hpp` 只不过是这些信头的列表,所以在研究你需要哪个信头的时候,这是一个很好的开始。
+另见 [rclcpp 便捷头文件说明](../../_internal/Rclcpp-Convenience-Header-Note.md)。
 
 <span id="examine-the-code"></span>
+#### 2.1 分析代码
 
-#### 2.1 审查守则
+开头的 `#include` 对应软件包依赖。
 
-那个... `#include` 顶端的语句是软件包的依赖性。
+随后定义类及其构造函数。构造函数首先声明名为 `my_parameter` 的参数，默认值为 `world`。参数类型由默认值推断，因此这里是字符串。接下来将 `timer_` 周期设为 1000 ms，使 `timer_callback` 每秒执行一次。
 
-下一个代码块创建类和构造器。 此构造器的第一行创建一个带有名称的参数 `my_parameter` 和默认值 `world`。从默认值中推断出参数类型,因此在此情况下,参数类型将被设定为字符串类型。 `timer_` 初始化的时期为1000毫秒,从而导致 `timer_callback` 函数将每秒执行一次。
-
-``` C++
+```C++
 class MinimalParam : public rclcpp::Node
 {
 public:
@@ -145,9 +116,9 @@ public:
   }
 ```
 
-我们的第一线 `timer_callback` 函数获得参数 `my_parameter` 从节点,并储存在 `my_param`下一个 `RCLCPP_INFO` 函数确保该事件被记录。 `set_parameters` 函数然后设置参数 `my_parameter` 返回默认字符串值 `world`。如果用户外部更改了参数,这将保证它总是被重置为原参数。
+`timer_callback` 首先从节点获取 `my_parameter`，保存到 `my_param`。随后通过 `RCLCPP_INFO` 输出日志。`set_parameters` 再将参数设回默认字符串 `world`，确保即使用户从外部修改参数，也会被恢复为原值。
 
-``` C++
+```C++
 void timer_callback()
 {
   std::string my_param = this->get_parameter("my_parameter").as_string();
@@ -159,16 +130,16 @@ void timer_callback()
 }
 ```
 
-最后一个是宣布 `timer_`.
+最后声明 `timer_`：
 
-``` C++
+```C++
 private:
   rclcpp::TimerBase::SharedPtr timer_;
 ```
 
-跟着我们 `MinimalParam` 是我们的 `main`。这里,ROS 2是初始化的。 `MinimalParam` 类别是构建的,以及 `rclcpp::spin` 开始从节点处理数据。
+`MinimalParam` 之后是 `main`：初始化 ROS 2，创建 `MinimalParam` 实例，再通过 `rclcpp::spin` 开始处理节点数据。
 
-``` C++
+```C++
 int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
@@ -179,12 +150,11 @@ int main(int argc, char ** argv)
 ```
 
 <span id="optional-add-parameterdescriptor"></span>
+##### 2.1.1 可选：添加 ParameterDescriptor
 
-##### 2.1.1(备选) 添加参数描述符
+可以为参数设置描述符，提供文字说明和约束，例如只读属性、取值范围等。为此，将构造函数修改为：
 
-可以选择设置参数的描述符。描述符允许您指定参数及其限制的文本描述,比如使其只读,指定范围等等。要做到这一点,构建符中的代码必须更改为:
-
-``` C++
+```C++
 // ...
 
 class MinimalParam : public rclcpp::Node
@@ -203,15 +173,14 @@ public:
   }
 ```
 
-其余代码保持不变。一旦运行了节点,您就可以运行 `ros2 param describe /minimal_param_node my_parameter` 以查看类型和描述。
+其余代码保持不变。运行节点后，执行 `ros2 param describe /minimal_param_node my_parameter` 即可查看类型和说明。
 
 <span id="add-executable"></span>
+#### 2.2 添加可执行程序
 
-#### 2.2 添加可执行文件
+打开 `CMakeLists.txt`，在依赖声明 `find_package(rclcpp REQUIRED)` 下方添加：
 
-现在打开 `CMakeLists.txt` 文件。在依赖下方 `find_package(rclcpp REQUIRED)` 添加以下代码行。
-
-``` cmake
+```cmake
 add_executable(minimal_param_node src/cpp_parameters_node.cpp)
 ament_target_dependencies(minimal_param_node rclcpp)
 
@@ -222,199 +191,170 @@ install(TARGETS
 ```
 
 <span id="build-and-run"></span>
+### 3 构建并运行
 
-### 3 构建和运行
+推荐构建前在工作空间根目录 `ros2_ws` 运行 `rosdep` 检查缺失依赖。
 
-运行是好的做法 `rosdep` 在工作空间的根部(`ros2_ws`在建构前检查缺失的依赖性 :
+**Linux**
 
-##### Linux
-
-``` console
+```console
 $ rosdep install -i --from-path src --rosdistro rolling -y
 ```
 
-##### macOS
+**macOS 和 Windows**
 
-rosdep只运行在Linux上,所以可以提前跳到下一步.
+本教程的 rosdep 步骤仅适用于 Linux，可跳到下一步。
 
-##### Windows
+返回 `ros2_ws` 根目录，构建软件包。
 
-rosdep只运行在Linux上,所以可以提前跳到下一步.
+**Linux**
 
-导航回你工作空间的根, `ros2_ws`,并构建您的新软件包:
-
-##### Linux
-
-``` console
+```console
 $ colcon build --packages-select cpp_parameters
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ colcon build --packages-select cpp_parameters
 ```
 
-##### Windows
+**Windows**
 
-``` console
+```console
 $ colcon build --merge-install --packages-select cpp_parameters
 ```
 
-打开新终端, 导航到 `ros2_ws`,并源代码设置文件 :
+打开新终端，进入 `ros2_ws` 并加载环境设置文件。
 
-##### Linux
+**Linux**
 
-``` console
+```console
 $ source install/setup.bash
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ . install/setup.bash
 ```
 
-##### Windows
+**Windows**
 
-``` console
+```console
 $ call install/setup.bat
 ```
 
-现在运行节点,终端应该返回 `Hello World` 消息每秒钟 :
+运行节点，终端应每秒显示一次 Hello World 消息：
 
-``` console
+```console
  $ ros2 run cpp_parameters minimal_param_node
 [INFO] [minimal_param_node]: Hello world!
 ```
 
-现在您可以看到您参数的默认值, 但是您想要自己设置它。 有两种方法可以实现 。
+现在看到的是参数默认值。接下来用两种方式设置它。
 
 <span id="change-via-the-console"></span>
+#### 3.1 通过控制台修改
 
-#### 3.1 通过控制台进行更改
+将[参数教程](../Beginner-CLI-Tools/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md)中的知识应用到刚创建的节点。
 
-这部分将利用你从 [关于参数的教程](../Beginner-CLI-Tools/Understanding-ROS2-Parameters/Understanding-ROS2-Parameters.md) 并将其应用到您刚刚创建的节点上。
+确认节点正在运行：
 
-确保节点运行中 :
-
-``` console
+```console
 $ ros2 run cpp_parameters minimal_param_node
 ```
 
-打开另一个终端, 从内部源出设置文件 `ros2_ws` ,并输入以下行:
+打开另一个终端，在 `ros2_ws` 中加载环境，再输入：
 
-``` console
+```console
 $ ros2 param list
 ```
 
-您将在此看到自定义参数 `my_parameter`。为了改变它,只需在控制台上运行以下一行:
+列表中会显示自定义参数 `my_parameter`。运行以下命令修改它：
 
-``` console
+```console
 $ ros2 param set /minimal_param_node my_parameter earth
 ```
 
-你知道,如果你得到输出它很好 `Set parameter successful`。如果查看另一个终端,则应当看到输出更改为 `[INFO] [minimal_param_node]: Hello earth!`
+输出 `Set parameter successful` 表示设置成功。另一个终端中应出现 `[INFO] [minimal_param_node]: Hello earth!`。
 
 <span id="change-via-a-launch-file"></span>
+#### 3.2 通过 launch 文件修改
 
-#### 3.2 通过发射文件更改
+也可以在 launch 文件中设置参数。先在 `ros2_ws/src/cpp_parameters/` 下创建 `launch` 目录，再创建 `cpp_parameters_launch.py`，内容见[原始 launch 示例文件](launch/cpp_parameters_launch.py)。
 
-也可以在发射文件中设置参数,但首先需要添加发射目录。 `ros2_ws/src/cpp_parameters/` 目录,创建新的目录,名为 `launch`中,创建名为“新文件”的文件 `cpp_parameters_launch.py`
+该文件在启动 `minimal_param_node` 时将 `my_parameter` 设为 `earth`。以下两行确保输出打印在控制台中：
 
-``` python
-from launch import LaunchDescription
-from launch_ros.actions import Node
-
-
-def generate_launch_description():
-    return LaunchDescription([
-        Node(
-            package='cpp_parameters',
-            executable='minimal_param_node',
-            name='custom_minimal_param_node',
-            output='screen',
-            emulate_tty=True,
-            parameters=[
-                {'my_parameter': 'earth'}
-            ]
-        )
-    ])
-```
-
-在这里,你可以看到,我们设置 `my_parameter` 改为: `earth` 当我们发射节点时 `minimal_param_node`。通过在下面增加两行,我们保证我们的输出在我们的控制台上打印。
-
-``` python
+```python
 output="screen",
 emulate_tty=True,
 ```
 
-现在打开 `CMakeLists.txt` 文件。在您先前添加的行下面,添加以下的行码。
+打开 `CMakeLists.txt`，在之前添加的配置下方加入：
 
-``` cmake
+```cmake
 install(
   DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
 )
 ```
 
-打开一个控制台 导航到您工作空间的根, `ros2_ws`,并构建您的新软件包:
+打开终端，进入工作空间根目录 `ros2_ws`，重新构建软件包。
 
-##### Linux
+**Linux**
 
-``` console
+```console
 $ colcon build --packages-select cpp_parameters
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ colcon build --packages-select cpp_parameters
 ```
 
-##### Windows
+**Windows**
 
-``` console
+```console
 $ colcon build --merge-install --packages-select cpp_parameters
 ```
 
-然后从新终端中获取设置文件 :
+随后在新终端中加载环境设置文件。
 
-##### Linux
+**Linux**
 
-``` console
+```console
 $ source install/setup.bash
 ```
 
-##### macOS
+**macOS**
 
-``` console
+```console
 $ . install/setup.bash
 ```
 
-##### Windows
+**Windows**
 
-``` console
+```console
 $ call install/setup.bat
 ```
 
-现在使用我们刚刚创建的发射文件运行节点。 终端应该第一次返回以下信息 :
+使用刚创建的 launch 文件运行节点。第一次应输出：
 
-``` console
+```console
 $ ros2 launch cpp_parameters cpp_parameters_launch.py
 [INFO] [custom_minimal_param_node]: Hello earth!
 ```
 
-其他产出应显示 `[INFO] [minimal_param_node]: Hello world!` 每一秒钟。
+之后应每秒输出 `[INFO] [minimal_param_node]: Hello world!`。
 
 <span id="summary"></span>
-
 ## 小结
 
-您创建了一个自定义参数的节点, 可以从发射文件或命令行中设置。 您在软件包配置文件中添加了依赖性、 可执行文件以及启动文件, 以便构建和运行它们, 并在操作中看到参数 。
+你创建了带自定义参数的节点，能够通过 launch 文件或命令行设置参数。将依赖、可执行程序和 launch 文件加入软件包配置后，完成了构建和运行，并观察了参数的作用。
 
 <span id="next-steps"></span>
-
 ## 后续步骤
 
-现在,你有一些包 和ROS 2系统你自己的, [下一个教程](Getting-Started-With-Ros2doctor.md) 将教你如何检查环境和系统中的问题,以防出现问题。
+现在你已经有了自己的软件包和 ROS 2 系统。[下一篇教程](Getting-Started-With-Ros2doctor.md)将介绍出现问题时如何检查环境和系统。

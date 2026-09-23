@@ -3,10 +3,6 @@ translation_status: machine_translated
 source: Tutorials/Demos/dummy-robot-demo.rst
 ---
 
-!!! info "翻译说明"
-
-    本页为自动翻译初稿，尚未逐页人工校对；代码、命令和 API 标识保留原文。
-
 <span id="experimenting-with-a-dummy-robot"></span>
 
 # 使用虚拟机器人进行实验
