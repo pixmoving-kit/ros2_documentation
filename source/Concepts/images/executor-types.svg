@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 210" role="img" aria-labelledby="title">
+<title id="title">Executor class hierarchy</title>
+<rect width="860" height="210" fill="#fff"/>
+<g stroke="#334155" stroke-width="2" fill="#eff6ff">
+<rect x="355" y="18" width="150" height="44" rx="5"/>
+<rect x="20" y="143" width="245" height="46" rx="5"/>
+<rect x="298" y="143" width="264" height="46" rx="5"/>
+<rect x="595" y="143" width="248" height="46" rx="5"/>
+<path d="M142 143V108H718V143M430 143V82" fill="none"/>
+<path d="M430 62L420 82H440Z" fill="#fff"/>
+</g>
+<g font-family="monospace" font-size="16" fill="#0f172a" text-anchor="middle">
+<text x="430" y="46">Executor</text>
+<text x="142" y="171">SingleThreadedExecutor</text>
+<text x="430" y="171">MultiThreadedExecutor</text>
+<text x="719" y="164" font-size="14">StaticSingleThreaded</text>
+<text x="719" y="181" font-size="14">Executor</text>
+</g>
+</svg>

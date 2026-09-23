@@ -1,3 +1,26 @@
+# ROS 2 中文 Markdown 文档
+
+原目录结构和配套图片、附件、代码示例均保留。`source/` 中的 309 个英文 RST 文档已替换为中文 Markdown。
+译文是自动翻译初稿，部分标题与重点段落已修订，仍需人工技术校对。
+
+## 使用 MkDocs
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m mkdocs serve
+```
+
+打开 <http://127.0.0.1:8000>。静态构建：`python -m mkdocs build --strict`，输出到 `site/`。
+直接修改 `source/**/*.md`；站点配置与导航位于 `mkdocs.yml`。
+图片和附件继续使用原仓库中的路径。转换、翻译脚本和中间产物已清理。
+
+原仓库自带的脚本、TXT、配置及许可文件保留。下面是上游 README 的原始内容，
+其中的 Sphinx 构建说明仅供历史参考，当前中文站点使用上面的 MkDocs 命令。
+
+---
+
 # ROS 2 Documentation
 
 This repository contains the sources for the ROS 2 documentation that is hosted at [https://docs.ros.org/en](https://docs.ros.org/en).
